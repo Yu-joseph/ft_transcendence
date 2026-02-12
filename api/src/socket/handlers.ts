@@ -95,33 +95,35 @@ export function setupSocketHandlers(io: Server) {
     });
 
     // Handle game move
-    socket.on('make-move', (data: { matchId: string; index: number; newidx:number }) => {
+    socket.on('make-move', (data: { matchId: string; index: number; userId: string }) => {
       const match = matches.get(data.matchId);
-      const player = players.get(socket.id);
-      
-      if (!match || !player) return;
+      if (!match) return;
+
+      // Find the player in the match by their persistent Clerk userId
+      const player = match.players.find(p => p.id === data.userId);
+      if (!player) return;
+
+      // Update socketId in case of reconnect
+      player.socketId = socket.id;
+
       if (match.currentTurn !== player.id) return; // Not your turn
-      if (match.board[data.newidx] !== null) return; // Cell taken
-      
+      if (match.board[data.index] !== null) return; // Cell taken
+
       // Determine symbol (first player is X)
       const symbol = match.players[0].id === player.id ? 'X' : 'O';
-      match.board[data.newidx] = symbol;
-      if (data.index !== 10)
-        match.board[data.index] = null;
-      
+      match.board[data.index] = symbol;
+
       // Check for winner
       const winner = checkWinner(match.board);
       if (winner) {
         match.status = 'finished';
         match.winner = player.id;
       } else if (!match.board.includes(null)) {
-        // Draw
         match.status = 'finished';
       } else {
-        // Switch turn
         match.currentTurn = match.players.find(p => p.id !== player.id)?.id || null;
       }
-      
+
       // Broadcast updated match to both players
       match.players.forEach(p => {
         io.to(p.socketId).emit('match-update', match);
