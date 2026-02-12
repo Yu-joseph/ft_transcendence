@@ -3,6 +3,11 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import { ClerkProvider } from '@clerk/clerk-react'
 import Game from './Game.tsx'
+import Lobby from './Lobby.tsx'
+import Login from './Login.tsx'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+// import Lobby from './Lobby.tsx'
+
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined
 
@@ -26,7 +31,14 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     {PUBLISHABLE_KEY ? (
       <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-        <Game />
+        <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/lobby" element={<Lobby />} />
+        <Route path="/game/:matchId" element={<Game />} />
+      </Routes>
+    </BrowserRouter>
+        {/* <Game /> */}
       </ClerkProvider>
     ) : (
       <MissingClerkKey />

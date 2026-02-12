@@ -1,67 +1,128 @@
-import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/clerk-react";
-import { useState } from "react";
+import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { socket } from "./socket/sock";
 
-type Player = "X" | "O" | null;
+type CellValue = "X" | "O" | null;
 
-const Win_array = [
-  [0,1,2],[3,4,5],[6,7,8],
-  [0,3,6],[1,4,7],[2,5,8],
-  [0,4,8],[2,4,6],
-];
-
-function checkWinner(board: Player[]) {
-  for (const [a,b,c] of Win_array) {
-    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-      return board[a];
-    }
-  }
-  return null;
+interface Player {
+  id: string;
+  username: string;
+  socketId: string;
+  isReady: boolean;
 }
 
+interface Match {
+  id: string;
+  players: Player[];
+  board: (string | null)[];
+  currentTurn: string | null;
+  status: 'waiting' | 'ready' | 'playing' | 'finished';
+  winner: string | null;
+}
 
 function Game() {
   const { user } = useUser();
+  const navigate = useNavigate();
+  const { matchId } = useParams<{ matchId: string }>();
+  const location = useLocation();
+  
+  const [board, setBoard] = useState<CellValue[]>(Array(9).fill(null));
+  const [mySymbol, setMySymbol] = useState<"X" | "O" | null>(null);
+  const [currentTurn, setCurrentTurn] = useState<string | null>(null);
+  const [winner, setWinner] = useState<string | null>(null);
+  const [matchStatus, setMatchStatus] = useState<string>("waiting");
+  const [players, setPlayers] = useState<Player[]>([]);
 
-  const [board, setBoard] = useState<Player[]>(Array(9).fill(null));
-  const [currentPlayer, setCurrentPlayer] = useState<Player>("X");
-  const [winner, setWinner] = useState<Player | null>(null);
+  // Get symbol and initial match from location state (passed from Lobby)
+  useEffect(() => {
+    const state = location.state as { symbol?: string; match?: Match } | null;
+    if (state?.symbol) {
+      setMySymbol(state.symbol as "X" | "O");
+    }
+    if (state?.match) {
+      console.log("Initializing match from state:", state.match);
+      setBoard(state.match.board as CellValue[]);
+      setCurrentTurn(state.match.currentTurn);
+      setMatchStatus(state.match.status);
+      setPlayers(state.match.players);
+    }
+  }, [location.state]);
 
+  // Ensure socket is connected
+  useEffect(() => {
+    if (!socket.connected) {
+      socket.connect();
+    }
+  }, []);
+
+  // Listen for match updates from server
+  useEffect(() => {
+    if (!matchId) return;
+
+    const handleMatchUpdate = (match: Match) => {
+      console.log("Match update received:", match);
+      setBoard(match.board as CellValue[]);
+      setCurrentTurn(match.currentTurn);
+      setMatchStatus(match.status);
+      setPlayers(match.players);
+      
+      if (match.winner) {
+        // Find winner's username
+        const winnerPlayer = match.players.find(p => p.id === match.winner);
+        setWinner(winnerPlayer?.username || match.winner);
+      } else if (match.status === 'finished' && !match.winner) {
+        setWinner("Draw");
+      }
+    };
+
+    socket.on("match-update", handleMatchUpdate);
+
+    return () => {
+      socket.off("match-update", handleMatchUpdate);
+    };
+  }, [matchId]);
+
+  // Determine if it's my turn
+  const isMyTurn = user && currentTurn === user.id;
+
+  // Debug logging
+  useEffect(() => {
+    console.log("Debug - user.id:", user?.id);
+    console.log("Debug - currentTurn:", currentTurn);
+    console.log("Debug - isMyTurn:", isMyTurn);
+    console.log("Debug - matchStatus:", matchStatus);
+    console.log("Debug - mySymbol:", mySymbol);
+  }, [user, currentTurn, isMyTurn, matchStatus, mySymbol]);
+
+  // Determine status text
   let statusText: string;
   if (winner) {
-    statusText = `Winner: ${winner}`;
-    // string template `Winner: ${winner}`;
+    statusText = winner === "Draw" ? "It's a Draw!" : `Winner: ${winner}`;
+  } else if (matchStatus === "waiting") {
+    statusText = "Waiting for opponent...";
+  } else if (isMyTurn) {
+    statusText = `Your turn (${mySymbol})`;
   } else {
-    statusText = `Turn: ${currentPlayer}`;
+    statusText = "Opponent's turn...";
   }
 
-  const handleClick = (index: number) =>
-  {
-    if (board[index] || winner)
-      return;
-
-    const newBoard = [...board];
-    newBoard[index] = currentPlayer;
-// in result u will get winner x or 0
-    const result = checkWinner(newBoard);
-    const isDraw = result === null && newBoard.every((cell) => cell !== null);
-
-    if (result) {
-      setBoard(newBoard);
-      setWinner(result);
+  const handleClick = (index: number) => {
+    console.log("Cell clicked:", index);
+    console.log("Conditions - isMyTurn:", isMyTurn, "board[index]:", board[index], "winner:", winner, "matchStatus:", matchStatus);
+    
+    // Only allow move if it's my turn, cell is empty, no winner, and match is playing
+    if (!isMyTurn || board[index] || winner || matchStatus !== "playing") {
+      console.log("Move blocked!");
       return;
     }
 
-    // No draw state: if board is full with no winner, start a new round.
-    if (isDraw) {
-      setBoard(Array(9).fill(null));
-      setWinner(null);
-      setCurrentPlayer("X");
-      return;
-    }
-
-    setBoard(newBoard);
-    //setting value for next move
-    setCurrentPlayer(currentPlayer === "X" ? "O" : "X");
+    console.log("Emitting make-move", { matchId, index });
+    // Emit move to server
+    socket.emit("make-move", {
+      matchId,
+      index
+    });
   };
 
   return (
@@ -81,19 +142,18 @@ function Game() {
           Game
         </span>
       </h1>
-
+      {/* <Lobby /> */}
       <SignedOut>
         <div className="flex flex-col items-center gap-4 mt-6">
           <p className="text-white text-xl">Please sign in to play.</p>
-          <SignInButton>
-            <button
-              className="px-6 py-3 text-lg font-semibold rounded-xl 
-                             bg-linear-to-r from-indigo-500 to-purple-600
-                             text-white hover:scale-105 transition"
-            >
-              Sign In
-            </button>
-          </SignInButton>
+          <button
+            onClick={() => navigate("/")}
+            className="px-6 py-3 text-lg font-semibold rounded-xl 
+                         bg-linear-to-r from-indigo-500 to-purple-600
+                         text-white hover:scale-105 transition"
+          >
+            Go to Login
+          </button>
         </div>
       </SignedOut> 
 
@@ -102,10 +162,17 @@ function Game() {
         <div className="flex items-center justify-center gap-3 mt-2">
           <UserButton afterSignOutUrl="/" />
           <span className="text-white text-sm">
-            {/*the ? mean pick the first elem is not null */}
             {user?.fullName ?? user?.username ?? user?.primaryEmailAddress?.emailAddress}
+            {mySymbol && <span className="ml-2 text-emerald-400">({mySymbol})</span>}
           </span>
         </div>
+
+        {/* Show players in match */}
+        {players.length === 2 && (
+          <div className="text-slate-400 text-sm">
+            {players[0].username} (X) vs {players[1].username} (O)
+          </div>
+        )}
 
         <p className="text-white text-xl">{statusText}</p>
 
@@ -115,9 +182,11 @@ function Game() {
             <button
               key={index}
               onClick={() => handleClick(index)}
-              className="w-20 h-20 text-3xl font-bold rounded-lg
+              disabled={!isMyTurn || !!winner}
+              className={`w-20 h-20 text-3xl font-bold rounded-lg
                         bg-slate-800 text-white
-                        hover:bg-slate-700 transition"
+                        ${isMyTurn && !winner ? "hover:bg-slate-700 cursor-pointer" : "cursor-not-allowed opacity-80"}
+                        transition`}
             >
               {cell}
             </button>
@@ -125,14 +194,10 @@ function Game() {
         </div>
 
         <button
-          onClick={() => {
-            setBoard(Array(9).fill(null));
-            setWinner(null);
-            setCurrentPlayer("X");
-          }}
-          className="mt-6 px-6 py-2 rounded-lg bg-emerald-500 text-white"
+          onClick={() => navigate("/lobby")}
+          className="mt-6 px-6 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-500 transition"
         >
-          Reset Game
+          Back to Lobby
         </button>
       </SignedIn>
 
