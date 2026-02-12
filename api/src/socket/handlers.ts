@@ -12,6 +12,11 @@ export function setupSocketHandlers(io: Server) {
 
     // Handle player joining lobby
     socket.on('join-lobby', (data: { id: string; username: string }) => {
+      for (const [, existing] of players)
+      {
+        if(existing.id === data.id)
+          return;
+      }
       const player: Player = {
         id: data.id,
         username: data.username,
@@ -101,7 +106,8 @@ export function setupSocketHandlers(io: Server) {
       // Determine symbol (first player is X)
       const symbol = match.players[0].id === player.id ? 'X' : 'O';
       match.board[data.newidx] = symbol;
-      match.board[data.index] = null;
+      if (data.index !== 10)
+        match.board[data.index] = null;
       
       // Check for winner
       const winner = checkWinner(match.board);
