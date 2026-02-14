@@ -95,7 +95,7 @@ export function setupSocketHandlers(io: Server) {
     });
 
     // Handle game move
-    socket.on('make-move', (data: { matchId: string; index: number; userId: string }) => {
+    socket.on('make-move', (data: { matchId: string; oldindex: number; newindex: number; userId: string }) => {
       const match = matches.get(data.matchId);
       if (!match) return;
 
@@ -107,11 +107,13 @@ export function setupSocketHandlers(io: Server) {
       player.socketId = socket.id;
 
       if (match.currentTurn !== player.id) return; // Not your turn
-      if (match.board[data.index] !== null) return; // Cell taken
+      if (match.board[data.newindex] !== null) return; // Cell taken
 
       // Determine symbol (first player is X)
       const symbol = match.players[0].id === player.id ? 'X' : 'O';
-      match.board[data.index] = symbol;
+      match.board[data.newindex] = symbol;
+      if (data.oldindex !== 10)
+        match.board[data.oldindex] = null;
 
       // Check for winner
       const winner = checkWinner(match.board);
