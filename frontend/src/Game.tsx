@@ -33,6 +33,12 @@ function Game() {
   const [winner, setWinner] = useState<string | null>(null);
   const [matchStatus, setMatchStatus] = useState<string>("waiting");
   const [players, setPlayers] = useState<Player[]>([]);
+  const [pieceToRemove, setPieceToRemove] = useState<number | null>(null);
+
+  // Derive move count from the current board state
+  const getMoveCount = (symbol: "X" | "O"): number => {
+    return board.filter(cell => cell === symbol).length;
+  };
 
   // Get symbol and initial match from location state (passed from Lobby)
   useEffect(() => {
@@ -66,6 +72,7 @@ function Game() {
       setCurrentTurn(match.currentTurn);
       setMatchStatus(match.status);
       setPlayers(match.players);
+      setPieceToRemove(null); // Reset piece selection on each update
       
       if (match.winner) {
         // Find winner's username
@@ -108,23 +115,53 @@ function Game() {
   }
 
   const handleClick = (index: number) => {
-    console.log("Cell clicked:", index);
-    console.log("Conditions - isMyTurn:", isMyTurn, "board[index]:", board[index], "winner:", winner, "matchStatus:", matchStatus);
-    
-    // Only allow move if it's my turn, cell is empty, no winner, and match is playing
-    if (!isMyTurn || board[index] || winner || matchStatus !== "playing") {
-      console.log("Move blocked!");
+    if (!isMyTurn || winner || matchStatus !== "playing") return;
+
+    const symbol = mySymbol as "X" | "O";
+    const myMoveCount = getMoveCount(symbol);
+
+    // 🟢 CASE 1 — less than 3 pieces on board
+    if (myMoveCount < 3) {
+      if (board[index]) return; // Cell is occupied
+
+      socket.emit("make-move", {
+        matchId,
+        oldindex: -1,          // no removal
+        newindex: index,
+        userId: user!.id
+      });
+
       return;
     }
 
-    console.log("Emitting make-move", { matchId, index });
-    // Emit move to server
-    socket.emit("make-move", {
-      matchId,
-      index
-    });
-  };
+    // 🔵 CASE 2 — already 3 pieces on board, must remove one first
 
+    // Step A: select piece to remove (click on own piece)
+    if (pieceToRemove === null) {
+      if (board[index] === symbol) {
+        setPieceToRemove(index);
+      }
+      return;
+    }
+
+    // If clicking on another own piece, change selection
+    if (board[index] === symbol) {
+      setPieceToRemove(index);
+      return;
+    }
+
+    // Step B: place new piece on empty cell
+    if (!board[index]) {
+      socket.emit("make-move", {
+        matchId,
+        oldindex: pieceToRemove,
+        newindex: index,
+        userId: user!.id
+      });
+
+      setPieceToRemove(null);
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-900"> 
     <header className="min-h-screen flex flex-col items-center justify-start gap-10 pt-12">
@@ -176,21 +213,40 @@ function Game() {
 
         <p className="text-white text-xl">{statusText}</p>
 
+        {/* Instructions when need to remove a piece */}
+        {isMyTurn && mySymbol && getMoveCount(mySymbol) >= 3 && pieceToRemove === null && !winner && (
+          <p className="text-yellow-400 text-sm">Click one of your pieces to remove it first</p>
+        )}
+        {pieceToRemove !== null && (
+          <p className="text-green-400 text-sm">Now click an empty cell to place your piece</p>
+        )}
+
         {/* Board */}
         <div className="grid grid-cols-3 gap-3 mt-6">
-          {board.map((cell, index) => (
-            <button
-              key={index}
-              onClick={() => handleClick(index)}
-              disabled={!isMyTurn || !!winner}
-              className={`w-20 h-20 text-3xl font-bold rounded-lg
-                        bg-slate-800 text-white
-                        ${isMyTurn && !winner ? "hover:bg-slate-700 cursor-pointer" : "cursor-not-allowed opacity-80"}
-                        transition`}
-            >
-              {cell}
-            </button>
-          ))}
+          {board.map((cell, index) => {
+            const isSelectedForRemoval = pieceToRemove === index;
+            const isMyPiece = cell === mySymbol;
+            const needsToSelectPiece = isMyTurn && mySymbol && getMoveCount(mySymbol) >= 3 && pieceToRemove === null;
+            
+            return (
+              <button
+                key={index}
+                onClick={() => handleClick(index)}
+                disabled={!isMyTurn || !!winner}
+                className={`w-20 h-20 text-3xl font-bold rounded-lg
+                          ${isSelectedForRemoval 
+                            ? "bg-red-600 ring-4 ring-red-400" 
+                            : needsToSelectPiece && isMyPiece
+                              ? "bg-yellow-700 hover:bg-yellow-600"
+                              : "bg-slate-800"}
+                          text-white
+                          ${isMyTurn && !winner ? "hover:bg-slate-700 cursor-pointer" : "cursor-not-allowed opacity-80"}
+                          transition`}
+              >
+                {cell}
+              </button>
+            );
+          })}
         </div>
 
         <button
