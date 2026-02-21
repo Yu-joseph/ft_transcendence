@@ -53,14 +53,39 @@ function Game() {
       setMatchStatus(state.match.status);
       setPlayers(state.match.players);
     }
-  }, [location.state]);
+  },[]);
 
   // Ensure socket is connected
   useEffect(() => {
+     if (!user || !matchId) return;
+
     if (!socket.connected) {
       socket.connect();
     }
-  }, []);
+
+    // If we don't have match state (e.g. after refresh), ask server to rejoin
+    const handleConnect = () => {
+      socket.emit('reconnect-match', { userId: user.id, matchId });
+    };
+
+    if (socket.connected) {
+      handleConnect();
+    } else {
+      socket.on('connect', handleConnect);
+    }
+
+    const handleReconnectFailed = (data: { reason: string }) => {
+      console.log('Reconnect failed:', data.reason);
+      navigate('/lobby');
+    };
+
+    socket.on('reconnect-match-failed', handleReconnectFailed);
+
+    return () => {
+      socket.off('connect', handleConnect);
+      socket.off('reconnect-match-failed', handleReconnectFailed);
+    };
+  }, [user, matchId, navigate]);
 
   // Listen for match updates from server
   useEffect(() => {
@@ -87,6 +112,30 @@ function Game() {
 
     return () => {
       socket.off("match-update", handleMatchUpdate);
+    };
+  }, [matchId]);
+
+    useEffect(() => {
+    if (!matchId) return;
+
+    const handleMatchFound = (data: { matchId: string; match: Match; symbol: string }) => {
+      console.log("Match restored:", data.matchId, "Symbol:", data.symbol);
+      setMySymbol(data.symbol as "X" | "O");
+      setBoard(data.match.board as CellValue[]);
+      setCurrentTurn(data.match.currentTurn);
+      setMatchStatus(data.match.status);
+      setPlayers(data.match.players);
+
+      if (data.match.winner) {
+        const winnerPlayer = data.match.players.find(p => p.id === data.match.winner);
+        setWinner(winnerPlayer?.username || data.match.winner);
+      }
+    };
+
+    socket.on('match-found', handleMatchFound);
+
+    return () => {
+      socket.off('match-found', handleMatchFound);
     };
   }, [matchId]);
 
