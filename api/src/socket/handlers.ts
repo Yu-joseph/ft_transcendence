@@ -1,68 +1,138 @@
 import { Server, Socket } from 'socket.io';
 import { Player, Match } from '../types/game';
+import prisma from '../lib/prisma';
 
-// In-memory storage (use Redis/DB for production)
+// In-memory storage
 const players = new Map<string, Player>();
 const searchQueue: string[] = [];
 const matches = new Map<string, Match>();
+
+async function ensureUser(id: string, username: string) {
+  await prisma.user.upsert({
+    where: { id },
+    update: { username },
+    create: { id, username },
+  });
+}
+
+/**
+ * Save a new match to DB when it starts.
+ */
+async function createGameInDB(match: Match) {
+  const boardStrings = match.board.map(cell => cell ?? '');
+  await prisma.game.create({
+    data: {
+      id: match.id,
+      board: boardStrings,
+      status: 'playing',
+      result: 'PENDING',
+      playerXId: match.players[0].id,
+      playerOId: match.players[1].id,
+    },
+  });
+  console.log(`Game created in DB: ${match.id}`);
+}
+
+/**
+ * Update the board in DB after every move.
+ */
+async function updateGameInDB(match: Match) {
+  const boardStrings = match.board.map(cell => cell ?? '');
+  await prisma.game.update({
+    where: { id: match.id },
+    data: {
+      board: boardStrings,
+      status: match.status,
+    },
+  });
+}
+
+/**
+ * Finalize the game: update result, winner, and user stats.
+ */
+async function finalizeGame(match: Match) {
+  const playerXId = match.players[0].id;
+  const playerOId = match.players[1].id;
+
+  let result: string;
+  let winnerId: string | null = null;
+
+  if (match.winner) {
+    winnerId = match.winner;
+    result = match.winner === playerXId ? 'X_WIN' : 'O_WIN';
+  } else {
+    result = 'DRAW';
+  }
+
+  const boardStrings = match.board.map(cell => cell ?? '');
+
+  await prisma.game.update({
+    where: { id: match.id },
+    data: {
+      board: boardStrings,
+      status: 'finished',
+      result,
+      winnerId,
+    },
+  });
+
+  if (result === 'DRAW') {
+    await prisma.user.update({ where: { id: playerXId }, data: { draws: { increment: 1 } } });
+    await prisma.user.update({ where: { id: playerOId }, data: { draws: { increment: 1 } } });
+  } else {
+    const loserId = winnerId === playerXId ? playerOId : playerXId;
+    await prisma.user.update({ where: { id: winnerId! }, data: { wins: { increment: 1 } } });
+    await prisma.user.update({ where: { id: loserId }, data: { losses: { increment: 1 } } });
+  }
+
+  console.log(`Game finished: ${result} | ${match.players[0].username} vs ${match.players[1].username}`);
+}
 
 export function setupSocketHandlers(io: Server) {
   io.on('connection', (socket: Socket) => {
     console.log('User connected:', socket.id);
 
-    // Handle player joining lobby
-    socket.on('join-lobby', (data: { id: string; username: string }) => {
-      for (const [, existing] of players)
-      {
-        if(existing.id === data.id)
-          return;
+    socket.on('join-lobby', async (data: { id: string; username: string }) => {
+      for (const [, existing] of players) {
+        if (existing.id === data.id) return;
       }
+      await ensureUser(data.id, data.username);
+
       const player: Player = {
         id: data.id,
         username: data.username,
         socketId: socket.id,
-        isReady: false
+        isReady: false,
       };
-      
+
       players.set(socket.id, player);
-      
-      // Broadcast updated player list to all clients
       io.emit('players-update', Array.from(players.values()));
       console.log(`${data.username} joined the lobby`);
     });
 
-    
-    // Handle sending invite to a player
     socket.on('send-invite', (targetSocketId: string) => {
       const sender = players.get(socket.id);
       const target = players.get(targetSocketId);
-      
       if (!sender || !target) return;
-      if (targetSocketId === socket.id) return; // Can't invite yourself
-      
-      // Send invite to the target player
+      if (targetSocketId === socket.id) return;
+
       io.to(targetSocketId).emit('receive-invite', {
         from: sender,
-        inviteId: `invite-${Date.now()}`
+        inviteId: `invite-${Date.now()}`,
       });
-      
       console.log(`${sender.username} invited ${target.username}`);
     });
 
-    // Handle accepting an invite
-    socket.on('accept-invite', (data: { inviteId: string; fromSocketId: string }) => {
-      const player1 = players.get(data.fromSocketId); // Inviter
-      const player2 = players.get(socket.id);          // Accepter
-      
+    socket.on('accept-invite', async (data: { inviteId: string; fromSocketId: string }) => {
+      const player1 = players.get(data.fromSocketId);
+      const player2 = players.get(socket.id);
       if (!player1 || !player2) return;
-      
-      // Remove both from search queue if they were searching
+
       [data.fromSocketId, socket.id].forEach(id => {
         const index = searchQueue.indexOf(id);
         if (index > -1) searchQueue.splice(index, 1);
       });
-      
-      // Create match
+
       const matchId = `match-${Date.now()}`;
       const match: Match = {
         id: matchId,
@@ -70,52 +140,48 @@ export function setupSocketHandlers(io: Server) {
         board: Array(9).fill(null),
         currentTurn: player1.id,
         status: 'playing',
-        winner: null
+        winner: null,
       };
-      
+
       matches.set(matchId, match);
-      
-      // Notify both players
+
+      // Save to DB immediately
+      try {
+        await createGameInDB(match);
+      } catch (err) {
+        console.error('Failed to create game in DB:', err);
+      }
+
       io.to(data.fromSocketId).emit('match-found', { matchId, match, symbol: 'X' });
       io.to(socket.id).emit('match-found', { matchId, match, symbol: 'O' });
-      
+
       console.log(`Match created via invite: ${player1.username} vs ${player2.username}`);
     });
 
-    // Handle declining an invite
     socket.on('decline-invite', (data: { inviteId: string; fromSocketId: string }) => {
       const decliner = players.get(socket.id);
-      
-      // Notify the inviter that their invite was declined
       io.to(data.fromSocketId).emit('invite-declined', {
-        by: decliner?.username || 'Unknown'
+        by: decliner?.username || 'Unknown',
       });
-      
       console.log(`${decliner?.username} declined invite`);
     });
 
-    // Handle game move
-    socket.on('make-move', (data: { matchId: string; oldindex: number; newindex: number; userId: string }) => {
+    socket.on('make-move', async (data: { matchId: string; oldindex: number; newindex: number; userId: string }) => {
       const match = matches.get(data.matchId);
       if (!match) return;
 
-      // Find the player in the match by their persistent Clerk userId
       const player = match.players.find(p => p.id === data.userId);
       if (!player) return;
 
-      // Update socketId in case of reconnect
       player.socketId = socket.id;
 
-      if (match.currentTurn !== player.id) return; // Not your turn
-      if (match.board[data.newindex] !== null) return; // Cell taken
+      if (match.currentTurn !== player.id) return;
+      if (match.board[data.newindex] !== null) return;
 
-      // Determine symbol (first player is X)
       const symbol = match.players[0].id === player.id ? 'X' : 'O';
       match.board[data.newindex] = symbol;
-      if (data.oldindex !== 10)
-        match.board[data.oldindex] = null;
+      if (data.oldindex >= 0) match.board[data.oldindex] = null;
 
-      // Check for winner
       const winner = checkWinner(match.board);
       if (winner) {
         match.status = 'finished';
@@ -126,28 +192,53 @@ export function setupSocketHandlers(io: Server) {
         match.currentTurn = match.players.find(p => p.id !== player.id)?.id || null;
       }
 
-      // Broadcast updated match to both players
+      // Send update to clients FIRST (instant feedback)
       match.players.forEach(p => {
         io.to(p.socketId).emit('match-update', match);
       });
+
+      // Then persist to DB (non-blocking for the player)
+      try {
+        if (match.status === 'finished') {
+          await finalizeGame(match);
+          matches.delete(data.matchId);
+        } else {
+          await updateGameInDB(match);
+        }
+      } catch (err) {
+        console.error('Failed to update game in DB:', err);
+      }
     });
 
-    // Handle disconnect
+    socket.on('reconnect-match', (data: { userId: string; matchId: string }) => {
+      const match = matches.get(data.matchId);
+      if (!match) {
+        socket.emit('reconnect-match-failed', { reason: 'Match not found' });
+        return;
+      }
+
+      const player = match.players.find(p => p.id === data.userId);
+      if (!player) {
+        socket.emit('reconnect-match-failed', { reason: 'Not a player in this match' });
+        return;
+      }
+
+      player.socketId = socket.id;
+      players.set(socket.id, player);
+      const symbol = match.players[0].id === data.userId ? 'X' : 'O';
+      socket.emit('match-found', { matchId: data.matchId, match, symbol });
+      console.log(`${player.username} reconnected to match ${data.matchId}`);
+    });
+
     socket.on('disconnect', () => {
       const player = players.get(socket.id);
-      
-      // Remove from search queue
+
       const queueIndex = searchQueue.indexOf(socket.id);
-      if (queueIndex > -1) {
-        searchQueue.splice(queueIndex, 1);
-      }
-      
-      // Remove from players
+      if (queueIndex > -1) searchQueue.splice(queueIndex, 1);
+
       players.delete(socket.id);
-      
-      // Broadcast updated player list
       io.emit('players-update', Array.from(players.values()));
-      
+
       console.log('User disconnected:', player?.username || socket.id);
     });
   });
@@ -155,11 +246,10 @@ export function setupSocketHandlers(io: Server) {
 
 function checkWinner(board: (string | null)[]): string | null {
   const lines = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
-    [0, 4, 8], [2, 4, 6]             // diagonals
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6],
   ];
-  
   for (const [a, b, c] of lines) {
     if (board[a] && board[a] === board[b] && board[a] === board[c]) {
       return board[a];

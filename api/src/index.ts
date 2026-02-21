@@ -3,6 +3,7 @@ import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { setupSocketHandlers } from './socket/handlers';
+import prisma from './lib/prisma';
 
 const app = express();
 
@@ -11,9 +12,9 @@ const PORT = process.env.PORT || 3000;
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: '*', // Vite dev server
-    methods: ['GET', 'POST']
-  }
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
 });
 
 app.use(cors());
@@ -27,11 +28,59 @@ app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok' });
 });
 
-app.post('/test',(req: Request, res: Response) => {
-  const {name} = req.body;
-  res.status(200).send({
-    test: name
-  })
+// Get user stats (wins, losses, draws)
+app.get('/api/users/:id/stats', async (req: Request, res: Response) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.params.id as string},
+      select: { id: true, username: true, wins: true, losses: true, draws: true },
+    });
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get user's game history
+app.get('/api/users/:id/games', async (req: Request, res: Response) => {
+  try {
+    const games = await prisma.game.findMany({
+      where: {
+        OR: [{ playerXId: req.params.id as string}, { playerOId: req.params.id as string}],
+      },
+      include: {
+        playerX: { select: { id: true, username: true } },
+        playerO: { select: { id: true, username: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(games);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get leaderboard
+app.get('/api/leaderboard', async (req: Request, res: Response) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: { id: true, username: true, wins: true, losses: true, draws: true },
+      orderBy: { wins: 'desc' },
+      take: 20,
+    });
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/test', (req: Request, res: Response) => {
+  const { name } = req.body;
+  res.status(200).send({ test: name });
 });
 
 // Setup socket handlers
