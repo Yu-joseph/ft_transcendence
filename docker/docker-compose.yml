@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: sayf
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: mydb
+    volumes:
+      - ./db:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - "1234:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: hh@pgadmin.com
+      PGADMIN_DEFAULT_PASSWORD: 1234
+    depends_on:
+      - db
+
+  auth:
+    container_name: auth
+    build: ../backend/auth
+    command: python3 manage.py runserver 0.0.0.0:8000
+    restart: always
+    volumes:
+      - ../backend/auth/myauth:/app
+    depends_on:
+      - db
+
+
+  frontend:
+    container_name: frontend
+    restart: always
+    build: ../frontend
+    
+  
+  nginx:
+    build : ./nginx
+    container_name: nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      - frontend
