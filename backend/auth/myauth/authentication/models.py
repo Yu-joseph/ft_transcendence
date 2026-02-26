@@ -5,7 +5,4 @@ class UserAuth(models.Model):
     username = models.CharField(max_length=255)
     fullname = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
-
-    def save(self, *args, **kwargs):
-        self.password = make_password(self.password)
-        super().save(*args, **kwargs)
+    
