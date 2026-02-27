@@ -1,11 +1,13 @@
 import { Server, Socket } from 'socket.io';
 import { Player, Match } from '../types/game';
 import prisma from '../lib/prisma';
+import { advanceTournamentBracket } from './tournament';
 
 // In-memory storage
-const players = new Map<string, Player>();
 const searchQueue: string[] = [];
-const matches = new Map<string, Match>();
+export const players = new Map<string, Player>();
+export const matches = new Map<string, Match>();
+export { createGameInDB, finalizeGame, updateGameInDB };
 
 async function ensureUser(id: string, username: string) {
   await prisma.user.upsert({
@@ -28,6 +30,7 @@ async function createGameInDB(match: Match) {
       result: 'PENDING',
       playerXId: match.players[0].id,
       playerOId: match.players[1].id,
+      tournamentId: match.tournamentId ?? undefined,
     },
   });
   console.log(`Game created in DB: ${match.id}`);
@@ -88,13 +91,54 @@ async function finalizeGame(match: Match) {
   console.log(`Game finished: ${result} | ${match.players[0].username} vs ${match.players[1].username}`);
 }
 
+/**
+ * Forfeit a match: the leaver loses, the opponent wins.
+ */
+async function forfeitMatch(io: Server, matchId: string, leaverId: string) {
+  const match = matches.get(matchId);
+  if (!match || match.status === 'finished') return;
+
+  const opponent = match.players.find(p => p.id !== leaverId);
+  if (!opponent) return;
+
+  match.status = 'finished';
+  match.winner = opponent.id;
+
+  // Notify the opponent
+  io.to(opponent.socketId).emit('match-update', match);
+  io.to(opponent.socketId).emit('opponent-forfeited', {
+    matchId,
+    winner: opponent.username,
+  });
+
+  // Persist to DB
+  try {
+    await finalizeGame(match);
+    matches.delete(matchId);
+    if (match.tournamentId) {
+      advanceTournamentBracket(io, match.tournamentId, match);
+    }
+  } catch (err) {
+    console.error('Failed to finalize forfeited match:', err);
+  }
+
+  console.log(`Match ${matchId} forfeited by ${leaverId}, ${opponent.username} wins`);
+}
+
 export function setupSocketHandlers(io: Server) {
   io.on('connection', (socket: Socket) => {
     console.log('User connected:', socket.id);
 
     socket.on('join-lobby', async (data: { id: string; username: string }) => {
-      for (const [, existing] of players) {
-        if (existing.id === data.id) return;
+      for (const [existingSocketId, existing] of players) {
+        if (existing.id === data.id)
+        {
+          players.delete(existingSocketId);
+          existing.socketId = socket.id;
+          players.set(socket.id, existing);
+          socket.emit('players-update', Array.from(players.values()));
+          return;
+        }
       }
       await ensureUser(data.id, data.username);
 
@@ -202,6 +246,9 @@ export function setupSocketHandlers(io: Server) {
         if (match.status === 'finished') {
           await finalizeGame(match);
           matches.delete(data.matchId);
+          if (match.tournamentId) {
+            advanceTournamentBracket(io, match.tournamentId, match);
+          }
         } else {
           await updateGameInDB(match);
         }
@@ -229,13 +276,22 @@ export function setupSocketHandlers(io: Server) {
       socket.emit('match-found', { matchId: data.matchId, match, symbol });
       console.log(`${player.username} reconnected to match ${data.matchId}`);
     });
-
+    socket.on('leave-match', async (data: { matchId: string; userId: string }) => {
+      await forfeitMatch(io, data.matchId, data.userId);
+    });
     socket.on('disconnect', () => {
       const player = players.get(socket.id);
 
       const queueIndex = searchQueue.indexOf(socket.id);
       if (queueIndex > -1) searchQueue.splice(queueIndex, 1);
-
+      if (player) {
+        for (const [matchId, match] of matches) {
+          if (match.status === 'playing' && match.players.some(p => p.id === player.id)) {
+            forfeitMatch(io, matchId, player.id);
+            break;
+          }
+        }
+      }
       players.delete(socket.id);
       io.emit('players-update', Array.from(players.values()));
 
