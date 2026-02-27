@@ -36,18 +36,18 @@ function Login() {
       </SignedOut>
 
       <SignedIn>
-        <RedirectToLobby />
+        <RedirectToDashboard />
       </SignedIn>
     </div>
   );
 }
 
 // Separate component to handle redirect after sign in
-function RedirectToLobby() {
+function RedirectToDashboard() {
   const navigate = useNavigate();
-
+//Component renders → UI is ready → useEffect runs → navigate("/Dashboard")
   useEffect(() => {
-    navigate("/lobby");
+    navigate("/Dashboard");
   }, [navigate]);
 
   return (

@@ -5,6 +5,7 @@ import { ClerkProvider } from '@clerk/clerk-react'
 import Game from './Game.tsx'
 import Lobby from './Lobby.tsx'
 import Login from './Login.tsx'
+import Dashboard from "./Dashboard.tsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 // import Lobby from './Lobby.tsx'
 
@@ -34,6 +35,7 @@ createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path= "/Dashboard" element={<Dashboard />} />
         <Route path="/lobby" element={<Lobby />} />
         <Route path="/game/:matchId" element={<Game />} />
       </Routes>

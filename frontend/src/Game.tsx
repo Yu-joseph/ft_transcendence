@@ -2,6 +2,7 @@ import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { socket } from "./socket/sock";
+import BottomNav from "./components/BottomNav";
 
 type CellValue = "X" | "O" | null;
 
@@ -26,7 +27,7 @@ function Game() {
   const navigate = useNavigate();
   const { matchId } = useParams<{ matchId: string }>();
   const location = useLocation();
-  
+  //useLocation to access url info
   const [board, setBoard] = useState<CellValue[]>(Array(9).fill(null));
   const [mySymbol, setMySymbol] = useState<"X" | "O" | null>(null);
   const [currentTurn, setCurrentTurn] = useState<string | null>(null);
@@ -34,6 +35,7 @@ function Game() {
   const [matchStatus, setMatchStatus] = useState<string>("waiting");
   const [players, setPlayers] = useState<Player[]>([]);
   const [pieceToRemove, setPieceToRemove] = useState<number | null>(null);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
   // Derive move count from the current board state
   const getMoveCount = (symbol: "X" | "O"): number => {
@@ -49,6 +51,7 @@ function Game() {
     if (state?.match) {
       console.log("Initializing match from state:", state.match);
       setBoard(state.match.board as CellValue[]);
+      // casted CellValue cuz the ts should know this protcted before ( and convert it to cellValue)
       setCurrentTurn(state.match.currentTurn);
       setMatchStatus(state.match.status);
       setPlayers(state.match.players);
@@ -57,13 +60,14 @@ function Game() {
 
   // Ensure socket is connected
   useEffect(() => {
-     if (!user || !matchId) return;
+     if (!user || !matchId) 
+      return;
 
     if (!socket.connected) {
       socket.connect();
     }
 
-    // If we don't have match state (e.g. after refresh), ask server to rejoin
+    // If we dont have match state (after refresh), ask server to rejoin
     const handleConnect = () => {
       socket.emit('reconnect-match', { userId: user.id, matchId });
     };
@@ -89,7 +93,8 @@ function Game() {
 
   // Listen for match updates from server
   useEffect(() => {
-    if (!matchId) return;
+    if (!matchId) 
+      return;
 
     const handleMatchUpdate = (match: Match) => {
       console.log("Match update received:", match);
@@ -100,7 +105,7 @@ function Game() {
       setPieceToRemove(null); // Reset piece selection on each update
       
       if (match.winner) {
-        // Find winner's username
+        // Find winners username
         const winnerPlayer = match.players.find(p => p.id === match.winner);
         setWinner(winnerPlayer?.username || match.winner);
       } else if (match.status === 'finished' && !match.winner) {
@@ -139,10 +144,37 @@ function Game() {
     };
   }, [matchId]);
 
+  // Warn on browser tab close/refresh during active match
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // for popup for leaving this BeforeUnloadEvent typescripts type and it for event object of browser when leaving
+      if (matchStatus === "playing" && !winner) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [matchStatus, winner]);
+
+  const handleLeaveAttempt = () => {
+    if (matchStatus === "playing" && !winner) {
+      setShowLeaveConfirm(true);
+    } else {
+      navigate("/lobby");
+    }
+  };
+
+  const handleConfirmLeave = () => {
+    socket.emit("forfeit-match", { matchId, userId: user?.id });
+    setShowLeaveConfirm(false);
+    navigate("/lobby");
+  };
+
   // Determine if it's my turn
   const isMyTurn = user && currentTurn === user.id;
 
-  // Debug logging
+  // Debug states
   useEffect(() => {
     console.log("Debug - user.id:", user?.id);
     console.log("Debug - currentTurn:", currentTurn);
@@ -155,11 +187,14 @@ function Game() {
   let statusText: string;
   if (winner) {
     statusText = winner === "Draw" ? "It's a Draw!" : `Winner: ${winner}`;
-  } else if (matchStatus === "waiting") {
+  } 
+  else if (matchStatus === "waiting") {
     statusText = "Waiting for opponent...";
-  } else if (isMyTurn) {
+  } 
+  else if (isMyTurn) {
     statusText = `Your turn (${mySymbol})`;
-  } else {
+  }
+  else {
     statusText = "Opponent's turn...";
   }
 
@@ -169,7 +204,7 @@ function Game() {
     const symbol = mySymbol as "X" | "O";
     const myMoveCount = getMoveCount(symbol);
 
-    // 🟢 CASE 1 — less than 3 pieces on board
+    //  CASE 1 — less than 3 pieces on board
     if (myMoveCount < 3) {
       if (board[index]) return; // Cell is occupied
 
@@ -183,7 +218,7 @@ function Game() {
       return;
     }
 
-    // 🔵 CASE 2 — already 3 pieces on board, must remove one first
+    //  CASE 2 — already 3 pieces on board, must remove one first
 
     // Step A: select piece to remove (click on own piece)
     if (pieceToRemove === null) {
@@ -299,13 +334,39 @@ function Game() {
         </div>
 
         <button
-          onClick={() => navigate("/lobby")}
+          onClick={handleLeaveAttempt}
           className="mt-6 px-6 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-500 transition"
         >
           Back to Lobby
         </button>
-      </SignedIn>
 
+        {/* Leave Confirmation Modal */}
+        {showLeaveConfirm && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+            <div className="bg-slate-800 border border-red-700 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+              <h3 className="text-white text-xl font-bold mb-2">Leave Match?</h3>
+              <p className="text-slate-300 mb-6">
+                If you leave now, you will <span className="text-red-400 font-semibold">Lose the match</span> and your opponent wins.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleConfirmLeave}
+                  className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition font-semibold"
+                >
+                  Leave
+                </button>
+                <button
+                  onClick={() => setShowLeaveConfirm(false)}
+                  className="flex-1 px-4 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-500 transition font-semibold"
+                >
+                  Stay
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </SignedIn>
+      <BottomNav />
     </header>
     </div>
   );
