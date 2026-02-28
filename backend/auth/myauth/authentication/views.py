@@ -6,7 +6,6 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from datetime import timedelta
-from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -17,42 +16,49 @@ import json
 def login(request):
 
     if request.method != "POST":
-        return Response({"error": "Method not allowed"}, status=405)
+        return JsonResponse({"error": "Method not allowed"}, status=405)
 
     body = json.loads(request.body)
     username = body.get("username")
     password = body.get("password")
 
-    user = authenticate(username=username, password=password)
+    # Using a custom UserAuth model (not Django's auth User), so
+    # `authenticate()` won't find users. Manually verify credentials.
+    user = UserAuth.objects.filter(username=username).first()
 
-    if user is None:
-        return Response({"error": "Invalid credentials"}, status=401)
+    if not user:
+        return JsonResponse({"error": "Invalid credentials"}, status=401)
 
-    if not user.is_active:
-        return Response({"error": "Account inactive"}, status=403)
-    
+    if not check_password(password, user.password):
+        return JsonResponse({"error": "Invalid credentials"}, status=401)
+
+    # If the model has an `is_active` attribute, respect it; otherwise assume active.
+    if getattr(user, "is_active", True) is False:
+        return JsonResponse({"error": "Account inactive"}, status=403)
+
     refresh = RefreshToken.for_user(user)
     access = refresh.access_token
 
-    response = Response({"message": "Login successful"})
+    response = JsonResponse({"message": "Login successful"})
 
     response.set_cookie(
         key="access_token",
         value=str(access),
-        max_age=300,  
+        max_age=300,
         httponly=True,
-        secure=False, 
+        secure=False,
         samesite="Lax"
     )
 
     response.set_cookie(
         key="refresh_token",
         value=str(refresh),
-        max_age=604800,  
+        max_age=604800,
         httponly=True,
         secure=False,
         samesite="Lax"
     )
+
     csrf.get_token(request)
 
     return response
