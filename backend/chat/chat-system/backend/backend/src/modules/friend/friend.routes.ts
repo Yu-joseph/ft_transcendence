@@ -10,6 +10,8 @@ const routes = Router();
 // });
 
 routes.post('/request', authenticate, FriendController.addFriend);
+routes.put('/:id/accept', authenticate, FriendController.acceptFriend);
+routes.put('/:id/reject', authenticate, FriendController.rejectFriend);
 // routes.get('/', authenticate, );
 
 

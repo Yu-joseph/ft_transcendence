@@ -33,16 +33,53 @@ export class FriendController {
                 message: error.message || 'Internal Server Error'
             })
         }
+    }
+    static async acceptFriend(req: AuthenticatedRequest, res: Response) {
+        try {
+            const   receiverId = req.user?.id;
+            const   friendRequestId = Number(req.params.id);
+            if(!Number.isInteger(friendRequestId) || friendRequestId < 0)
+                return res.status(400).json({success: false, message: 'Bad Request ID'});
+            const   result = await FriendService.AcceptFriend({receiverId, friendRequestId});
+            
+            return res.status(200).json({
+                success: true,
+                message: 'Friend request accepted',
+                data: result
+            })
+
+        } catch (error: any) {
+            const   statusCode = error.statusCode;
+            console.error(error.message || 'Internal server error');
+            return res.status(statusCode || 500).json({
+                success: false,
+                message: error.message || 'Internal server error'
+            })
+        }
 
 
     }
-    // static async acceptFriend(req: AuthenticatedRequest, res: Response) {
-    //     try {
+    static async rejectFriend(req: AuthenticatedRequest, res: Response) {
+        try {
+            const   receiverId = req.user?.id;
+            const   friendRequestId = Number(req.params.id);
+            if (!Number.isInteger(friendRequestId) || friendRequestId <= 0) {
+                return res.status(400).json({success: false, message: 'Bad request ID'});
+            }
+            const   result = await FriendService.rejectFriend({receiverId, friendRequestId});
             
-    //     } catch (error) {
-            
-    //     }
+            return res.status(200).json({
+                success: true,
+                message: 'Friend request Rejected',
+                data: result
+            })
 
-
-    // }
+        } catch (error: any) {
+            const   statusCode = error.statusCode;
+            return res.status(statusCode || 500).json({
+                success: false,
+                message: error.message || 'Internal server error'
+            });
+        }
+    }
 }

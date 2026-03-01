@@ -28,7 +28,9 @@ app.get('/api/friend', async (req, res) => {
         return res.status(500).json({message: error.message})
     }
 })
-
+/*  __ Friend Module API __  */
 app.use('/api/friend', friendRoutes);
+app.use('/api/friend', friendRoutes);
+
 
 export  default app;
