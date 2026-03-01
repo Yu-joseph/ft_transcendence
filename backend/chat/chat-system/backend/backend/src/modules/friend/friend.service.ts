@@ -1,9 +1,11 @@
-import { AcceptFriendRequest, AddFriendRequest, AddFriendResponse } from "./friend.types.js";
+import { AcceptFriendRequest, AddFriendRequest, AddFriendResponse, CancelFriendRequest, RemoveFriendShip } from "./friend.types.js";
 import { prisma } from "../../lib/prisma.js";
 import { FriendsStatus } from "../../../generated/prisma/index.js";
 import { AppError } from "../../utils/AppError.js";
+import { threadCpuUsage } from "node:process";
 
 export  class FriendService {
+    /*  _________ Add Friend Request __________    */
     static async addFriend(data: AddFriendRequest) {
         if (data.requesterId == data.receiverId)
             throw new AppError('Cannot add yourself', 400);
@@ -37,7 +39,7 @@ export  class FriendService {
         });
         return newRequest;
     }
-
+    /*  _________ Accept Friend Request __________    */
     static async AcceptFriend(data: AcceptFriendRequest) {
         const   friendRequest = await prisma.friend.findUnique({
             where: {
@@ -72,7 +74,7 @@ export  class FriendService {
                 return result;
         }
     }
-
+    /*  _________ Reject Friend Request __________    */
     static async rejectFriend(data: AcceptFriendRequest) {
         
         const   friendRequest = await prisma.friend.findUnique({
@@ -102,5 +104,74 @@ export  class FriendService {
                 });
                 return result;
         }
+    }
+    /*  _________ Remove Friends Relation __________    */
+    static async removeFriendShip(data: RemoveFriendShip){
+        if (data.requesterId === data.friendId)
+            throw new AppError('Friend Ship not found', 409);
+        const   exist = await prisma.friend.findFirst({
+            where: {
+                receiverId: data.friendId,
+                requesterId: data.requesterId
+            }
+        });
+        if (!exist)
+            throw new AppError('FriendShip not found', 404);
+        switch (exist.status) {
+            case FriendsStatus.PENDING:
+                throw new AppError('No FriendShip exist yet(you can\'t remove it), you can just cancel it', 400);
+            case FriendsStatus.REJECTED:
+                throw new AppError('FriendShip already rejected', 409);
+            case FriendsStatus.ACCEPTED:
+                const   result = await prisma.friend.delete({
+                    where: {
+                        id: exist.id,
+                        receiverId: data.friendId,
+                        requesterId: data.requesterId,
+                        status: FriendsStatus.ACCEPTED
+                    }
+                });
+                return result;
+        }
+    }
+    /*  _________ Cancel Friends Request __________    */
+    static async cancelFriend(data: CancelFriendRequest) {
+        const   existed = await prisma.friend.findUnique({
+            where: {
+                id: data.requestId
+            }
+        });
+        if(!existed)
+            throw new AppError('Request Not Found', 404);
+        if (existed.requesterId !== data.requesterId)
+            throw new AppError('Not authorized', 403);
+        switch (existed.status) {
+            case FriendsStatus.ACCEPTED:
+                throw new AppError('Cannot Cancel FriendShip Request', 400)
+            case FriendsStatus.REJECTED:
+                throw new AppError('Cannot Cancel  Rejected Request', 400);
+            case FriendsStatus.PENDING:
+                const result = await prisma.friend.delete({
+                    where: {
+                        id: data.requestId,
+                        requesterId: data.requesterId,
+                        status: FriendsStatus.PENDING
+                    }
+                });
+                return result;
+        }
+    }
+    /*  _________ Get All FriendShip __________    */
+    static async getFriends(userId: number | undefined) {
+        const   friends = await prisma.friend.findMany({
+            where: {
+                OR: [
+                    {requesterId: userId},
+                    {receiverId: userId}
+                ],
+                status: FriendsStatus.ACCEPTED
+            }
+        });
+        return friends;
     }
 }

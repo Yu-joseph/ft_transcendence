@@ -12,6 +12,9 @@ const routes = Router();
 routes.post('/request', authenticate, FriendController.addFriend);
 routes.put('/:id/accept', authenticate, FriendController.acceptFriend);
 routes.put('/:id/reject', authenticate, FriendController.rejectFriend);
+routes.delete('/:id', authenticate, FriendController.removeFriendShip); 
+routes.delete('/:id/cancel', authenticate, FriendController.cancelFriend);
+routes.get('/', authenticate, FriendController.getFriends);
 // routes.get('/', authenticate, );
 
 

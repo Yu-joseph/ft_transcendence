@@ -18,19 +18,19 @@ app.get('/', async (req, res) => {
 
 })   
 
-app.get('/api/friend', async (req, res) => {
-    try {
-        const   list = await prisma.friend.findMany();
-        console.log("Friend request:", list);
-        res.status(200).json({success: true, data: list})
-    } catch (error: any) {
-        console.log(error.message);
-        return res.status(500).json({message: error.message})
-    }
-})
+// app.get('/api/friend', async (req, res) => {
+//     try {
+//         const   list = await prisma.friend.findMany();
+//         // console.log("Friend request:", list);
+//         res.status(200).json({success: true, data: list})
+//     } catch (error: any) {
+//         console.log(error.message);
+//         return res.status(500).json({message: error.message})
+//     }
+// })
 /*  __ Friend Module API __  */
 app.use('/api/friend', friendRoutes);
-app.use('/api/friend', friendRoutes);
+// app.use('/api/friend', friendRoutes);
 
 
 export  default app;

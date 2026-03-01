@@ -15,3 +15,13 @@ export  interface AcceptFriendRequest {
     receiverId: number | undefined
     friendRequestId: number
 }
+
+export  interface RemoveFriendShip {
+    requesterId: number | undefined
+    friendId: number
+}
+
+export  interface CancelFriendRequest {
+    requesterId: number | undefined
+    requestId: number
+}

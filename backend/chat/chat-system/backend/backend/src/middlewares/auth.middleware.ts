@@ -27,7 +27,7 @@ export  const   authenticate = (
         console.log(process.env.SECRET_KEY);
         const   decoded = jwt.verify(token, process.env.SECRET_KEY as string) as JwtPayload;
         req.user = {
-            id: 8,
+            id: 1,
             username: 'userQ'
         };
         console.log("Payload:", req.user);

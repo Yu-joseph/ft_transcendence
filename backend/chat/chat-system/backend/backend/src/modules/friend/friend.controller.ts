@@ -7,6 +7,7 @@ import  { Response }       from    'express';
 import  { FriendService }   from    './friend.service.js';
 
 export class FriendController {
+    /*  _________ Add Friend Request __________    */
     static async addFriend(req: AuthenticatedRequest, res: Response) {
         try {
             const   requesterId = req.user?.id;
@@ -34,6 +35,7 @@ export class FriendController {
             })
         }
     }
+    /*  _________ Accept Friend Request __________    */
     static async acceptFriend(req: AuthenticatedRequest, res: Response) {
         try {
             const   receiverId = req.user?.id;
@@ -59,6 +61,7 @@ export class FriendController {
 
 
     }
+    /*  _________ Reject Friend Request __________    */
     static async rejectFriend(req: AuthenticatedRequest, res: Response) {
         try {
             const   receiverId = req.user?.id;
@@ -80,6 +83,68 @@ export class FriendController {
                 success: false,
                 message: error.message || 'Internal server error'
             });
+        }
+    }
+    /*  _________ Remove Friends Relation __________    */
+    static async removeFriendShip(req: AuthenticatedRequest, res: Response) {
+        try {
+            const   requesterId = req.user?.id;
+            const   friendId = Number(req.params.id);
+            console.log(friendId);
+            if (!Number.isInteger(friendId) || friendId <= 0)
+                return res.status(400).json({success: false, message: 'Bad request ID'});
+            const   result = await FriendService.removeFriendShip({requesterId, friendId});
+            return res.status(200).json({
+                success: true,
+                message: 'FriendShip removed',
+                data: result
+            })
+        } catch (error: any) {
+            const   statusCode = error.statusCode;
+            return res.status(statusCode || 500).json({
+                success: true,
+                message: error.message || 'Internal server error'
+            })
+        }
+    }
+    /*  _________ Cancel Friends Request __________    */
+    static async cancelFriend(req: AuthenticatedRequest, res: Response) {
+        try {
+            const   requesterId = req.user?.id;
+            const   requestId = Number(req.params.id);
+            if (!Number.isInteger(requestId) || requestId <= 0)
+                return res.status(400).json({success: false, message: 'Bad request ID'});
+
+            const   result = await FriendService.cancelFriend({requesterId, requestId})
+            return res.status(200).json({
+                success: true,
+                message: 'Friend Request Canceled successfuly',
+                data: result
+            })
+        } catch (error: any) {
+            const   statusCode = error.statusCode;
+            console.log(error.message || 'Internal server error');
+            return res.status(statusCode || 500).json({
+                success: false,
+                message: error.message || 'Internal server error'
+            });
+        }
+    }
+    /*  _________ Get All FriendShip __________    */
+    static async getFriends(req: AuthenticatedRequest, res: Response) {
+        try {
+            const   userId = req.user?.id;
+            const   result = await FriendService.getFriends(userId);
+            return res.status(200).json({
+                success: true,
+                message: 'FriendShip',
+                data: result
+            })
+        } catch (error : any) {
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            })
         }
     }
 }
