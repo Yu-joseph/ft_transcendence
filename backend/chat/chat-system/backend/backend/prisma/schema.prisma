@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+model User {
+  id Int @id @default(autoincrement())
+  username String @unique
+  email String @unique
+  password String 
+  created_at DateTime @default(now())
+
+  receivedRequests  Friend[] @relation("ReceivedRequests")
+  sentRequests      Friend[] @relation("SentRequests")
+}
+
+model Friend {
+  id Int @id @default(autoincrement())
+  requesterId Int
+  receiverId  Int
+  status FriendsStatus @default(PENDING)
+  created_at DateTime @default(now())
+
+  requester User @relation("SentRequests", fields: [requesterId], references: [id])
+  receiver  User @relation("ReceivedRequests", fields: [receiverId], references: [id])
+}
+
+enum  FriendsStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
