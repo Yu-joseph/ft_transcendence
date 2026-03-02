@@ -22,6 +22,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  createdTournaments Tournament[] @relation("TournamentCreator")
+  wonTournaments     Tournament[] @relation("TournamentWinner")
+  tournamentEntries  TournamentParticipant[]
+
   gamesAsPlayerX Game[] @relation("PlayerX")
   gamesAsPlayerO Game[] @relation("PlayerO")
   wonGames       Game[] @relation("Winner")
@@ -42,5 +46,33 @@ model Game {
   winner    User?    @relation("Winner", fields: [winnerId], references: [id])
   winnerId  String?
 
+  tournament   Tournament? @relation("TournamentGames", fields: [tournamentId], references: [id])
+  tournamentId String?
+
   createdAt DateTime @default(now())
+}
+
+model Tournament {
+  id        String   @id @default(uuid())
+  name      String
+  status    String   // "waiting", "in-progress", "finished"
+  creatorId String
+  creator   User     @relation("TournamentCreator", fields: [creatorId], references: [id])
+  winnerId  String?
+  winner    User?    @relation("TournamentWinner", fields: [winnerId], references: [id])
+  players   TournamentParticipant[]
+  games     Game[]   @relation("TournamentGames")
+  createdAt DateTime @default(now())
+}
+
+model TournamentParticipant {
+  id           String     @id @default(uuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  seed         Int
+  eliminated   Boolean    @default(false)
+
+  @@unique([tournamentId, userId])
 }

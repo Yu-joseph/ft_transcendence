@@ -7,6 +7,7 @@ import { advanceTournamentBracket } from './tournament';
 const searchQueue: string[] = [];
 export const players = new Map<string, Player>();
 export const matches = new Map<string, Match>();
+const disconnectTimeouts = new Map<string, NodeJS.Timeout>();
 export { createGameInDB, finalizeGame, updateGameInDB };
 
 async function ensureUser(id: string, username: string) {
@@ -57,14 +58,12 @@ async function finalizeGame(match: Match) {
   const playerXId = match.players[0].id;
   const playerOId = match.players[1].id;
 
-  let result: string;
+  let result: string = '';
   let winnerId: string | null = null;
 
   if (match.winner) {
     winnerId = match.winner;
     result = match.winner === playerXId ? 'X_WIN' : 'O_WIN';
-  } else {
-    result = 'DRAW';
   }
 
   const boardStrings = match.board.map(cell => cell ?? '');
@@ -79,14 +78,10 @@ async function finalizeGame(match: Match) {
     },
   });
 
-  if (result === 'DRAW') {
-    await prisma.user.update({ where: { id: playerXId }, data: { draws: { increment: 1 } } });
-    await prisma.user.update({ where: { id: playerOId }, data: { draws: { increment: 1 } } });
-  } else {
-    const loserId = winnerId === playerXId ? playerOId : playerXId;
-    await prisma.user.update({ where: { id: winnerId! }, data: { wins: { increment: 1 } } });
-    await prisma.user.update({ where: { id: loserId }, data: { losses: { increment: 1 } } });
-  }
+  
+  const loserId = winnerId === playerXId ? playerOId : playerXId;
+  await prisma.user.update({ where: { id: winnerId! }, data: { wins: { increment: 1 } } });
+  await prisma.user.update({ where: { id: loserId }, data: { losses: { increment: 1 } } });
 
   console.log(`Game finished: ${result} | ${match.players[0].username} vs ${match.players[1].username}`);
 }
@@ -258,6 +253,11 @@ export function setupSocketHandlers(io: Server) {
     });
 
     socket.on('reconnect-match', (data: { userId: string; matchId: string }) => {
+      const timeout = disconnectTimeouts.get(data.userId);
+      if (timeout) {
+        clearTimeout(timeout);
+        disconnectTimeouts.delete(data.userId);
+      }
       const match = matches.get(data.matchId);
       if (!match) {
         socket.emit('reconnect-match-failed', { reason: 'Match not found' });
@@ -287,7 +287,17 @@ export function setupSocketHandlers(io: Server) {
       if (player) {
         for (const [matchId, match] of matches) {
           if (match.status === 'playing' && match.players.some(p => p.id === player.id)) {
-            forfeitMatch(io, matchId, player.id);
+            if (match.tournamentId) {
+              // Tournament match: give 15s grace period for reconnect (page refresh)
+              const timeout = setTimeout(() => {
+                disconnectTimeouts.delete(player.id);
+                forfeitMatch(io, matchId, player.id);
+              }, 15000);
+              disconnectTimeouts.set(player.id, timeout);
+            } else {
+              // Regular 1v1: forfeit immediately
+              forfeitMatch(io, matchId, player.id);
+            }
             break;
           }
         }
