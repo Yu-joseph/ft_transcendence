@@ -32,7 +32,6 @@ def login(request):
     if not check_password(password, user.password):
         return JsonResponse({"error": "Invalid credentials"}, status=401)
 
-    # If the model has an `is_active` attribute, respect it; otherwise assume active.
     if getattr(user, "is_active", True) is False:
         return JsonResponse({"error": "Account inactive"}, status=403)
 
@@ -47,7 +46,8 @@ def login(request):
         max_age=300,
         httponly=True,
         secure=False,
-        samesite="Lax"
+        samesite="Lax",
+        path="/"
     )
 
     response.set_cookie(
@@ -56,7 +56,8 @@ def login(request):
         max_age=604800,
         httponly=True,
         secure=False,
-        samesite="Lax"
+        samesite="Lax",
+        path="/"
     )
 
     csrf.get_token(request)
@@ -104,7 +105,9 @@ def register(request):
 
 @csrf_exempt
 def logout(request):
-    response = JsonResponse({"message": "Logged out"}, status=200)
-    response.delete_cookie("access_token")
-    response.delete_cookie("refresh_token")
+    response = JsonResponse({"message": "Logged out"})
+
+    response.delete_cookie("access_token", path="/")
+    response.delete_cookie("refresh_token", path="/")
+
     return response
