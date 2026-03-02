@@ -113,26 +113,26 @@ export default function Dashboard() {
             <p className="text-gray-300">Choose an option below to get started.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-lg mt-4">
               <button
-                onClick={() => navigate("/lobby")}
-                className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-cyan-400 hover:scale-105 transition-all duration-300 shadow-lg"
+                onClick={() => navigate("/AiChallange")}
+                className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-amber-500 hover:scale-105 transition-all duration-300 shadow-lg"
               >
                 <span className="text-4xl"><PiGameControllerFill /></span>
-                <span className="text-amber-500 text-xl font-semibold">Lobby</span>
+                <span className="text-amber-500 text-xl font-semibold">AiChallange</span>
                 <span className="text-gray-400 text-sm">Find players and start a match</span>
               </button>
               <button
-                onClick={() => navigate("/lobby")}
-                className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-cyan-400 hover:scale-105 transition-all duration-300 shadow-lg"
+                onClick={() => navigate("/AiChallange")}
+                className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-amber-500 hover:scale-105 transition-all duration-300 shadow-lg"
               >
                 <span className="text-4xl"><TbTournament /></span>
                 <span className="text-amber-500 text-xl font-semibold">Tournament</span>
                 <span className="text-gray-400 text-sm">Compete in tournament brackets</span>
               </button>
             </div>
-            <div className="flex-1">
+            {/* <div className="grid grid-cols-1 gap-6"> */}
               <PlayerList />
-            </div>
-            <TournamentList />
+              <TournamentList />
+            {/* </div> */}
             </div>
 
             {/* Right column */}
