@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { setupSocketHandlers } from './socket/handlers';
 import prisma from './lib/prisma';
+import { setupTournamentHandlers } from './socket/tournament';
 
 const app = express();
 
@@ -85,6 +86,7 @@ app.post('/test', (req: Request, res: Response) => {
 
 // Setup socket handlers
 setupSocketHandlers(io);
+setupTournamentHandlers(io);
 
 httpServer.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
