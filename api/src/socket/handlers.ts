@@ -1,7 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { Player, Match } from '../types/game';
 import prisma from '../lib/prisma';
-import { advanceTournamentBracket } from './tournament';
+// import { advanceTournamentBracket } from './tournament';
 
 // In-memory storage
 const searchQueue: string[] = [];
@@ -31,7 +31,7 @@ async function createGameInDB(match: Match) {
       result: 'PENDING',
       playerXId: match.players[0].id,
       playerOId: match.players[1].id,
-      tournamentId: match.tournamentId ?? undefined,
+      // tournamentId: match.tournamentId ?? undefined,
     },
   });
   console.log(`Game created in DB: ${match.id}`);
@@ -110,9 +110,9 @@ async function forfeitMatch(io: Server, matchId: string, leaverId: string) {
   try {
     await finalizeGame(match);
     matches.delete(matchId);
-    if (match.tournamentId) {
-      advanceTournamentBracket(io, match.tournamentId, match);
-    }
+    // if (match.tournamentId) {
+    //   advanceTournamentBracket(io, match.tournamentId, match);
+    // }
   } catch (err) {
     console.error('Failed to finalize forfeited match:', err);
   }
@@ -241,9 +241,9 @@ export function setupSocketHandlers(io: Server) {
         if (match.status === 'finished') {
           await finalizeGame(match);
           matches.delete(data.matchId);
-          if (match.tournamentId) {
-            advanceTournamentBracket(io, match.tournamentId, match);
-          }
+          // if (match.tournamentId) {
+          //   advanceTournamentBracket(io, match.tournamentId, match);
+          // }
         } else {
           await updateGameInDB(match);
         }
