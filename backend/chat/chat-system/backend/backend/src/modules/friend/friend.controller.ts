@@ -42,7 +42,7 @@ export class FriendController {
             const   friendRequestId = Number(req.params.id);
             if(!Number.isInteger(friendRequestId) || friendRequestId < 0)
                 return res.status(400).json({success: false, message: 'Bad Request ID'});
-            const   result = await FriendService.AcceptFriend({receiverId, friendRequestId});
+            const   result = await FriendService.acceptFriend({receiverId, friendRequestId});
             
             return res.status(200).json({
                 success: true,
@@ -102,7 +102,7 @@ export class FriendController {
         } catch (error: any) {
             const   statusCode = error.statusCode;
             return res.status(statusCode || 500).json({
-                success: true,
+                success: false,
                 message: error.message || 'Internal server error'
             })
         }
@@ -118,7 +118,7 @@ export class FriendController {
             const   result = await FriendService.cancelFriend({requesterId, requestId})
             return res.status(200).json({
                 success: true,
-                message: 'Friend Request Canceled successfuly',
+                message: 'Friend request canceled successfully',
                 data: result
             })
         } catch (error: any) {
@@ -145,6 +145,40 @@ export class FriendController {
                 success: false,
                 message: 'Internal server error'
             })
+        }
+    }
+    /*  _________ Get Rejected FriendShip __________    */
+    static async getRejectedFriend(req: AuthenticatedRequest, res: Response) {
+        try {
+            const   userId = req.user?.id;
+            const   result = await FriendService.getRejectedFriend(userId);
+            return res.status(200).json({
+                success: true,
+                message: 'Rejected request',
+                data: result
+            })
+        } catch (error: any) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Internal server error'
+            });
+        }
+    }
+        /*  _________ Get PENDING FriendShip __________    */
+    static async getPendingFriend(req: AuthenticatedRequest, res: Response) {
+        try {
+            const   userId = req.user?.id;
+            const   result = await FriendService.getPendingFriend(userId);
+            return res.status(200).json({
+                success: true,
+                message: 'Pending request',
+                data: result
+            })
+        } catch (error: any) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Internal server error'
+            });
         }
     }
 }

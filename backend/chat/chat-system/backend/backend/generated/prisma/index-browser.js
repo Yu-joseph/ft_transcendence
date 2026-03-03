@@ -136,6 +136,22 @@ exports.Prisma.FriendScalarFieldEnum = {
   created_at: 'created_at'
 };
 
+exports.Prisma.ConversationScalarFieldEnum = {
+  id: 'id',
+  user1Id: 'user1Id',
+  user2Id: 'user2Id',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.MessageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  senderId: 'senderId',
+  conversationId: 'conversationId',
+  created_at: 'created_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -153,7 +169,9 @@ exports.FriendsStatus = exports.$Enums.FriendsStatus = {
 
 exports.Prisma.ModelName = {
   User: 'User',
-  Friend: 'Friend'
+  Friend: 'Friend',
+  Conversation: 'Conversation',
+  Message: 'Message'
 };
 
 /**

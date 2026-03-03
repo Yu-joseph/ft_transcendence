@@ -26,10 +26,7 @@ export  const   authenticate = (
     try {
         console.log(process.env.SECRET_KEY);
         const   decoded = jwt.verify(token, process.env.SECRET_KEY as string) as JwtPayload;
-        req.user = {
-            id: 1,
-            username: 'userQ'
-        };
+        req.user = decoded;
         console.log("Payload:", req.user);
         next();
     } catch (error) {
