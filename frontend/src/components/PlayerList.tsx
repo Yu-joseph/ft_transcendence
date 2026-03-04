@@ -29,7 +29,8 @@ export default function PlayerList() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user)
+      return;
 
     socket.connect();
 //let server know there is new connetcioni
@@ -116,7 +117,7 @@ export default function PlayerList() {
 
   return (
     <>
-      <div className="bg-slate-800 border border-blue-700 rounded-xl p-6 w-full max-w-md">
+      <div className="bg-slate-800 border border-blue-700 rounded-xl p-5 w-full max-w-lg">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-amber-500 text-xl font-semibold">Online Players</h2>
           <span className="text-green-400 text-sm">{onlineCount} online</span>
@@ -148,7 +149,7 @@ export default function PlayerList() {
 
       {/* Sent Toast */}
       {sentToast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm font-semibold animate-pulse">
+        <div className="fixed bottom-24 left-1/2 bg-amber-500 text-white px-4 py-3 rounded-xl  font-semibold animate-pulse">
           {sentToast}
         </div>
       )}

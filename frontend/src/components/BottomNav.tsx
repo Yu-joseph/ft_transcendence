@@ -23,9 +23,9 @@ export default function BottomNav() {
 
           {/* Lobby Button */}
           <button
-            onClick={() => navigate("/lobby")}
+            onClick={() => navigate("/AiChallange")}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg transition-all duration-300 transform ${
-              pathname === "/lobby"
+              pathname === "/AiChallange"
                 ? "bg-cyan-600 text-white scale-110 shadow-lg shadow-cyan-500/50"
                 : "text-gray-400 hover:text-cyan-300 hover:bg-slate-800/50 hover:scale-105"
             }`}

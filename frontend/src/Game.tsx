@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { socket } from "./socket/sock";
 import BottomNav from "./components/BottomNav";
+import { GiPodiumWinner } from "react-icons/gi";
+
 
 type CellValue = "X" | "O" | null;
 
@@ -36,7 +38,7 @@ function Game() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [pieceToRemove, setPieceToRemove] = useState<number | null>(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
-
+  const [openmentLeaver, setopLeave] = useState(false);
   // Derive move count from the current board state
   const getMoveCount = (symbol: "X" | "O"): number => {
     return board.filter(cell => cell === symbol).length;
@@ -80,7 +82,7 @@ function Game() {
 
     const handleReconnectFailed = (data: { reason: string }) => {
       console.log('Reconnect failed:', data.reason);
-      navigate('/lobby');
+      navigate('/Dashboard');
     };
 
     socket.on('reconnect-match-failed', handleReconnectFailed);
@@ -113,10 +115,17 @@ function Game() {
       }
     };
 
+    const handleOpponentForfeited = () => {
+      setopLeave(true);
+      setTimeout(() => navigate("/Dashboard"), 4000);
+    };
+
     socket.on("match-update", handleMatchUpdate);
+    socket.on("opponent-forfeited", handleOpponentForfeited);
 
     return () => {
       socket.off("match-update", handleMatchUpdate);
+      socket.off("opponent-forfeited", handleOpponentForfeited);
     };
   }, [matchId]);
 
@@ -161,14 +170,14 @@ function Game() {
     if (matchStatus === "playing" && !winner) {
       setShowLeaveConfirm(true);
     } else {
-      navigate("/lobby");
+      navigate("/Dashboard");
     }
   };
 
   const handleConfirmLeave = () => {
-    socket.emit("forfeit-match", { matchId, userId: user?.id });
+    socket.emit("leave-match", { matchId, userId: user?.id });
     setShowLeaveConfirm(false);
-    navigate("/lobby");
+    navigate("/Dashboard");
   };
 
   // Determine if it's my turn
@@ -340,6 +349,9 @@ function Game() {
           Back to Lobby
         </button>
 
+        {/* Opponent Left Modal */}
+      
+
         {/* Leave Confirmation Modal */}
         {showLeaveConfirm && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
@@ -362,6 +374,16 @@ function Game() {
                   Stay
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+        {openmentLeaver && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+            <div className="bg-slate-800 border border-emerald-600 rounded-xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center">
+              <div className="text-5xl mb-4"><GiPodiumWinner /></div>
+              <h3 className="text-white text-2xl font-bold mb-2">You Win!</h3>
+              <p className="text-slate-300 mb-4">Your opponent left the match.</p>
+              <p className="text-slate-400 text-sm">Redirecting to Dashboard...</p>
             </div>
           </div>
         )}
