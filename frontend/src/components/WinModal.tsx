@@ -12,11 +12,15 @@ interface WinModalProps {
   winnerName: string;
   message?: string;
 <<<<<<< HEAD
+<<<<<<< HEAD
   timerTransfer?: number; // ms, default 4000
   redirectTo?: string; // default /Dashboard
 =======
   redirectDelay?: number; // ms, default 4000
 >>>>>>> e2ddfd1 (adding win medals)
+=======
+  timerTransfer?: number; // ms, default 4000
+>>>>>>> 6d4554a (frontend)
 }
 
 export default function WinModal({
@@ -25,11 +29,15 @@ export default function WinModal({
   winnerName,
   message,
 <<<<<<< HEAD
+<<<<<<< HEAD
   timerTransfer = 4000,
   redirectTo = '/Dashboard',
 =======
   redirectDelay = 4000,
 >>>>>>> e2ddfd1 (adding win medals)
+=======
+  timerTransfer = 4000,
+>>>>>>> 6d4554a (frontend)
 }: WinModalProps) {
   const navigate = useNavigate();
 
@@ -38,10 +46,14 @@ export default function WinModal({
     if (!show) 
         return;
 <<<<<<< HEAD
+<<<<<<< HEAD
     const timer = setTimeout(() => navigate(redirectTo), timerTransfer);
 =======
     const timer = setTimeout(() => navigate("/Dashboard"), redirectDelay);
 >>>>>>> e2ddfd1 (adding win medals)
+=======
+    const timer = setTimeout(() => navigate("/Dashboard"), timerTransfer);
+>>>>>>> 6d4554a (frontend)
     return () => clearTimeout(timer);
   }, [show]);
 

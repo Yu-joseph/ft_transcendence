@@ -134,7 +134,7 @@ export default function Dashboard() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
-                    <thead className="bg-slate-900/70">
+                    <thead className="bg-slate-900">
                       <tr>
                         <th className="px-6 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Rank</th>
                         <th className="px-6 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Player</th>
