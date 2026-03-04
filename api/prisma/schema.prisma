@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id              // Clerk user ID
+  username  String
+  wins      Int      @default(0)
+  losses    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdTournaments Tournament[] @relation("TournamentCreator")
+  wonTournaments     Tournament[] @relation("TournamentWinner")
+  tournamentEntries  TournamentParticipant[]
+
+  gamesAsPlayerX Game[] @relation("PlayerX")
+  gamesAsPlayerO Game[] @relation("PlayerO")
+  wonGames       Game[] @relation("Winner")
+}
+
+model Game {
+  id        String   @id @default(uuid())
+  board     String[] // final board state, e.g. ["X", "O", null, ...]
+  status    String   // "finished"
+  result    String   // "X_WIN", "O_WIN"
+
+  playerX   User     @relation("PlayerX", fields: [playerXId], references: [id])
+  playerXId String
+
+  playerO   User     @relation("PlayerO", fields: [playerOId], references: [id])
+  playerOId String
+
+  winner    User?    @relation("Winner", fields: [winnerId], references: [id])
+  winnerId  String?
+
+  tournament   Tournament? @relation("TournamentGames", fields: [tournamentId], references: [id])
+  tournamentId String?
+
+  createdAt DateTime @default(now())
+}
+
+model Tournament {
+  id        String   @id @default(uuid())
+  name      String
+  status    String   // "waiting", "in-progress", "finished"
+  creatorId String
+  creator   User     @relation("TournamentCreator", fields: [creatorId], references: [id])
+  winnerId  String?
+  winner    User?    @relation("TournamentWinner", fields: [winnerId], references: [id])
+  players   TournamentParticipant[]
+  games     Game[]   @relation("TournamentGames")
+  createdAt DateTime @default(now())
+}
+
+model TournamentParticipant {
+  id           String     @id @default(uuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  seed         Int
+  eliminated   Boolean    @default(false)
+
+  @@unique([tournamentId, userId])
+}
