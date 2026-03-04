@@ -7,7 +7,11 @@ function Bar() {
   const navigate = useNavigate();
   const {user} = useUser();
   return (
+<<<<<<< HEAD
     <header className="bg-slate-900 border-b border-amber-400 shadow-lg">
+=======
+    <header className="bg-slate-900 border-b border-blue-800 shadow-lg">
+>>>>>>> e2ddfd1 (adding win medals)
       <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex items-center justify-between">
         <div>
           <button

@@ -8,7 +8,10 @@ import Login from './Login.tsx'
 import Dashboard from "./Dashboard.tsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Tournament from './Tournament.tsx'
+<<<<<<< HEAD:frontend/src/Game/main.tsx
 import ProtectedRoute from '../components/ProtectedRoute.tsx'
+=======
+>>>>>>> e2ddfd1 (adding win medals):frontend/src/main.tsx
 // import Lobby from './Lobby.tsx'
 
 
@@ -37,12 +40,19 @@ createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+<<<<<<< HEAD:frontend/src/Game/main.tsx
         <Route path="/Dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path ="/Chat" element={<ProtectedRoute><div>chat</div></ProtectedRoute>} />
         <Route path ="/Friends" element={<ProtectedRoute><div>Friend</div></ProtectedRoute>} />
         <Route path="/AiChallange" element={<ProtectedRoute><Lobby /></ProtectedRoute>} />
         <Route path="/Tournament" element={<ProtectedRoute><Tournament /></ProtectedRoute>} />
         <Route path="/game/:matchId" element={<ProtectedRoute><Game /></ProtectedRoute>} />
+=======
+        <Route path= "/Dashboard" element={<Dashboard />} />
+        <Route path="/AiChallange" element={<Lobby />} />
+        <Route path="/Tournament" element={<Tournament />} />
+        <Route path="/game/:matchId" element={<Game />} />
+>>>>>>> e2ddfd1 (adding win medals):frontend/src/main.tsx
       </Routes>
     </BrowserRouter>
         {/* <Game /> */}

@@ -2,8 +2,13 @@ import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { socket } from "./socket/sock";
+<<<<<<< HEAD:frontend/src/Game/Game.tsx
 import BottomNav from "../components/BottomNav";
 import WinModal from "../components/WinModal";
+=======
+import BottomNav from "./components/BottomNav";
+import WinModal from "./components/WinModal";
+>>>>>>> e2ddfd1 (adding win medals):frontend/src/Game.tsx
 
 
 type CellValue = "X" | "O" | null;
@@ -394,7 +399,10 @@ function Game() {
           isWinner={true}
           winnerName={user?.fullName ?? user?.username ?? "You"}
           message="Your opponent left the match."
+<<<<<<< HEAD:frontend/src/Game/Game.tsx
           redirectTo={backToRef.current}
+=======
+>>>>>>> e2ddfd1 (adding win medals):frontend/src/Game.tsx
         />
 
         {/* Regular game end */}
@@ -403,7 +411,10 @@ function Game() {
             show={showWinModal}
             isWinner={!!winner && players.find(p => p.id === user?.id)?.username === winner}
             winnerName={winner ?? ""}
+<<<<<<< HEAD:frontend/src/Game/Game.tsx
             redirectTo={backToRef.current}
+=======
+>>>>>>> e2ddfd1 (adding win medals):frontend/src/Game.tsx
           />
         )}
       </SignedIn>
