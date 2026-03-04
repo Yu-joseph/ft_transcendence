@@ -1,3 +1,4 @@
+import { IncomingMessage } from "node:http";
 import { FriendsStatus } from "../../../generated/prisma/index.js";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/AppError.js";
@@ -122,7 +123,40 @@ export  class   ConversationService {
       /**
      * @function deleteConversation userId create new conversation with otherUserId
      */
-    // static async deleteConversation(data: DeleteConversation) {
+    static async deleteConversation(data: DeleteConversation) {
+        const   convExist = await prisma.conversation.findUnique({
+            where: {
+                id: data.conversationId
+            }
+        });
+        if (!convExist)
+            throw new AppError('Conversation Not Found', 404);
+        const   inConv = await prisma.conversation.findFirst({
+            where: {
+                OR: [ {user1Id:  data.currentUserId}, {user2Id: data.currentUserId} ]
+            }
+        });
+        if(!inConv)
+            throw new AppError('This Conversation not for you',401);
+        const   deletedConv = await prisma.conversation.delete({
+            where: { id: data.conversationId },
+            include: {
+                user1: {select: {id: true, username: true, email: true}},
+                user2: {select: {id: true, username: true, email: true}},
+                messages: {take: 1, orderBy: {created_at: 'desc'}, select: {id: true, senderId: true, content: true, created_at: true}}
+            }
+        });
+        const   response: SingleConversation = {
+            statusOfRes: {
+                statusCode: 200,
+                message: 'Conversation deleted'
+            },
+            id: deletedConv.id,
+            otherUser: deletedConv.user1Id === data.currentUserId ? deletedConv.user2 : deletedConv.user1,
+            lastMessage: deletedConv.messages[0] || null,
+            updated_at: deletedConv.updated_at
 
-    // }
+        };
+        return response;
+    }
 }

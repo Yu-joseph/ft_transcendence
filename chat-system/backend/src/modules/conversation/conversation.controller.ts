@@ -76,21 +76,36 @@ export class    ConversationController {
          /**
      * @function deleteConversation req.user.id delete a single conversation by it's ID
      */
-    // static async deleteConversation(req: AuthenticatedRequest, res: Response) {
-    //     try {
-    //         const   currentUserId = req.user?.id;
-    //         const   conversationId = Number(req.params.id);
+    static async deleteConversation(req: AuthenticatedRequest, res: Response) {
+        try {
+            const   currentUserId = req.user?.id;
+            const   conversationId = Number(req.params.id);
 
-    //         if (!Number.isInteger(conversationId) || conversationId <= 0) {
-    //             const   response: ResponseModule<null> = {success: false, message: 'Invalid Conversation ID', data: null};
-    //             return res.status(400).json(response);
-    //         }
-    //         const   result = await ConversationService.deleteConversation({currentUserId, conversationId})
+            if (!Number.isInteger(conversationId) || conversationId <= 0) {
+                const   response: ResponseModule<null> = {success: false, message: 'Invalid Conversation ID', data: null};
+                return res.status(400).json(response);
+            }
+            const   result = await ConversationService.deleteConversation({currentUserId, conversationId});
+            const   response: ResponseModule<ExistingConversationsT> = {
+                success: true,
+                message: result.statusOfRes.message,
+                data: {
+                    id: result.id,
+                    otherUser: result.otherUser,
+                    lastMessage: result.lastMessage,
+                    updated_at: result.updated_at
+                }
+            };
+            return res.status(result.statusOfRes.statusCode).json(response);
 
-
-    //     } catch (error: any) {
-            
-    //     }
-
-    // }
+        } catch (error: any) {
+            const   statusCode = error.statusCode || 500;
+            const   response: ResponseModule<null> = {
+                success: false,
+                message: error.message || 'Internal server error',
+                data: null
+            }
+            return res.status(statusCode).json(response);
+        }
+    }
 }

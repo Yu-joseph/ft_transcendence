@@ -30,6 +30,6 @@ export interface SingleConversation extends ExistingConversationsT {
 }
 
 export  interface DeleteConversation {
-    currentUserId: number
+    currentUserId: number | undefined
     conversationId: number
 }
