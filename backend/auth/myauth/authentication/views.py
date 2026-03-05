@@ -22,8 +22,6 @@ def login(request):
     username = body.get("username")
     password = body.get("password")
 
-    # Using a custom UserAuth model (not Django's auth User), so
-    # `authenticate()` won't find users. Manually verify credentials.
     user = UserAuth.objects.filter(username=username).first()
 
     if not user:
@@ -91,7 +89,9 @@ def register(request):
 
             UserAuth.objects.create(
                 username=username,
-                password=hashed_password
+                password=hashed_password,
+                fullname="",
+                role="user"
             )
 
             return JsonResponse({"message": "User created"}, status=201)
@@ -111,3 +111,20 @@ def logout(request):
     response.delete_cookie("refresh_token", path="/")
 
     return response
+
+def protected_view(request):
+
+    token = request.COOKIES.get("access_token")
+
+    if not token:
+        return JsonResponse({"error": "Authentication required"}, status=401)
+
+    try:
+        access = AccessToken(token)
+
+        user_id = access["user_id"]
+
+    except TokenError:
+        return JsonResponse({"error": "Invalid token"}, status=401)
+
+    return JsonResponse({"message": "Authorized", "user_id": user_id})                      
