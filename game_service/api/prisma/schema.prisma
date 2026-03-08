@@ -72,6 +72,7 @@ model TournamentParticipant {
   user         User       @relation(fields: [userId], references: [id])
   seed         Int
   eliminated   Boolean    @default(false)
+  eliminatedInRound Int? 
 
   @@unique([tournamentId, userId])
 }
