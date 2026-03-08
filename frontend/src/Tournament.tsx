@@ -180,20 +180,7 @@ function Tournament() {
     if (!socket.connected) 
       socket.connect()
 
-    // Re-emit join so the server resends tournament-update to this freshly mounted page
-    // location.state is used on normal navigation; sessionStorage survives refresh
-    const navState = location.state as { tournamentId?: string; userId?: string; username?: string } | null
-    const stored = sessionStorage.getItem('activeTournament')
-    const storedState = stored ? JSON.parse(stored) as { tournamentId?: string; userId?: string; username?: string } : null
-    const joinInfo = navState?.tournamentId ? navState : storedState
-    if (joinInfo?.tournamentId && joinInfo?.userId) {
-      socket.emit('join-tournament', {
-        tournamentId: joinInfo.tournamentId,
-        userId: joinInfo.userId,
-        username: joinInfo.username ?? 'Player',
-      })
-    }
-
+    
     const onUpdate = (data: TournamentState) => {
       setActiveTournament(data)
       setLoading(false)
@@ -224,6 +211,22 @@ function Tournament() {
     socket.on('match-found', onMatchFound)
     socket.on('tournament-error', onError)
 
+    // Re-emit join so the server resends tournament-update to this freshly mounted page
+    // location.state is used on normal navigation; sessionStorage survives refresh
+    const navState = location.state as { tournamentId?: string; userId?: string; username?: string } | null
+    const stored = sessionStorage.getItem('activeTournament')
+    const storedState = stored ? JSON.parse(stored) as { tournamentId?: string; userId?: string; username?: string } : null
+    const joinInfo = navState?.tournamentId ? navState : storedState
+    if (joinInfo?.tournamentId && joinInfo?.userId) {
+      socket.emit('join-tournament', {
+        tournamentId: joinInfo.tournamentId,
+        userId: joinInfo.userId,
+        username: joinInfo.username ?? 'Player',
+      })
+    }
+
+    
+    
     //waitig for server to rspond and waiting in leading page
     const timeout = setTimeout(() => setLoading(false), 5000)
 
