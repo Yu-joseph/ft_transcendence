@@ -18,12 +18,20 @@ function TournamentLoadingPage({ loading, onBack }: TournamentLoadingPageProps) 
           </>
         ) : (
           <>
+<<<<<<< HEAD
             <p className="text-gray-400">You won the tournament.</p>
+=======
+            <p className="text-gray-400">No active tournament.</p>
+>>>>>>> 7df0ecb (verfiying files)
             <button
               onClick={onBack}
               className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-semibold transition"
             >
+<<<<<<< HEAD
               Back to Dashboard
+=======
+              ← Back to Dashboard
+>>>>>>> 7df0ecb (verfiying files)
             </button>
           </>
         )}

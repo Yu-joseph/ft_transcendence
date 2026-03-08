@@ -70,6 +70,23 @@ export default function Dashboard() {
     };
   }, [apiServerUrl]);
 
+  useEffect(() => {
+    const onTournamentCreated = (data: { tournamentId: string; tournament: { name: string; creatorId: string } }) => {
+      if (user) {
+        sessionStorage.setItem('activeTournament', JSON.stringify({
+          tournamentId: data.tournamentId,
+          userId: user.id,
+          username: user.username ?? user.fullName ?? 'Player',
+        }));
+      }
+      navigate("/Tournament");
+    };
+    socket.on("tournament-created", onTournamentCreated);
+    return () => {
+      socket.off("tournament-created", onTournamentCreated);
+    };
+  }, [navigate, user]);
+
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
       <Bar />

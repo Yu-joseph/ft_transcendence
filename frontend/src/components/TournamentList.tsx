@@ -84,13 +84,20 @@ export default function TournamentList() {
   const handleJoin = (tournamentId: string) => {
     if (!user) 
       return;
-    socket.emit("join-tournament", {
+    const joinInfo = {
       tournamentId,
       userId: user.id,
       username: user.username ?? user.fullName ?? "Player",
+<<<<<<< HEAD
     });
     navigate("/tournament");
 >>>>>>> 7b21cd9 (adding tournmanet list)
+=======
+    };
+    sessionStorage.setItem("activeTournament", JSON.stringify(joinInfo));
+    socket.emit("join-tournament", joinInfo);
+    navigate("/Tournament", { state: joinInfo });
+>>>>>>> 7df0ecb (verfiying files)
   };
 
   return (
