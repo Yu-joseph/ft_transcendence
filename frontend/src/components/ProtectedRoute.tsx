@@ -7,11 +7,17 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   if (!isLoaded) 
     return null // wait for Clerk to initialise
 <<<<<<< HEAD
+<<<<<<< HEAD
 //when an unauthenticated user tries to access a protected route, 
 // using `replace` prevents them from pressing the **back button** to return 
 // to the protected page they were never allowed to see in the first place.
 =======
 >>>>>>> 8279122 (fixing realoding)
+=======
+//when an unauthenticated user tries to access a protected route, 
+// using `replace` prevents them from pressing the **back button** to return 
+// to the protected page they were never allowed to see in the first place.
+>>>>>>> eef5d5f (fixing bug in torunamnet player redrcted to tournamnet after he win)
 
   if (!isSignedIn) 
     return <Navigate to="/" replace />

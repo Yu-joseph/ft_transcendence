@@ -400,9 +400,13 @@ function Game() {
           winnerName={user?.fullName ?? user?.username ?? "You"}
           message="Your opponent left the match."
 <<<<<<< HEAD:frontend/src/Game/Game.tsx
+<<<<<<< HEAD:frontend/src/Game/Game.tsx
           redirectTo={backToRef.current}
 =======
 >>>>>>> e2ddfd1 (adding win medals):frontend/src/Game.tsx
+=======
+          redirectTo={backToRef.current}
+>>>>>>> eef5d5f (fixing bug in torunamnet player redrcted to tournamnet after he win):frontend/src/Game.tsx
         />
 
         {/* Regular game end */}
@@ -412,9 +416,13 @@ function Game() {
             isWinner={!!winner && players.find(p => p.id === user?.id)?.username === winner}
             winnerName={winner ?? ""}
 <<<<<<< HEAD:frontend/src/Game/Game.tsx
+<<<<<<< HEAD:frontend/src/Game/Game.tsx
             redirectTo={backToRef.current}
 =======
 >>>>>>> e2ddfd1 (adding win medals):frontend/src/Game.tsx
+=======
+            redirectTo={backToRef.current}
+>>>>>>> eef5d5f (fixing bug in torunamnet player redrcted to tournamnet after he win):frontend/src/Game.tsx
           />
         )}
       </SignedIn>

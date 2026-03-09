@@ -37,6 +37,9 @@ function CreateTourn({ isOpen, onClose, onCreate }: Props) {
         />
         <div className="mb-4">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> eef5d5f (fixing bug in torunamnet player redrcted to tournamnet after he win)
         <label className="block text-amber-500 mb-2">Number of players</label>
         <div className="flex gap-3">
           {[4, 8, 16].map((num) => (
@@ -57,11 +60,14 @@ function CreateTourn({ isOpen, onClose, onCreate }: Props) {
         {/* <div className="mb-4">
           <label className="block  text-amber-500 mb-2">Number of players</label>
           <input type="number"
+<<<<<<< HEAD
 =======
           <label className="block text-sm text-amber-500 mb-2">Number of players</label>
           <input
             type="number"
 >>>>>>> 7b21cd9 (adding tournmanet list)
+=======
+>>>>>>> eef5d5f (fixing bug in torunamnet player redrcted to tournamnet after he win)
             min={4}
             max={16}
             step={4}
@@ -70,10 +76,14 @@ function CreateTourn({ isOpen, onClose, onCreate }: Props) {
             className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white focus:outline-none focus:border-amber-500 transition"
           />
 <<<<<<< HEAD
+<<<<<<< HEAD
         </div> */}
 =======
         </div>
 >>>>>>> 7b21cd9 (adding tournmanet list)
+=======
+        </div> */}
+>>>>>>> eef5d5f (fixing bug in torunamnet player redrcted to tournamnet after he win)
           {/* //e is for events  */}
         <div className="flex gap-3">
           <button onClick={onClose} className="flex-1 py-2 rounded-xl border border-slate-600 text-gray-300 hover:bg-slate-700 transition">Cancel</button>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Bar from './components/Bar'
@@ -50,8 +50,8 @@ function MatchCard({
   const canPlay = match.status === 'ready' && isInMatch
   const hasRequested = match.requestedBy === userId
 
-  const p1Name = match.player1?.username ?? 'TBD'
-  const p2Name = match.player2?.username ?? 'TBD'
+  const p1Name = match.player1?.username ?? 'plyaer1'
+  const p2Name = match.player2?.username ?? 'player2'
 /// ststaus to css class to set color for each status
   const cardClass = {
     pending: 'border-slate-600 bg-slate-800/60',
@@ -175,6 +175,7 @@ function Tournament() {
   const [activeTournament, setActiveTournament] = useState<TournamentState | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (!socket.connected) 
@@ -184,8 +185,10 @@ function Tournament() {
     const onUpdate = (data: TournamentState) => {
       setActiveTournament(data)
       setLoading(false)
-      if (data.status === 'finished') 
+      if (data.status === 'finished') {
         sessionStorage.removeItem('activeTournament')
+        redirectTimeoutRef.current = setTimeout(() => navigate('/Dashboard'), 4000)
+      }
     }
 
     const onCreated = (data: { tournamentId: string; tournament: TournamentState }) => {
@@ -198,7 +201,9 @@ function Tournament() {
       match: { id: string; players: Player[]; board: (string | null)[]; currentTurn: string | null; status: string; winner: string | null }
       symbol: string
     }) => {
-      navigate(`/game/${data.matchId}`, { state: { symbol: data.symbol, match: data.match } })
+      const stored = sessionStorage.getItem('activeTournament')
+      const tournamentId = stored ? (JSON.parse(stored) as { tournamentId?: string }).tournamentId : null
+      navigate(`/game/${data.matchId}`, { state: { symbol: data.symbol, match: data.match, tournamentId } })
     }
 
     const onError = (data: { message: string }) => {
@@ -236,6 +241,7 @@ function Tournament() {
       socket.off('match-found', onMatchFound)
       socket.off('tournament-error', onError)
       clearTimeout(timeout)
+      if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current)
     }
   }, [navigate, location.state])
 
@@ -320,7 +326,10 @@ function Tournament() {
             {activeTournament.status === 'finished' && winnerPlayer && (
               <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-700">
                 <span className="text-3xl"><GiPodiumWinner /></span>
-                <span className="text-xl font-bold text-amber-400">{winnerPlayer.username} wins!</span>
+                <div>
+                  <span className="text-xl font-bold text-amber-400">{winnerPlayer.username} wins!</span>
+                  <p className="text-sm text-gray-400 mt-1">Redirecting to Dashboard…</p>
+                </div>
               </div>
             )}
             <h2 className="text-lg font-semibold text-white mb-5">Bracket</h2>
