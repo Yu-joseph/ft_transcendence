@@ -1,6 +1,9 @@
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.exceptions import TokenError
 from django.http import JsonResponse
 from .models import UserAuth
+from .permissions import role_required  
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
@@ -91,7 +94,7 @@ def register(request):
                 username=username,
                 password=hashed_password,
                 fullname="",
-                role="user"
+                role="admin"
             )
 
             return JsonResponse({"message": "User created"}, status=201)
@@ -127,4 +130,95 @@ def protected_view(request):
     except TokenError:
         return JsonResponse({"error": "Invalid token"}, status=401)
 
-    return JsonResponse({"message": "Authorized", "user_id": user_id})                      
+    return JsonResponse({"message": "Authorized", "user_id": user_id})
+
+
+@role_required(["admin"])
+def list_users(request):
+
+    users = UserAuth.objects.all().values("id", "username", "role")
+
+    return JsonResponse(list(users), safe=False)
+
+@role_required(["admin"])
+def delete_user(request, user_id):
+
+    if request.method != "DELETE":
+        return JsonResponse({"error": "DELETE required"}, status=405)
+
+    user = UserAuth.objects.filter(id=user_id).first()
+
+    if not user:
+        return JsonResponse({"error": "User not found"}, status=404)
+
+    user.delete()
+
+    return JsonResponse({"message": "User deleted"})
+
+@role_required(["admin"])
+def update_user(request, user_id):
+
+    if request.method != "PATCH":
+        return JsonResponse({"error": "PATCH required"}, status=405)
+
+    body = json.loads(request.body)
+
+    user = UserAuth.objects.filter(id=user_id).first()
+
+    if not user:
+        return JsonResponse({"error": "User not found"}, status=404)
+
+    user.fullname = body.get("fullname", user.fullname)
+    user.role = body.get("role", user.role)
+
+    user.save()
+
+    return JsonResponse({"message": "User updated"})
+
+@role_required(["admin", "moderator"])
+def deactivate_user(request, user_id):
+
+    user = UserAuth.objects.filter(id=user_id).first()
+
+    if not user:
+        return JsonResponse({"error": "User not found"}, status=404)
+
+    user.is_active = False
+    user.save()
+
+    return JsonResponse({"message": "User banned"})                  
+
+@role_required(["admin"])
+def change_user_role(request, user_id):
+
+    if request.method != "PATCH":
+        return JsonResponse({"error": "PATCH required"}, status=405)
+
+    body = json.loads(request.body)
+
+    new_role = body.get("role")
+
+    if not new_role:
+        return JsonResponse({"error": "Role required"}, status=400)
+
+    user = UserAuth.objects.filter(id=user_id).first()
+
+    if not user:
+        return JsonResponse({"error": "User not found"}, status=404)
+
+    user.role = new_role
+    user.save()
+
+    return JsonResponse({"message": "Role updated"})
+
+@role_required(["admin", "moderator"])
+def get_user(request, user_id):
+
+    user = UserAuth.objects.filter(id=user_id).values(
+        "id", "username", "fullname", "role", "is_active"
+    ).first()
+
+    if not user:
+        return JsonResponse({"error": "User not found"}, status=404)
+
+    return JsonResponse(user)

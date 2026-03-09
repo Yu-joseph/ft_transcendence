@@ -44,3 +44,21 @@ services:
       - "8080:80"
     depends_on:
       - frontend
+
+  game:
+    build: ../backend/game_service
+    container_name: game
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+    depends_on:
+      - db
+
+  chat:
+    build: ../backend/chat/chat-system/backend
+    container_name: chat
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://sayf:1234@db:5432/mydb
