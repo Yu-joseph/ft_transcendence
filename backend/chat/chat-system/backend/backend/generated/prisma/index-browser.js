@@ -125,7 +125,9 @@ exports.Prisma.UserScalarFieldEnum = {
   username: 'username',
   email: 'email',
   password: 'password',
-  created_at: 'created_at'
+  created_at: 'created_at',
+  avatar: 'avatar',
+  status: 'status'
 };
 
 exports.Prisma.FriendScalarFieldEnum = {
@@ -160,6 +162,11 @@ exports.Prisma.SortOrder = {
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
 };
 exports.FriendsStatus = exports.$Enums.FriendsStatus = {
   PENDING: 'PENDING',

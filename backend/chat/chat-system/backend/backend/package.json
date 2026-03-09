@@ -18,8 +18,13 @@
 <<<<<<<< HEAD:backend/chat/chat-system/backend/package.json
 ========
     "dotenv": "^17.3.1",
+<<<<<<< HEAD:backend/chat/chat-system/backend/backend/package.json
 >>>>>>>> 120fda6 (friend-system: send friend Request Done.):backend/chat/chat-system/backend/backend/package.json
     "express": "^5.2.1"
+=======
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
+>>>>>>> a64783e (profile: view-profile information of users):chat-system/backend/package.json
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

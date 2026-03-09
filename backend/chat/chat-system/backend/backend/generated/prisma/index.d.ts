@@ -1276,6 +1276,8 @@ export namespace Prisma {
     email: string | null
     password: string | null
     created_at: Date | null
+    avatar: string | null
+    status: string | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -1284,6 +1286,8 @@ export namespace Prisma {
     email: string | null
     password: string | null
     created_at: Date | null
+    avatar: string | null
+    status: string | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -1292,6 +1296,8 @@ export namespace Prisma {
     email: number
     password: number
     created_at: number
+    avatar: number
+    status: number
     _all: number
   }
 
@@ -1310,6 +1316,8 @@ export namespace Prisma {
     email?: true
     password?: true
     created_at?: true
+    avatar?: true
+    status?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -1318,6 +1326,8 @@ export namespace Prisma {
     email?: true
     password?: true
     created_at?: true
+    avatar?: true
+    status?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -1326,6 +1336,8 @@ export namespace Prisma {
     email?: true
     password?: true
     created_at?: true
+    avatar?: true
+    status?: true
     _all?: true
   }
 
@@ -1421,6 +1433,8 @@ export namespace Prisma {
     email: string
     password: string
     created_at: Date
+    avatar: string | null
+    status: string
     _count: UserCountAggregateOutputType | null
     _avg: UserAvgAggregateOutputType | null
     _sum: UserSumAggregateOutputType | null
@@ -1448,6 +1462,8 @@ export namespace Prisma {
     email?: boolean
     password?: boolean
     created_at?: boolean
+    avatar?: boolean
+    status?: boolean
     receivedRequests?: boolean | User$receivedRequestsArgs<ExtArgs>
     sentRequests?: boolean | User$sentRequestsArgs<ExtArgs>
     user1Conversation?: boolean | User$user1ConversationArgs<ExtArgs>
@@ -1462,6 +1478,8 @@ export namespace Prisma {
     email?: boolean
     password?: boolean
     created_at?: boolean
+    avatar?: boolean
+    status?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -1470,6 +1488,8 @@ export namespace Prisma {
     email?: boolean
     password?: boolean
     created_at?: boolean
+    avatar?: boolean
+    status?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -1478,9 +1498,11 @@ export namespace Prisma {
     email?: boolean
     password?: boolean
     created_at?: boolean
+    avatar?: boolean
+    status?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "email" | "password" | "created_at", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "email" | "password" | "created_at" | "avatar" | "status", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     receivedRequests?: boolean | User$receivedRequestsArgs<ExtArgs>
     sentRequests?: boolean | User$sentRequestsArgs<ExtArgs>
@@ -1507,6 +1529,8 @@ export namespace Prisma {
       email: string
       password: string
       created_at: Date
+      avatar: string | null
+      status: string
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -1940,6 +1964,8 @@ export namespace Prisma {
     readonly email: FieldRef<"User", 'String'>
     readonly password: FieldRef<"User", 'String'>
     readonly created_at: FieldRef<"User", 'DateTime'>
+    readonly avatar: FieldRef<"User", 'String'>
+    readonly status: FieldRef<"User", 'String'>
   }
     
 
@@ -5839,7 +5865,9 @@ export namespace Prisma {
     username: 'username',
     email: 'email',
     password: 'password',
-    created_at: 'created_at'
+    created_at: 'created_at',
+    avatar: 'avatar',
+    status: 'status'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -5892,6 +5920,14 @@ export namespace Prisma {
   };
 
   export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+  export const NullsOrder: {
+    first: 'first',
+    last: 'last'
+  };
+
+  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
   /**
@@ -5981,6 +6017,8 @@ export namespace Prisma {
     email?: StringFilter<"User"> | string
     password?: StringFilter<"User"> | string
     created_at?: DateTimeFilter<"User"> | Date | string
+    avatar?: StringNullableFilter<"User"> | string | null
+    status?: StringFilter<"User"> | string
     receivedRequests?: FriendListRelationFilter
     sentRequests?: FriendListRelationFilter
     user1Conversation?: ConversationListRelationFilter
@@ -5994,6 +6032,8 @@ export namespace Prisma {
     email?: SortOrder
     password?: SortOrder
     created_at?: SortOrder
+    avatar?: SortOrderInput | SortOrder
+    status?: SortOrder
     receivedRequests?: FriendOrderByRelationAggregateInput
     sentRequests?: FriendOrderByRelationAggregateInput
     user1Conversation?: ConversationOrderByRelationAggregateInput
@@ -6010,6 +6050,8 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     password?: StringFilter<"User"> | string
     created_at?: DateTimeFilter<"User"> | Date | string
+    avatar?: StringNullableFilter<"User"> | string | null
+    status?: StringFilter<"User"> | string
     receivedRequests?: FriendListRelationFilter
     sentRequests?: FriendListRelationFilter
     user1Conversation?: ConversationListRelationFilter
@@ -6023,6 +6065,8 @@ export namespace Prisma {
     email?: SortOrder
     password?: SortOrder
     created_at?: SortOrder
+    avatar?: SortOrderInput | SortOrder
+    status?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -6039,6 +6083,8 @@ export namespace Prisma {
     email?: StringWithAggregatesFilter<"User"> | string
     password?: StringWithAggregatesFilter<"User"> | string
     created_at?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    avatar?: StringNullableWithAggregatesFilter<"User"> | string | null
+    status?: StringWithAggregatesFilter<"User"> | string
   }
 
   export type FriendWhereInput = {
@@ -6230,6 +6276,8 @@ export namespace Prisma {
     email: string
     password: string
     created_at?: Date | string
+    avatar?: string | null
+    status?: string
     receivedRequests?: FriendCreateNestedManyWithoutReceiverInput
     sentRequests?: FriendCreateNestedManyWithoutRequesterInput
     user1Conversation?: ConversationCreateNestedManyWithoutUser1Input
@@ -6243,6 +6291,8 @@ export namespace Prisma {
     email: string
     password: string
     created_at?: Date | string
+    avatar?: string | null
+    status?: string
     receivedRequests?: FriendUncheckedCreateNestedManyWithoutReceiverInput
     sentRequests?: FriendUncheckedCreateNestedManyWithoutRequesterInput
     user1Conversation?: ConversationUncheckedCreateNestedManyWithoutUser1Input
@@ -6255,6 +6305,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     receivedRequests?: FriendUpdateManyWithoutReceiverNestedInput
     sentRequests?: FriendUpdateManyWithoutRequesterNestedInput
     user1Conversation?: ConversationUpdateManyWithoutUser1NestedInput
@@ -6268,6 +6320,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     receivedRequests?: FriendUncheckedUpdateManyWithoutReceiverNestedInput
     sentRequests?: FriendUncheckedUpdateManyWithoutRequesterNestedInput
     user1Conversation?: ConversationUncheckedUpdateManyWithoutUser1NestedInput
@@ -6281,6 +6335,8 @@ export namespace Prisma {
     email: string
     password: string
     created_at?: Date | string
+    avatar?: string | null
+    status?: string
   }
 
   export type UserUpdateManyMutationInput = {
@@ -6288,6 +6344,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -6296,6 +6354,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
   }
 
   export type FriendCreateInput = {
@@ -6492,6 +6552,21 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type FriendListRelationFilter = {
     every?: FriendWhereInput
     some?: FriendWhereInput
@@ -6508,6 +6583,11 @@ export namespace Prisma {
     every?: MessageWhereInput
     some?: MessageWhereInput
     none?: MessageWhereInput
+  }
+
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
   }
 
   export type FriendOrderByRelationAggregateInput = {
@@ -6528,6 +6608,8 @@ export namespace Prisma {
     email?: SortOrder
     password?: SortOrder
     created_at?: SortOrder
+    avatar?: SortOrder
+    status?: SortOrder
   }
 
   export type UserAvgOrderByAggregateInput = {
@@ -6540,6 +6622,8 @@ export namespace Prisma {
     email?: SortOrder
     password?: SortOrder
     created_at?: SortOrder
+    avatar?: SortOrder
+    status?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -6548,6 +6632,8 @@ export namespace Prisma {
     email?: SortOrder
     password?: SortOrder
     created_at?: SortOrder
+    avatar?: SortOrder
+    status?: SortOrder
   }
 
   export type UserSumOrderByAggregateInput = {
@@ -6600,6 +6686,24 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type EnumFriendsStatusFilter<$PrismaModel = never> = {
@@ -6818,6 +6922,10 @@ export namespace Prisma {
 
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
+  }
+
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
   }
 
   export type FriendUpdateManyWithoutReceiverNestedInput = {
@@ -7134,6 +7242,20 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -7190,6 +7312,34 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedEnumFriendsStatusFilter<$PrismaModel = never> = {
@@ -7446,6 +7596,8 @@ export namespace Prisma {
     email: string
     password: string
     created_at?: Date | string
+    avatar?: string | null
+    status?: string
     receivedRequests?: FriendCreateNestedManyWithoutReceiverInput
     user1Conversation?: ConversationCreateNestedManyWithoutUser1Input
     user2Conversation?: ConversationCreateNestedManyWithoutUser2Input
@@ -7458,6 +7610,8 @@ export namespace Prisma {
     email: string
     password: string
     created_at?: Date | string
+    avatar?: string | null
+    status?: string
     receivedRequests?: FriendUncheckedCreateNestedManyWithoutReceiverInput
     user1Conversation?: ConversationUncheckedCreateNestedManyWithoutUser1Input
     user2Conversation?: ConversationUncheckedCreateNestedManyWithoutUser2Input
@@ -7474,6 +7628,8 @@ export namespace Prisma {
     email: string
     password: string
     created_at?: Date | string
+    avatar?: string | null
+    status?: string
     sentRequests?: FriendCreateNestedManyWithoutRequesterInput
     user1Conversation?: ConversationCreateNestedManyWithoutUser1Input
     user2Conversation?: ConversationCreateNestedManyWithoutUser2Input
@@ -7486,6 +7642,8 @@ export namespace Prisma {
     email: string
     password: string
     created_at?: Date | string
+    avatar?: string | null
+    status?: string
     sentRequests?: FriendUncheckedCreateNestedManyWithoutRequesterInput
     user1Conversation?: ConversationUncheckedCreateNestedManyWithoutUser1Input
     user2Conversation?: ConversationUncheckedCreateNestedManyWithoutUser2Input
@@ -7513,6 +7671,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     receivedRequests?: FriendUpdateManyWithoutReceiverNestedInput
     user1Conversation?: ConversationUpdateManyWithoutUser1NestedInput
     user2Conversation?: ConversationUpdateManyWithoutUser2NestedInput
@@ -7525,6 +7685,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     receivedRequests?: FriendUncheckedUpdateManyWithoutReceiverNestedInput
     user1Conversation?: ConversationUncheckedUpdateManyWithoutUser1NestedInput
     user2Conversation?: ConversationUncheckedUpdateManyWithoutUser2NestedInput
@@ -7547,6 +7709,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     sentRequests?: FriendUpdateManyWithoutRequesterNestedInput
     user1Conversation?: ConversationUpdateManyWithoutUser1NestedInput
     user2Conversation?: ConversationUpdateManyWithoutUser2NestedInput
@@ -7559,6 +7723,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     sentRequests?: FriendUncheckedUpdateManyWithoutRequesterNestedInput
     user1Conversation?: ConversationUncheckedUpdateManyWithoutUser1NestedInput
     user2Conversation?: ConversationUncheckedUpdateManyWithoutUser2NestedInput
@@ -7570,6 +7736,8 @@ export namespace Prisma {
     email: string
     password: string
     created_at?: Date | string
+    avatar?: string | null
+    status?: string
     receivedRequests?: FriendCreateNestedManyWithoutReceiverInput
     sentRequests?: FriendCreateNestedManyWithoutRequesterInput
     user2Conversation?: ConversationCreateNestedManyWithoutUser2Input
@@ -7582,6 +7750,8 @@ export namespace Prisma {
     email: string
     password: string
     created_at?: Date | string
+    avatar?: string | null
+    status?: string
     receivedRequests?: FriendUncheckedCreateNestedManyWithoutReceiverInput
     sentRequests?: FriendUncheckedCreateNestedManyWithoutRequesterInput
     user2Conversation?: ConversationUncheckedCreateNestedManyWithoutUser2Input
@@ -7598,6 +7768,8 @@ export namespace Prisma {
     email: string
     password: string
     created_at?: Date | string
+    avatar?: string | null
+    status?: string
     receivedRequests?: FriendCreateNestedManyWithoutReceiverInput
     sentRequests?: FriendCreateNestedManyWithoutRequesterInput
     user1Conversation?: ConversationCreateNestedManyWithoutUser1Input
@@ -7610,6 +7782,8 @@ export namespace Prisma {
     email: string
     password: string
     created_at?: Date | string
+    avatar?: string | null
+    status?: string
     receivedRequests?: FriendUncheckedCreateNestedManyWithoutReceiverInput
     sentRequests?: FriendUncheckedCreateNestedManyWithoutRequesterInput
     user1Conversation?: ConversationUncheckedCreateNestedManyWithoutUser1Input
@@ -7660,6 +7834,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     receivedRequests?: FriendUpdateManyWithoutReceiverNestedInput
     sentRequests?: FriendUpdateManyWithoutRequesterNestedInput
     user2Conversation?: ConversationUpdateManyWithoutUser2NestedInput
@@ -7672,6 +7848,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     receivedRequests?: FriendUncheckedUpdateManyWithoutReceiverNestedInput
     sentRequests?: FriendUncheckedUpdateManyWithoutRequesterNestedInput
     user2Conversation?: ConversationUncheckedUpdateManyWithoutUser2NestedInput
@@ -7694,6 +7872,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     receivedRequests?: FriendUpdateManyWithoutReceiverNestedInput
     sentRequests?: FriendUpdateManyWithoutRequesterNestedInput
     user1Conversation?: ConversationUpdateManyWithoutUser1NestedInput
@@ -7706,6 +7886,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     receivedRequests?: FriendUncheckedUpdateManyWithoutReceiverNestedInput
     sentRequests?: FriendUncheckedUpdateManyWithoutRequesterNestedInput
     user1Conversation?: ConversationUncheckedUpdateManyWithoutUser1NestedInput
@@ -7733,6 +7915,8 @@ export namespace Prisma {
     email: string
     password: string
     created_at?: Date | string
+    avatar?: string | null
+    status?: string
     receivedRequests?: FriendCreateNestedManyWithoutReceiverInput
     sentRequests?: FriendCreateNestedManyWithoutRequesterInput
     user1Conversation?: ConversationCreateNestedManyWithoutUser1Input
@@ -7745,6 +7929,8 @@ export namespace Prisma {
     email: string
     password: string
     created_at?: Date | string
+    avatar?: string | null
+    status?: string
     receivedRequests?: FriendUncheckedCreateNestedManyWithoutReceiverInput
     sentRequests?: FriendUncheckedCreateNestedManyWithoutRequesterInput
     user1Conversation?: ConversationUncheckedCreateNestedManyWithoutUser1Input
@@ -7792,6 +7978,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     receivedRequests?: FriendUpdateManyWithoutReceiverNestedInput
     sentRequests?: FriendUpdateManyWithoutRequesterNestedInput
     user1Conversation?: ConversationUpdateManyWithoutUser1NestedInput
@@ -7804,6 +7992,8 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
     receivedRequests?: FriendUncheckedUpdateManyWithoutReceiverNestedInput
     sentRequests?: FriendUncheckedUpdateManyWithoutRequesterNestedInput
     user1Conversation?: ConversationUncheckedUpdateManyWithoutUser1NestedInput

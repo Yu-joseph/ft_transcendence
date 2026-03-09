@@ -1,12 +1,27 @@
 import  express         from    'express';
 import  friendRoutes    from    './modules/friend/friend.routes.js';
 import  chatRoutes      from    './modules/conversation/conversation.routes.js';
-
+import  profileRoutes   from    './modules/profile/profile.routes.js';
+import  { Request, Response, NextFunction }   from    'express';
 import { prisma } from './lib/prisma.js';
 const   app = express();
 
 
 app.use(express.json());
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    
+    console.log('00000000000000000000000000000000000000000000000000000000');
+
+    if (err instanceof SyntaxError && 'body' in err) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid JSON format',
+            data: null
+        });
+    }
+    next(err);
+})
+
 app.get('/', async (req, res) => {
     try {
         const   result = await prisma.friend.createMany({
@@ -36,6 +51,7 @@ app.get('/', async (req, res) => {
 /*  __ Friend Module API __  */
 app.use('/api/friend', friendRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/profile', profileRoutes);
 
 
 export  default app;
