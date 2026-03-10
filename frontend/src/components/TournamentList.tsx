@@ -13,9 +13,13 @@ type TournamentEntry = {
   creatorName: string;
   playerCount: number;
 <<<<<<< HEAD
+<<<<<<< HEAD
   maxPlayers: number;
 =======
 >>>>>>> 7b21cd9 (adding tournmanet list)
+=======
+  maxPlayers: number;
+>>>>>>> 3bf2605 ( fixing amount of player for each tournamnet)
 };
 
 export default function TournamentList() {
@@ -67,6 +71,9 @@ export default function TournamentList() {
   }, []);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3bf2605 ( fixing amount of player for each tournamnet)
   const handleJoin = (tournamentId: string, isFull: boolean) => {
     if (!user) 
       return;
@@ -111,6 +118,9 @@ export default function TournamentList() {
       ) : (
         <ul className="divide-y divide-blue-800/50">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3bf2605 ( fixing amount of player for each tournamnet)
           {tournaments.map((t) => {
             const isFull = t.playerCount >= t.maxPlayers;
             return (
@@ -133,6 +143,7 @@ export default function TournamentList() {
               </li>
             );
           })}
+<<<<<<< HEAD
 =======
           {tournaments.map((t) => (
             <li key={t.tournamentId} className="flex items-center justify-between px-6 py-4 hover:bg-slate-700/40 transition">
@@ -149,6 +160,8 @@ export default function TournamentList() {
             </li>
           ))}
 >>>>>>> 7b21cd9 (adding tournmanet list)
+=======
+>>>>>>> 3bf2605 ( fixing amount of player for each tournamnet)
         </ul>
       )}
     </section>

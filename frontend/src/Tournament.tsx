@@ -37,15 +37,8 @@ interface TournamentState {
   winner: string | null
 }
 
-function MatchCard({
-  match,
-  userId,
-  onPlay,
-}: {
-  match: TournamentMatch
-  userId: string
-  onPlay: () => void
-}) {
+function MatchCard({ match, userId, onPlay,}: { match: TournamentMatch ; userId: string ;onPlay: () => void }) 
+{
   const isInMatch = match.player1?.id === userId || match.player2?.id === userId
   const canPlay = match.status === 'ready' && isInMatch
   const hasRequested = match.requestedBy === userId
@@ -108,17 +101,10 @@ function MatchCard({
   )
 }
 
-function Bracket({
-  tournament,
-  userId,
-}: {
-  tournament: TournamentState
-  userId: string
-}) {
-  const rounds = Array.from(new Set(tournament.bracket.map(m => m.roundNumber))).sort(
-    (a, b) => a - b,
-  )
-  const totalRounds = rounds.length
+function Bracket({ tournament, userId, }: {tournament: TournamentState ;userId: string }) 
+{
+  const rounds = Array.from(new Set(tournament.bracket.map(m => m.roundNumber))).sort((a, b) => a - b,)
+  const totalRounds = rounds.length;
 
   const handlePlay = (match: TournamentMatch) => {
     socket.emit('request-tournament-match', {
@@ -246,7 +232,8 @@ function Tournament() {
   }, [navigate, location.state])
 
   const handleStart = () => {
-    if (!activeTournament) return
+    if (!activeTournament) 
+      return
     socket.emit('start-tournament', { tournamentId: activeTournament.id })
   }
 

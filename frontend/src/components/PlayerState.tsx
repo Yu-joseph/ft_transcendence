@@ -25,10 +25,14 @@ export default function PlayerState({ userId }: PlayerStateProps) {
         setLoading(true);
         setError(null);
 <<<<<<< HEAD
+<<<<<<< HEAD
         const response  = await fetch(`http://${window.location.hostname}:3000/api/users/${userId}/stats`);
 =======
         const response = await fetch(`http://localhost:3000/api/users/${userId}/stats`);
 >>>>>>> 7df0ecb (verfiying files)
+=======
+        const response  = await fetch(`http://${window.location.hostname}:3000/api/users/${userId}/stats`);
+>>>>>>> 3bf2605 ( fixing amount of player for each tournamnet)
         if (!response.ok) 
           throw new Error("User not found");
         const data = (await response.json()) as PlayerStats;

@@ -19,19 +19,27 @@ function TournamentLoadingPage({ loading, onBack }: TournamentLoadingPageProps) 
         ) : (
           <>
 <<<<<<< HEAD
+<<<<<<< HEAD
             <p className="text-gray-400">You won the tournament.</p>
 =======
             <p className="text-gray-400">No active tournament.</p>
 >>>>>>> 7df0ecb (verfiying files)
+=======
+            <p className="text-gray-400">You have won  the Tournamnet.</p>
+>>>>>>> 3bf2605 ( fixing amount of player for each tournamnet)
             <button
               onClick={onBack}
               className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-semibold transition"
             >
 <<<<<<< HEAD
+<<<<<<< HEAD
               Back to Dashboard
 =======
               ← Back to Dashboard
 >>>>>>> 7df0ecb (verfiying files)
+=======
+              Back to Dashboard
+>>>>>>> 3bf2605 ( fixing amount of player for each tournamnet)
             </button>
           </>
         )}
