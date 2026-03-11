@@ -160,6 +160,7 @@ function Tournament() {
   //location hold the cuurent react location
   const [activeTournament, setActiveTournament] = useState<TournamentState | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showWinnerScreen, setShowWinnerScreen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -173,7 +174,12 @@ function Tournament() {
       setLoading(false)
       if (data.status === 'finished') {
         sessionStorage.removeItem('activeTournament')
-        redirectTimeoutRef.current = setTimeout(() => navigate('/Dashboard'), 4000)
+        if (data.winner === user?.id) {
+          setShowWinnerScreen(true)
+          redirectTimeoutRef.current = setTimeout(() => navigate('/Dashboard'), 4000)
+        } else {
+          navigate('/Dashboard', { replace: true })
+        }
       }
     }
 
@@ -214,6 +220,9 @@ function Tournament() {
         userId: joinInfo.userId,
         username: joinInfo.username ?? 'Player',
       })
+    } else {
+      // No active tournament to join from nav click; show empty state instead of spinner.
+      setLoading(false)
     }
 
     
@@ -229,7 +238,7 @@ function Tournament() {
       clearTimeout(timeout)
       if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current)
     }
-  }, [navigate, location.state])
+  }, [navigate, location.state, user?.id])
 
   const handleStart = () => {
     if (!activeTournament) 
@@ -242,8 +251,32 @@ function Tournament() {
     ? activeTournament.players.find(p => p.id === activeTournament.winner)
     : null
 
+  if (showWinnerScreen) {
+    return <TournamentLoadingPage loading={false} onBack={() => navigate('/Dashboard')} />
+  }
+
   // Waiting for server to send tournament state
   if (!activeTournament) {
+    if (!loading) {
+      return (
+        <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
+          <Bar />
+          <main className="flex-1 px-6 py-8 pb-28 max-w-3xl mx-auto w-full flex items-center justify-center">
+            <div className="w-full max-w-md rounded-2xl border border-blue-700 bg-slate-800/80 p-6 text-center shadow-lg">
+              <h2 className="text-xl font-semibold text-amber-400 mb-2">No tournament yet</h2>
+              <p className="text-sm text-gray-300 mb-5">Invite friends or join one from Dashboard to start playing.</p>
+              <button
+                onClick={() => navigate('/Dashboard')}
+                className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-semibold transition"
+              >
+                Go to Dashboard
+              </button>
+            </div>
+          </main>
+          <BottomNav />
+        </div>
+      )
+    }
     return <TournamentLoadingPage loading={loading} onBack={() => navigate('/Dashboard')} />
   }
 
