@@ -12,6 +12,7 @@ interface WinModalProps {
   winnerName: string;
   message?: string;
   timerTransfer?: number; // ms, default 4000
+  redirectTo?: string; // default /Dashboard
 }
 
 export default function WinModal({
@@ -20,6 +21,7 @@ export default function WinModal({
   winnerName,
   message,
   timerTransfer = 4000,
+  redirectTo = '/Dashboard',
 }: WinModalProps) {
   const navigate = useNavigate();
 
@@ -27,7 +29,7 @@ export default function WinModal({
   useEffect(() => {
     if (!show) 
         return;
-    const timer = setTimeout(() => navigate("/Dashboard"), timerTransfer);
+    const timer = setTimeout(() => navigate(redirectTo), timerTransfer);
     return () => clearTimeout(timer);
   }, [show]);
 
@@ -74,7 +76,7 @@ export default function WinModal({
           <span className="text-amber-400 font-semibold">{winnerName}</span>
         </div>
 
-        <p className="text-slate-400 text-sm mt-3">Redirecting to Dashboard...</p>
+        <p className="text-slate-400 text-sm mt-3">Redirecting{redirectTo === '/Tournament' ? ' to Tournament…' : ' to Dashboard…'}</p>
       </div>
     </div>
   );

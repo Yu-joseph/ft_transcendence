@@ -8,6 +8,7 @@ import Login from './Login.tsx'
 import Dashboard from "./Dashboard.tsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Tournament from './Tournament.tsx'
+import ProtectedRoute from './components/ProtectedRoute.tsx'
 // import Lobby from './Lobby.tsx'
 
 
@@ -36,13 +37,10 @@ createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path= "/Dashboard" element={<Dashboard />} />
-        <Route path="/AiChallange" element={<Lobby />} />
-<<<<<<< HEAD
-=======
-        <Route path="/Tournament" element={<Tournament />} />
->>>>>>> sayf
-        <Route path="/game/:matchId" element={<Game />} />
+        <Route path="/Dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/AiChallange" element={<ProtectedRoute><Lobby /></ProtectedRoute>} />
+        <Route path="/Tournament" element={<ProtectedRoute><Tournament /></ProtectedRoute>} />
+        <Route path="/game/:matchId" element={<ProtectedRoute><Game /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
         {/* <Game /> */}

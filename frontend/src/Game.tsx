@@ -1,13 +1,9 @@
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { socket } from "./socket/sock";
 import BottomNav from "./components/BottomNav";
-<<<<<<< HEAD
-import { GiPodiumWinner } from "react-icons/gi";
-=======
 import WinModal from "./components/WinModal";
->>>>>>> sayf
 
 
 type CellValue = "X" | "O" | null;
@@ -34,6 +30,8 @@ function Game() {
   const { matchId } = useParams<{ matchId: string }>();
   const location = useLocation();
   //useLocation to access url info
+  const tournamentId = (location.state as { tournamentId?: string } | null)?.tournamentId ?? null
+  const backToRef = useRef(tournamentId ? '/Tournament' : '/Dashboard')
   const [board, setBoard] = useState<CellValue[]>(Array(9).fill(null));
   const [mySymbol, setMySymbol] = useState<"X" | "O" | null>(null);
   const [currentTurn, setCurrentTurn] = useState<string | null>(null);
@@ -43,10 +41,7 @@ function Game() {
   const [pieceToRemove, setPieceToRemove] = useState<number | null>(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [openmentLeaver, setopLeave] = useState(false);
-<<<<<<< HEAD
-=======
   const [showWinModal, setShowWinModal] = useState(false);
->>>>>>> sayf
   // Derive move count from the current board state
   const getMoveCount = (symbol: "X" | "O"): number => {
     return board.filter(cell => cell === symbol).length;
@@ -54,7 +49,7 @@ function Game() {
 
   // Get symbol and initial match from location state (passed from Lobby)
   useEffect(() => {
-    const state = location.state as { symbol?: string; match?: Match } | null;
+    const state = location.state as { symbol?: string; match?: Match; tournamentId?: string } | null;
     if (state?.symbol) {
       setMySymbol(state.symbol as "X" | "O");
     }
@@ -90,7 +85,7 @@ function Game() {
 
     const handleReconnectFailed = (data: { reason: string }) => {
       console.log('Reconnect failed:', data.reason);
-      navigate('/Dashboard');
+      navigate(backToRef.current);
     };
 
     socket.on('reconnect-match-failed', handleReconnectFailed);
@@ -126,15 +121,22 @@ function Game() {
 
     const handleOpponentForfeited = () => {
       setopLeave(true);
-      setTimeout(() => navigate("/Dashboard"), 4000);
+      setTimeout(() => navigate(backToRef.current), 4000);
+    };
+
+    const handleTournamentFinished = () => {
+      // whole tournament is over — always go back to Dashboard, not Tournament page
+      backToRef.current = '/Dashboard'
     };
 
     socket.on("match-update", handleMatchUpdate);
     socket.on("opponent-forfeited", handleOpponentForfeited);
+    socket.on("tournament-finished", handleTournamentFinished);
 
     return () => {
       socket.off("match-update", handleMatchUpdate);
       socket.off("opponent-forfeited", handleOpponentForfeited);
+      socket.off("tournament-finished", handleTournamentFinished);
     };
   }, [matchId]);
 
@@ -179,14 +181,14 @@ function Game() {
     if (matchStatus === "playing" && !winner) {
       setShowLeaveConfirm(true);
     } else {
-      navigate("/Dashboard");
+      navigate(backToRef.current);
     }
   };
 
   const handleConfirmLeave = () => {
     socket.emit("leave-match", { matchId, userId: user?.id });
     setShowLeaveConfirm(false);
-    navigate("/Dashboard");
+    navigate(backToRef.current);
   };
 
   // Determine if it's my turn
@@ -386,23 +388,13 @@ function Game() {
             </div>
           </div>
         )}
-<<<<<<< HEAD
-        {openmentLeaver && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-            <div className="bg-slate-800 border border-emerald-600 rounded-xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center">
-              <div className="text-5xl mb-4"><GiPodiumWinner /></div>
-              <h3 className="text-white text-2xl font-bold mb-2">You Win!</h3>
-              <p className="text-slate-300 mb-4">Your opponent left the match.</p>
-              <p className="text-slate-400 text-sm">Redirecting to Dashboard...</p>
-            </div>
-          </div>
-=======
         {/* Opponent forfeited → current player always wins */}
         <WinModal
           show={openmentLeaver}
           isWinner={true}
           winnerName={user?.fullName ?? user?.username ?? "You"}
           message="Your opponent left the match."
+          redirectTo={backToRef.current}
         />
 
         {/* Regular game end */}
@@ -411,8 +403,8 @@ function Game() {
             show={showWinModal}
             isWinner={!!winner && players.find(p => p.id === user?.id)?.username === winner}
             winnerName={winner ?? ""}
+            redirectTo={backToRef.current}
           />
->>>>>>> sayf
         )}
       </SignedIn>
       <BottomNav />
