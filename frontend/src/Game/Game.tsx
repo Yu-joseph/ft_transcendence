@@ -2,8 +2,8 @@ import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { socket } from "./socket/sock";
-import BottomNav from "./components/BottomNav";
-import WinModal from "./components/WinModal";
+import BottomNav from "../components/BottomNav";
+import WinModal from "../components/WinModal";
 
 
 type CellValue = "X" | "O" | null;

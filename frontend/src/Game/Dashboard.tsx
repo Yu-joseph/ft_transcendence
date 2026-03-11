@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
-import BottomNav from "./components/BottomNav";
-import PlayerList from "./components/PlayerList";
-import PlayerState from "./components/PlayerState";
-import TournamentList from "./components/TournamentList";
-import Leaderboard from "./components/Leaderboard";
+import BottomNav from "../components/BottomNav";
+import PlayerList from "../components/PlayerList";
+import PlayerState from "../components/PlayerState";
+import TournamentList from "../components/TournamentList";
+import Leaderboard from "../components/Leaderboard";
 // import { SiEpicgames } from "react-icons/si";
 import { PiGameControllerFill } from "react-icons/pi";
 import { TbTournament } from "react-icons/tb";
 // import { GiTicTacToe } from "react-icons/gi";
-import Bar from './components/Bar'
-import CreateTourn from "./components/CreateTourn";
+import Bar from '../components/Bar'
+import CreateTourn from "../components/CreateTourn";
 import { socket } from "./socket/sock";
 
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { socket } from "../socket/sock";
+import { socket } from "../Game/socket/sock";
 import { useNavigate } from "react-router-dom";
 
 type TournamentEntry = {

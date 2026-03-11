@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import Bar from './components/Bar'
-import BottomNav from './components/BottomNav'
-import TournamentLoadingPage from './components/TournamentLoadingPage'
+import Bar from '../components/Bar'
+import BottomNav from '../components/BottomNav'
+import TournamentLoadingPage from '../components/TournamentLoadingPage'
 import { socket } from './socket/sock'
 import { GiPodiumWinner } from "react-icons/gi";
 
@@ -153,7 +153,9 @@ function Bracket({ tournament, userId, }: {tournament: TournamentState ;userId: 
   )
 }
 
-function Tournament() {
+function Tournament() 
+{
+
   const { user } = useUser()
   const navigate = useNavigate()
   const location = useLocation()

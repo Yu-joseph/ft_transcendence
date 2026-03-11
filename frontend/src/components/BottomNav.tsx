@@ -32,17 +32,27 @@ export default function BottomNav() {
           >
             <span className="font-semibold">Tournament</span>
           </button>
-
-          {/* Game Button */}
           <button
-            onClick={() => navigate("/lobby")}
+            onClick={() => navigate("/Friends")}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg transition-all duration-300 transform ${
-              pathname.startsWith("/game")
+              pathname === "/Friends"
                 ? "bg-cyan-600 text-white scale-110 shadow-lg shadow-cyan-500/50"
                 : "text-gray-400 hover:text-cyan-300 hover:bg-slate-800/50 hover:scale-105"
             }`}
           >
-            <span className="font-semibold">Game</span>
+            <span className="font-semibold">Friend</span>
+          </button>
+
+          {/* Game Button */}
+          <button
+            onClick={() => navigate("/Chat")}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg transition-all duration-300 transform ${
+              pathname.startsWith("/Chat")
+                ? "bg-cyan-600 text-white scale-110 shadow-lg shadow-cyan-500/50"
+                : "text-gray-400 hover:text-cyan-300 hover:bg-slate-800/50 hover:scale-105"
+            }`}
+          >
+            <span className="font-semibold">Chat</span>
           </button>
 
         </div>

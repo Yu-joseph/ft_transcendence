@@ -42,7 +42,8 @@ services:
       - ft_password=1234
       - ft_transcendence=mydb
     build: ../frontend
-    
+    volumes:
+      - ../frontend:/app/
   
   nginx:
     build : ./nginx

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
-import BottomNav from "./components/BottomNav";
-import PlayerList from "./components/PlayerList";
+import BottomNav from "../components/BottomNav";
+import PlayerList from "../components/PlayerList";
 
 function Lobby() {
   const { user } = useUser();
