@@ -34,6 +34,13 @@ services:
   frontend:
     container_name: frontend
     restart: always
+    environment:
+      - VITE_CLERK_PUBLISHABLE_KEY=pk_test_ZGlzY3JldGUtbGlvbmVzcy00LmNsZXJrLmFjY291bnRzLmRldiQ
+      - VITE_API_URL=http://localhost:5173
+      - DATABASE_URL="postgres://sayf:1234@db:5432/mydb"
+      - ft_user=sayf
+      - ft_password=1234
+      - ft_transcendence=mydb
     build: ../frontend
     
   
