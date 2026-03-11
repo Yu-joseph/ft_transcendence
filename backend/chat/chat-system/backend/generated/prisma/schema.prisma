@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider   = "prisma-client-js"
+  output     = "../generated/prisma"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  username   String   @unique
+  email      String   @unique
+  password   String
+  created_at DateTime @default(now())
+
+  receivedRequests Friend[] @relation("ReceivedRequests")
+  sentRequests     Friend[] @relation("SentRequests")
+
+  user1Conversation Conversation[] @relation("User1Conversation")
+  user2Conversation Conversation[] @relation("User2Conversation")
+
+  senderMessage Message[] @relation("senderMessage")
+}
+
+/**
+ * Friend Module
+ */
+model Friend {
+  id          Int           @id @default(autoincrement())
+  requesterId Int
+  receiverId  Int
+  status      FriendsStatus @default(PENDING)
+  created_at  DateTime      @default(now())
+
+  requester User @relation("SentRequests", fields: [requesterId], references: [id])
+  receiver  User @relation("ReceivedRequests", fields: [receiverId], references: [id])
+
+  @@index([requesterId])
+  @@index([receiverId])
+  @@index([status])
+}
+
+enum FriendsStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+/**
+ * Chat-System Module
+ */
+
+model Conversation {
+  id         Int      @id @default(autoincrement())
+  user1Id    Int
+  user2Id    Int
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  user1 User @relation("User1Conversation", fields: [user1Id], references: [id])
+  user2 User @relation("User2Conversation", fields: [user2Id], references: [id])
+
+  messages Message[] @relation("conversationMessage")
+
+  @@unique([user1Id, user2Id]) /*to prevent creating multiple conversations between the same two users.*/
+  @@index([user1Id])
+  @@index([user2Id])
+  @@index([created_at])
+  @@index([updated_at])
+}
+
+model Message {
+  id             Int      @id @default(autoincrement())
+  content        String
+  senderId       Int
+  conversationId Int
+  created_at     DateTime @default(now())
+
+  sender       User         @relation("senderMessage", fields: [senderId], references: [id])
+  conversation Conversation @relation("conversationMessage", fields: [conversationId], references: [id])
+
+  @@index([senderId])
+  @@index([created_at])
+  @@index([conversationId])
+}

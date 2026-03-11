@@ -1,0 +1,71 @@
+services:
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: sayf
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: mydb
+    volumes:
+      - ./db:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - "1234:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: hh@pgadmin.com
+      PGADMIN_DEFAULT_PASSWORD: 1234
+    depends_on:
+      - db
+
+  auth:
+    container_name: auth
+    build: ../backend/auth
+    command: python3 manage.py runserver 0.0.0.0:8000
+    restart: always
+    volumes:
+      - ../backend/auth/myauth:/app
+    depends_on:
+      - db
+
+
+  frontend:
+    container_name: frontend
+    restart: always
+    environment:
+      - VITE_CLERK_PUBLISHABLE_KEY=pk_test_ZGlzY3JldGUtbGlvbmVzcy00LmNsZXJrLmFjY291bnRzLmRldiQ
+      - VITE_API_URL=http://localhost:5173
+      - DATABASE_URL="postgres://sayf:1234@db:5432/mydb"
+      - ft_user=sayf
+      - ft_password=1234
+      - ft_transcendence=mydb
+    build: ../frontend
+    
+  
+  nginx:
+    build : ./nginx
+    container_name: nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      - frontend
+
+  game:
+    build: ../backend/game_service
+    container_name: game
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+    depends_on:
+      - db
+
+  chat:
+    build: ../backend/chat/chat-system/backend
+    container_name: chat
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://sayf:1234@db:5432/mydb

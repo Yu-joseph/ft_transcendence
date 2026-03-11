@@ -1,0 +1,333 @@
+import { useEffect, useState } from 'react'
+import { useUser } from '@clerk/clerk-react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import Bar from './components/Bar'
+import BottomNav from './components/BottomNav'
+import TournamentLoadingPage from './components/TournamentLoadingPage'
+import { socket } from './socket/sock'
+import { GiPodiumWinner } from "react-icons/gi";
+
+
+interface Player {
+  id: string
+  username: string
+  socketId: string
+  isReady: boolean
+}
+
+interface TournamentMatch {
+  roundNumber: number
+  matchIndex: number
+  matchId: string | null
+  player1: Player | null
+  player2: Player | null
+  winnerId: string | null
+  status: 'pending' | 'ready' | 'playing' | 'finished'
+  requestedBy: string | null
+}
+
+interface TournamentState {
+  id: string
+  name: string
+  creatorId: string
+  status: 'waiting' | 'in-progress' | 'finished'
+  currentRound: number
+  bracket: TournamentMatch[]
+  players: Player[]
+  winner: string | null
+}
+
+function MatchCard({
+  match,
+  userId,
+  onPlay,
+}: {
+  match: TournamentMatch
+  userId: string
+  onPlay: () => void
+}) {
+  const isInMatch = match.player1?.id === userId || match.player2?.id === userId
+  const canPlay = match.status === 'ready' && isInMatch
+  const hasRequested = match.requestedBy === userId
+
+  const p1Name = match.player1?.username ?? 'TBD'
+  const p2Name = match.player2?.username ?? 'TBD'
+/// ststaus to css class to set color for each status
+  const cardClass = {
+    pending: 'border-slate-600 bg-slate-800/60',
+    ready: 'border-amber-500 bg-amber-900/20',
+    playing: 'border-cyan-500 bg-cyan-900/20',
+    finished: 'border-slate-600 bg-slate-800/40 opacity-70',
+  }[match.status]
+
+  const winnerName = match.winnerId
+    ? match.player1?.id === match.winnerId
+      ? match.player1?.username
+      : match.player2?.username
+    : null
+
+  return (
+    <div className={`rounded-xl border px-4 py-3 w-44 ${cardClass} flex flex-col gap-2 shadow-lg`}>
+      <div className="flex flex-col gap-1">
+        <span
+          className={`text-sm font-semibold truncate ${
+            match.winnerId === match.player1?.id ? 'text-amber-400' : 'text-white'
+          }`}
+        >
+          {p1Name}
+        </span>
+        <div className="border-t border-slate-600/60" />
+        <span
+          className={`text-sm font-semibold truncate ${
+            match.winnerId === match.player2?.id ? 'text-amber-400' : 'text-white'
+          }`}
+        >
+          {p2Name}
+        </span>
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-gray-400 capitalize">{match.status}</span>
+        {canPlay && (
+          <button
+            onClick={onPlay}
+            disabled={hasRequested}
+            className={`text-xs px-3 py-1 rounded-lg font-semibold transition ${
+              hasRequested
+                ? 'bg-slate-600 text-gray-400 cursor-default'
+                : 'bg-amber-500 hover:bg-amber-400 text-white'
+            }`}
+          >
+            {hasRequested ? 'Waiting…' : 'Play'}
+          </button>
+        )}
+        {match.status === 'finished' && winnerName && (
+          <span className="text-xs text-amber-400 truncate"> {winnerName}</span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Bracket({
+  tournament,
+  userId,
+}: {
+  tournament: TournamentState
+  userId: string
+}) {
+  const rounds = Array.from(new Set(tournament.bracket.map(m => m.roundNumber))).sort(
+    (a, b) => a - b,
+  )
+  const totalRounds = rounds.length
+
+  const handlePlay = (match: TournamentMatch) => {
+    socket.emit('request-tournament-match', {
+      tournamentId: tournament.id,
+      roundNumber: match.roundNumber,
+      matchIndex: match.matchIndex,
+    })
+  }
+
+  const roundLabel = (r: number) =>
+    r === totalRounds ? 'Final' : r === totalRounds - 1 ? 'Semi-Final' : `Round ${r}`
+
+  return (
+    <div className="overflow-x-auto pb-2">
+      <div className="flex gap-10 min-w-fit py-2">
+        {rounds.map(round => {
+          const roundMatches = tournament.bracket
+            .filter(m => m.roundNumber === round)
+            .sort((a, b) => a.matchIndex - b.matchIndex)
+          const isCurrent = round === tournament.currentRound
+
+          return (
+            <div key={round} className="flex flex-col items-center gap-4">
+              <span
+                className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${
+                  isCurrent ? 'bg-amber-500 text-white' : 'bg-slate-700 text-gray-400'
+                }`}
+              >
+                {roundLabel(round)}
+              </span>
+              <div className="flex flex-col gap-6">
+                {roundMatches.map(match => (
+                  <MatchCard
+                    key={`${match.roundNumber}-${match.matchIndex}`}
+                    match={match}
+                    userId={userId}
+                    onPlay={() => handlePlay(match)}
+                  />
+                ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function Tournament() {
+  const { user } = useUser()
+  const navigate = useNavigate()
+  const location = useLocation()
+  //location hold the cuurent react location
+  const [activeTournament, setActiveTournament] = useState<TournamentState | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!socket.connected) 
+      socket.connect()
+
+    // Re-emit join so the server resends tournament-update to this freshly mounted page
+    // location.state is used on normal navigation; sessionStorage survives refresh
+    const navState = location.state as { tournamentId?: string; userId?: string; username?: string } | null
+    const stored = sessionStorage.getItem('activeTournament')
+    const storedState = stored ? JSON.parse(stored) as { tournamentId?: string; userId?: string; username?: string } : null
+    const joinInfo = navState?.tournamentId ? navState : storedState
+    if (joinInfo?.tournamentId && joinInfo?.userId) {
+      socket.emit('join-tournament', {
+        tournamentId: joinInfo.tournamentId,
+        userId: joinInfo.userId,
+        username: joinInfo.username ?? 'Player',
+      })
+    }
+
+    const onUpdate = (data: TournamentState) => {
+      setActiveTournament(data)
+      setLoading(false)
+      if (data.status === 'finished') 
+        sessionStorage.removeItem('activeTournament')
+    }
+
+    const onCreated = (data: { tournamentId: string; tournament: TournamentState }) => {
+      setActiveTournament(data.tournament)
+      setLoading(false)
+    }
+
+    const onMatchFound = (data: {
+      matchId: string
+      match: { id: string; players: Player[]; board: (string | null)[]; currentTurn: string | null; status: string; winner: string | null }
+      symbol: string
+    }) => {
+      navigate(`/game/${data.matchId}`, { state: { symbol: data.symbol, match: data.match } })
+    }
+
+    const onError = (data: { message: string }) => {
+      setError(data.message)
+      setTimeout(() => setError(null), 3500)
+    }
+
+    socket.on('tournament-update', onUpdate)
+    socket.on('tournament-created', onCreated)
+    socket.on('match-found', onMatchFound)
+    socket.on('tournament-error', onError)
+
+    //waitig for server to rspond and waiting in leading page
+    const timeout = setTimeout(() => setLoading(false), 5000)
+
+    return () => {
+      socket.off('tournament-update', onUpdate)
+      socket.off('tournament-created', onCreated)
+      socket.off('match-found', onMatchFound)
+      socket.off('tournament-error', onError)
+      clearTimeout(timeout)
+    }
+  }, [navigate, location.state])
+
+  const handleStart = () => {
+    if (!activeTournament) return
+    socket.emit('start-tournament', { tournamentId: activeTournament.id })
+  }
+
+  const isCreator = activeTournament?.creatorId === user?.id
+  const winnerPlayer = activeTournament?.winner
+    ? activeTournament.players.find(p => p.id === activeTournament.winner)
+    : null
+
+  // Waiting for server to send tournament state
+  if (!activeTournament) {
+    return <TournamentLoadingPage loading={loading} onBack={() => navigate('/Dashboard')} />
+  }
+
+  return (
+    <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
+      <Bar />
+      <main className="flex-1 px-6 py-8 pb-28 max-w-4xl mx-auto w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-amber-500">{activeTournament.name}</h1>
+            <p className="text-sm text-gray-400">
+              {activeTournament.players.length} players ·{' '}
+              <span className="capitalize">{activeTournament.status}</span>
+              {activeTournament.status === 'in-progress' &&
+                ` · Round ${activeTournament.currentRound}`}
+            </p>
+          </div>
+          <button
+            onClick={() => { sessionStorage.removeItem('activeTournament'); setActiveTournament(null); navigate('/Dashboard'); }}
+            className="text-sm px-4 py-2 rounded-xl border border-slate-600 text-gray-300 hover:bg-slate-700 transition"
+          >
+            ← Back
+          </button>
+        </div>
+
+        {error && (
+          <div className="mb-4 px-4 py-2 bg-red-900/40 border border-red-500 rounded-xl text-red-300 text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* Waiting lobby */}
+        {activeTournament.status === 'waiting' && (
+          <div className="bg-slate-800 border border-blue-700 rounded-xl p-6 max-w-md">
+            <h2 className="text-lg font-semibold text-white mb-4">Waiting for players…</h2>
+            <ul className="space-y-2 mb-6">
+              {activeTournament.players.map((p, i) => (
+                <li key={p.id} className="flex items-center gap-3 text-white">
+                  <span className="w-6 h-6 flex items-center justify-center rounded-full bg-blue-800 text-xs font-bold text-amber-400">
+                    {i + 1}
+                  </span>
+                  {p.username}
+                  {p.id === activeTournament.creatorId && (
+                    <span className="text-xs text-amber-500 ml-1">(host)</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            {isCreator ? (
+              <button
+                onClick={handleStart}
+                disabled={activeTournament.players.length < 3}
+                className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-semibold disabled:opacity-40 transition"
+              >
+                Start Tournament
+              </button>
+            ) : (
+              <p className="text-gray-400 text-sm">Waiting for the host to start…</p>
+            )}
+          </div>
+        )}
+
+        {/* Bracket */}
+        {(activeTournament.status === 'in-progress' || activeTournament.status === 'finished') && (
+          <div className="bg-slate-800 border border-blue-700 rounded-xl p-6">
+            {activeTournament.status === 'finished' && winnerPlayer && (
+              <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-700">
+                <span className="text-3xl"><GiPodiumWinner /></span>
+                <span className="text-xl font-bold text-amber-400">{winnerPlayer.username} wins!</span>
+              </div>
+            )}
+            <h2 className="text-lg font-semibold text-white mb-5">Bracket</h2>
+            <Bracket tournament={activeTournament} userId={user?.id ?? ''} />
+          </div>
+        )}
+      </main>
+      <BottomNav />
+    </div>
+  )
+}
+
+export default Tournament

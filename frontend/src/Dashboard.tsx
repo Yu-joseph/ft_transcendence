@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
 import BottomNav from "./components/BottomNav";
 import PlayerList from "./components/PlayerList";
@@ -9,6 +10,20 @@ import TournamentList from "./TournamentList";
 import { PiGameControllerFill } from "react-icons/pi";
 import { TbTournament } from "react-icons/tb";
 import { GiTicTacToe } from "react-icons/gi";
+=======
+import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
+import BottomNav from "./components/BottomNav";
+import PlayerList from "./components/PlayerList";
+import PlayerState from "./components/PlayerState";
+import TournamentList from "./components/TournamentList";
+// import { SiEpicgames } from "react-icons/si";
+import { PiGameControllerFill } from "react-icons/pi";
+import { TbTournament } from "react-icons/tb";
+// import { GiTicTacToe } from "react-icons/gi";
+import Bar from './components/Bar'
+import CreateTourn from "./components/CreateTourn";
+import { socket } from "./socket/sock";
+>>>>>>> sayf
 
 
 
@@ -27,6 +42,11 @@ export default function Dashboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardPlayer[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
+<<<<<<< HEAD
+=======
+  const [opnePop, setOpenPop] = useState<boolean>(false);
+
+>>>>>>> sayf
 
   const apiServerUrl = "http://localhost:3000";
 
@@ -65,6 +85,7 @@ export default function Dashboard() {
     };
   }, [apiServerUrl]);
 
+<<<<<<< HEAD
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
 
@@ -88,6 +109,28 @@ export default function Dashboard() {
         </div>
       </header>
 
+=======
+  useEffect(() => {
+    const onTournamentCreated = (data: { tournamentId: string; tournament: { name: string; creatorId: string } }) => {
+      if (user) {
+        sessionStorage.setItem('activeTournament', JSON.stringify({
+          tournamentId: data.tournamentId,
+          userId: user.id,
+          username: user.username ?? user.fullName ?? 'Player',
+        }));
+      }
+      navigate("/Tournament");
+    };
+    socket.on("tournament-created", onTournamentCreated);
+    return () => {
+      socket.off("tournament-created", onTournamentCreated);
+    };
+  }, [navigate, user]);
+
+  return (
+    <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
+      <Bar />
+>>>>>>> sayf
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8 sm:px-6 lg:px-8 pb-32">
         <SignedOut>
@@ -121,12 +164,20 @@ export default function Dashboard() {
                 <span className="text-gray-400 text-sm">Find players and start a match</span>
               </button>
               <button
+<<<<<<< HEAD
                 onClick={() => navigate("/AiChallange")}
+=======
+                onClick={() => setOpenPop(true)}
+>>>>>>> sayf
                 className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-amber-500 hover:scale-105 transition-all duration-300 shadow-lg"
               >
                 <span className="text-4xl"><TbTournament /></span>
                 <span className="text-amber-500 text-xl font-semibold">Tournament</span>
+<<<<<<< HEAD
                 <span className="text-gray-400 text-sm">Compete in tournament brackets</span>
+=======
+                <span className="text-gray-400 text-sm">Create Tournmanet</span>
+>>>>>>> sayf
               </button>
             </div>
             {/* <div className="grid grid-cols-1 gap-6"> */}
@@ -153,7 +204,11 @@ export default function Dashboard() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
+<<<<<<< HEAD
                     <thead className="bg-slate-900/70">
+=======
+                    <thead className="bg-slate-900">
+>>>>>>> sayf
                       <tr>
                         <th className="px-6 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Rank</th>
                         <th className="px-6 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Player</th>
@@ -185,6 +240,21 @@ export default function Dashboard() {
       </main>
 
       <BottomNav />
+<<<<<<< HEAD
+=======
+      <CreateTourn
+        isOpen={opnePop}
+        onClose={() => setOpenPop(false)}
+        onCreate={(name, maxPlayers) => {
+          socket.emit("create-tournament", {
+            name,
+            userId: user?.id,
+            username: user?.username ?? user?.fullName ?? "Player",
+            maxPlayers,
+          });
+        }}
+      />
+>>>>>>> sayf
     </div>
   );
 }

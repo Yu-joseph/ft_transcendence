@@ -3,7 +3,11 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { socket } from "./socket/sock";
 import BottomNav from "./components/BottomNav";
+<<<<<<< HEAD
 import { GiPodiumWinner } from "react-icons/gi";
+=======
+import WinModal from "./components/WinModal";
+>>>>>>> sayf
 
 
 type CellValue = "X" | "O" | null;
@@ -39,6 +43,10 @@ function Game() {
   const [pieceToRemove, setPieceToRemove] = useState<number | null>(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [openmentLeaver, setopLeave] = useState(false);
+<<<<<<< HEAD
+=======
+  const [showWinModal, setShowWinModal] = useState(false);
+>>>>>>> sayf
   // Derive move count from the current board state
   const getMoveCount = (symbol: "X" | "O"): number => {
     return board.filter(cell => cell === symbol).length;
@@ -110,6 +118,7 @@ function Game() {
         // Find winners username
         const winnerPlayer = match.players.find(p => p.id === match.winner);
         setWinner(winnerPlayer?.username || match.winner);
+        setShowWinModal(true);
       } else if (match.status === 'finished' && !match.winner) {
         setWinner("Draw");
       }
@@ -377,6 +386,7 @@ function Game() {
             </div>
           </div>
         )}
+<<<<<<< HEAD
         {openmentLeaver && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
             <div className="bg-slate-800 border border-emerald-600 rounded-xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center">
@@ -386,6 +396,23 @@ function Game() {
               <p className="text-slate-400 text-sm">Redirecting to Dashboard...</p>
             </div>
           </div>
+=======
+        {/* Opponent forfeited → current player always wins */}
+        <WinModal
+          show={openmentLeaver}
+          isWinner={true}
+          winnerName={user?.fullName ?? user?.username ?? "You"}
+          message="Your opponent left the match."
+        />
+
+        {/* Regular game end */}
+        {!openmentLeaver && (
+          <WinModal
+            show={showWinModal}
+            isWinner={!!winner && players.find(p => p.id === user?.id)?.username === winner}
+            winnerName={winner ?? ""}
+          />
+>>>>>>> sayf
         )}
       </SignedIn>
       <BottomNav />

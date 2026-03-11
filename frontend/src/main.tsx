@@ -7,6 +7,7 @@ import Lobby from './Lobby.tsx'
 import Login from './Login.tsx'
 import Dashboard from "./Dashboard.tsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Tournament from './Tournament.tsx'
 // import Lobby from './Lobby.tsx'
 
 
@@ -37,6 +38,10 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/" element={<Login />} />
         <Route path= "/Dashboard" element={<Dashboard />} />
         <Route path="/AiChallange" element={<Lobby />} />
+<<<<<<< HEAD
+=======
+        <Route path="/Tournament" element={<Tournament />} />
+>>>>>>> sayf
         <Route path="/game/:matchId" element={<Game />} />
       </Routes>
     </BrowserRouter>
