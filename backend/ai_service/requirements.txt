@@ -1,0 +1,39 @@
+Flask
+Flask-Cors
+langchain
+langchain-core
+langchain-community
+langchain-google-genai
+google-generativeai
+python-dotenv
+Flask-Limiter
+openai
+huggingface_hub
+Pillow
+psycopg2-binary
+langchain-groq
+langchain-openai
+
+
+
+
+
+
+
+
+
+# Flask
+# Flask-Cors
+# langchain
+# langchain-core
+# langchain-community
+# langchain-google-genai
+# google-generativeai
+# python-dotenv
+# Flask-Limiter
+# google-generativeai
+# openai
+# huggingface_hub
+# Pillow
+# psycopg2-binary
+# langchain-groq
