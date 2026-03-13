@@ -52,6 +52,7 @@ services:
       - "8080:80"
     depends_on:
       - frontend
+      - auth
 
   game:
     build: ../backend/game_service
