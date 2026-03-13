@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { FriendsList } from "../components/friends/FriendsList";
-import  { Users, Clock, UserPlus }   from 'lucide-react';
+import  { Users, Clock, UserPlus, Ban }   from 'lucide-react';
+import { PendingRequests } from "../components/friends/PendingRequests";
+import { AddFriend } from "../components/friends/AddFriend";
+import { BlockedFriend } from "../components/friends/BlockedFriend";
 
-type    TabTypes = 'friends' | 'pending' | 'add';
+type    TabTypes = 'friends' | 'pending' | 'add' | 'blocked';
 
 export function Friend() {
     const   [activeTab, setActivetab] = useState<TabTypes>('friends');
@@ -12,9 +15,11 @@ export function Friend() {
             case 'friends':
                 return <FriendsList/>;
             case 'pending':
-                return <div className="p-8 text-white">Pending friend request goes here...</div>;
+                return <PendingRequests/>;
             case 'add':
-                return <div className="p-8 text-white">Add friend components goes hrer...</div>
+                return <AddFriend/>
+            case 'blocked':
+                return <BlockedFriend/>
             default:
                 return <FriendsList/>
         }
@@ -50,6 +55,14 @@ export function Friend() {
                         }`}>
                             <UserPlus size={16}/>
                             Add Friend
+                    </button>
+                    <button
+                        onClick={() => setActivetab('blocked')}
+                        className={`px-3 py-1 rounded-md text-sm font-medium cursor-pointer flex items-center gap-2 transition-colors ${
+                            activeTab === 'blocked' ? 'bg-red-500/20 text-red-500' : 'text-slate-400  hover:bg-slate-800 hover:text-red-400'
+                        }`}>
+                            <Ban size={16}/>
+                            Blocked
                     </button>
                 </nav>
             </div>

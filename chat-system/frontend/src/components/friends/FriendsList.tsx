@@ -6,22 +6,16 @@ export function FriendsList() {
     const friends = [
         { id: 1, avatar: '', username: 'user1', created_at: new Date, status: 'Online' },
         { id: 2, avatar: '', username: 'user2', created_at: new Date, status: 'Online' },
-        // { id: 3, avatar: '', username: 'user3', created_at: new Date, status: 'Offline' },
+        { id: 3, avatar: '', username: 'user3', created_at: new Date, status: 'Offline' },
         { id: 4, avatar: '', username: 'user4', created_at: new Date, status: 'Online' },
-        // { id: 5, avatar: '', username: 'user5', created_at: new Date, status: 'Offline' },
+        { id: 5, avatar: '', username: 'user5', created_at: new Date, status: 'Offline' },
         { id: 6, avatar: '', username: 'user6', created_at: new Date, status: 'Online' },
         { id: 7, avatar: '', username: 'user7', created_at: new Date, status: 'Online' },
     ];
     const [activeTab, setActivetab] = useState('Offline');
     const fiteredFriend = friends.filter((friend) => {
-        switch (activeTab) {
-            case 'All':
-                return friend;
-            case 'Online':
-                return friend.status === 'Online' ? friend : null;
-            case 'Offline':
-                return friend.status === 'Offline' ? friend : null;
-        }
+        if (activeTab === 'All') return true;
+        return activeTab === friend.status;
     })
     return (
         <div className="flex flex-col w-full h-full max-w-7xl mx-auto p-4 md:p-6 lg:p-6">
@@ -57,7 +51,7 @@ export function FriendsList() {
                     </button>
                 </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4 overflow-y-auto-w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4 overflow-y-auto w-full">
                 {fiteredFriend.map((fr) => {
                     return (
                         <div
@@ -72,8 +66,8 @@ export function FriendsList() {
                                 </div>
                                 <div className={`absolute w-6 h-6 bottom-0 right-0 ${fr.status === 'Online' ? 'bg-green-500' : 'bg-slate-500'} rounded-full border-2 border-slate-800`}></div>
                             </div>
-                            <h3>{fr.username}</h3>
-                            <p>{fr.id}</p>
+                            <h3 className="text-white font-medium">{fr.username}</h3>
+                            <p className="text-white text-sm">{fr.id}</p>
                             <div className="flex items-center gap-3 w-full">
                                 <button className="flex-1 flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4
                                 rounded-xl transition-colors duration-300 font-medium text-sm shadow-md shadow-indigo-500/20">
