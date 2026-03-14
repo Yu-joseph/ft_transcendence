@@ -3,6 +3,15 @@ import { useState } from "react";
 
 
 export function FriendsList() {
+    // const   [friendList, setFriendList] = useState(null);
+
+    // useEffect(() => {
+    //     const   fetchUserList = () => {
+
+    //     }
+    // }, [userId])
+
+
     const friends = [
         { id: 1, avatar: '', username: 'user1', created_at: new Date, status: 'Online' },
         { id: 2, avatar: '', username: 'user2', created_at: new Date, status: 'Online' },

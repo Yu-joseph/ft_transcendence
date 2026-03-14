@@ -1,8 +1,15 @@
+import { ProfileHeader } from "../components/profile/ProfileHeader";
+import { UserStatCard } from "../components/profile/UserStatCard";
+
 export  function Profile() {
+    const   viewOwnProfile = true;
+
     return (
-        <div className="text-white p-8">
-            <h1 className="text-3xl font-bold">Profile screen</h1>
-            <p className="text-gray-400 mt-2">profile information here</p>
+        <div className="text-white overflow-y-auto h-full w-full bg-slate-950 p-4 md:p-6 lg:p-8 pb-24">
+            <div className="max-w-4xl mx-auto space-y-8">
+                <ProfileHeader isOwnProfile={viewOwnProfile}/>
+                <UserStatCard/>
+            </div>
         </div>
     );
 }
