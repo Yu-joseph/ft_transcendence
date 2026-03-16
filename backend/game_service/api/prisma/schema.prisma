@@ -8,6 +8,7 @@ datasource db {
 }
 
 /// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+<<<<<<< HEAD
 model Conversation {
   id                              BigInt    @id @default(autoincrement())
   created_at                      DateTime  @db.Timestamptz(6)
@@ -49,12 +50,18 @@ model Friend {
 }
 
 /// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+=======
+>>>>>>> 2d98fb0 (SA)
 model Game {
   id                        String      @id @db.VarChar(255)
   board                     String[]    @db.VarChar(1)
   status                    String      @db.VarChar(50)
   result                    String      @db.VarChar(50)
+<<<<<<< HEAD
   created_at                DateTime    @db.Timestamptz(6)
+=======
+  createdAt                 DateTime    @db.Timestamptz(6)
+>>>>>>> 2d98fb0 (SA)
   tournamentId              String?     @db.VarChar(255)
   playerOId                 String      @db.VarChar(255)
   playerXId                 String      @db.VarChar(255)
@@ -67,6 +74,7 @@ model Game {
   @@index([id], map: "Game_id_23ff76e6_like")
   @@index([playerOId], map: "Game_playerOId_bb75da24")
   @@index([playerOId], map: "Game_playerOId_bb75da24_like")
+<<<<<<< HEAD
   @@index([playerOId], map: "Game_playerO_b08a59_idx")
   @@index([playerXId], map: "Game_playerXId_4ef002f6")
   @@index([playerXId], map: "Game_playerXId_4ef002f6_like")
@@ -75,10 +83,17 @@ model Game {
   @@index([tournamentId], map: "Game_tournamentId_940de859")
   @@index([tournamentId], map: "Game_tournamentId_940de859_like")
   @@index([winnerId], map: "Game_winnerI_f698b6_idx")
+=======
+  @@index([playerXId], map: "Game_playerXId_4ef002f6")
+  @@index([playerXId], map: "Game_playerXId_4ef002f6_like")
+  @@index([tournamentId], map: "Game_tournamentId_940de859")
+  @@index([tournamentId], map: "Game_tournamentId_940de859_like")
+>>>>>>> 2d98fb0 (SA)
   @@index([winnerId], map: "Game_winnerId_5b020525")
   @@index([winnerId], map: "Game_winnerId_5b020525_like")
 }
 
+<<<<<<< HEAD
 /// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
 model Message {
   id             BigInt       @id @default(autoincrement())
@@ -113,13 +128,19 @@ model The_User {
   @@index([id], map: "The_User_id_3e5573b1_like")
   @@index([username], map: "The_User_username_ce9ae5c5_like")
 }
+=======
+>>>>>>> 2d98fb0 (SA)
 
 /// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
 model Tournament {
   id                              String                  @id @db.VarChar(255)
   name                            String                  @db.VarChar(255)
   status                          String                  @db.VarChar(50)
+<<<<<<< HEAD
   created_at                      DateTime                @db.Timestamptz(6)
+=======
+  createdAt                       DateTime                @db.Timestamptz(6)
+>>>>>>> 2d98fb0 (SA)
   creatorId                       String                  @db.VarChar(255)
   winnerId                        String?                 @db.VarChar(255)
   Game                            Game[]
@@ -129,15 +150,20 @@ model Tournament {
 
   @@index([creatorId], map: "Tournament_creatorId_7bcf7439")
   @@index([creatorId], map: "Tournament_creatorId_7bcf7439_like")
+<<<<<<< HEAD
   @@index([creatorId], map: "Tournament_creator_7146f9_idx")
   @@index([id], map: "Tournament_id_fa336834_like")
   @@index([winnerId], map: "Tournament_winnerI_596780_idx")
+=======
+  @@index([id], map: "Tournament_id_fa336834_like")
+>>>>>>> 2d98fb0 (SA)
   @@index([winnerId], map: "Tournament_winnerId_d4e1bc5a")
   @@index([winnerId], map: "Tournament_winnerId_d4e1bc5a_like")
 }
 
 /// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
 model TournamentParticipant {
+<<<<<<< HEAD
   id                  String     @id @db.VarChar(255)
   seed                Int
   eliminated          Boolean
@@ -150,6 +176,18 @@ model TournamentParticipant {
   @@unique([tournamentId, userId], map: "TournamentParticipant_tournamentId_userId_cbceec4e_uniq")
   @@index([tournamentId], map: "TournamentP_tournam_78ba51_idx")
   @@index([userId], map: "TournamentP_userId_5051bc_idx")
+=======
+  id                String     @id @db.VarChar(255)
+  seed              Int
+  eliminated        Boolean
+  eliminatedInRound Int?
+  tournamentId      String     @db.VarChar(255)
+  userId            String     @db.VarChar(255)
+  Tournament        Tournament @relation(fields: [tournamentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TournamentParticipant_tournamentId_88dc4ab0_fk_Tournament_id")
+  User              User       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TournamentParticipant_userId_64dfab7f_fk_User_id")
+
+  @@unique([tournamentId, userId], map: "TournamentParticipant_tournamentId_userId_cbceec4e_uniq")
+>>>>>>> 2d98fb0 (SA)
   @@index([id], map: "TournamentParticipant_id_dd1d1ba5_like")
   @@index([tournamentId], map: "TournamentParticipant_tournamentId_88dc4ab0")
   @@index([tournamentId], map: "TournamentParticipant_tournamentId_88dc4ab0_like")
@@ -158,6 +196,7 @@ model TournamentParticipant {
 }
 
 model User {
+<<<<<<< HEAD
   id                                      String                  @id @db.VarChar(255)
   username                                String                  @unique @db.VarChar(255)
   emailox                                 String                  @unique @db.VarChar(255)
@@ -183,6 +222,22 @@ model User {
   @@index([emailox], map: "User_emailox_52212af8_like")
   @@index([id], map: "User_id_dba046ea_like")
   @@index([username], map: "User_username_3851fdce_like")
+=======
+  id                                    String                  @id @db.VarChar(255)
+  username                              String                  @db.VarChar(255)
+  wins                                  Int
+  losses                                Int
+  createdAt                             DateTime                @db.Timestamptz(6)
+  updatedAt                             DateTime                @db.Timestamptz(6)
+  Game_Game_playerOIdToUser             Game[]                  @relation("Game_playerOIdToUser")
+  Game_Game_playerXIdToUser             Game[]                  @relation("Game_playerXIdToUser")
+  Game_Game_winnerIdToUser              Game[]                  @relation("Game_winnerIdToUser")
+  Tournament_Tournament_creatorIdToUser Tournament[]            @relation("Tournament_creatorIdToUser")
+  Tournament_Tournament_winnerIdToUser  Tournament[]            @relation("Tournament_winnerIdToUser")
+  TournamentParticipant                 TournamentParticipant[]
+
+  @@index([id], map: "User_id_dba046ea_like")
+>>>>>>> 2d98fb0 (SA)
 }
 
 model auth_group {

@@ -77,7 +77,11 @@ app.get('/api/users/:id/tournaments', async (req: Request, res: Response) => {
           }
         }
       },
+<<<<<<< HEAD
       orderBy: { Tournament: {created_at: 'desc'} },
+=======
+      orderBy: { Tournament: {createdAt: 'desc'} },
+>>>>>>> 2d98fb0 (SA)
     });
     const result = entries.map(entry => ({
       tournamentId: entry.tournamentId,
@@ -95,7 +99,11 @@ app.get('/api/users/:id/tournaments', async (req: Request, res: Response) => {
       eliminated : entry.eliminated,
       seed: entry.seed,
       tournamentWinner: entry.Tournament.User_Tournament_winnerIdToUser,
+<<<<<<< HEAD
       createdAt: entry.Tournament.created_at,
+=======
+      createdAt: entry.Tournament.createdAt,
+>>>>>>> 2d98fb0 (SA)
     }));
     res.json(result);
   } catch (err) {

@@ -42,6 +42,7 @@ def login(request):
     if not password:
             return JsonResponse({"error": "password required"}, status=400)
 
+<<<<<<< HEAD
     if email:
         validator = EmailValidator()
         try:
@@ -49,6 +50,9 @@ def login(request):
         except ValidationError:
             return JsonResponse({"error": "Invalid Email"}, status=400)
         user = User.objects.filter(email=email).first()
+=======
+    user = User.objects.filter(username=username).first()
+>>>>>>> 2d98fb0 (SA)
 
     elif username:
         user = User.objects.filter(username=username).first()
@@ -70,6 +74,7 @@ def login(request):
 @csrf_exempt
 def register(request):
     if request.method == "POST":
+<<<<<<< HEAD
         
         content_type = request.content_type or ""
         if "application/json" in content_type:
@@ -82,6 +87,38 @@ def register(request):
                 
             except json.JSONDecodeError:
                 return JsonResponse({"error": "invalid JSON"}, status=400)
+=======
+
+        body = json.loads(request.body)
+
+        username = body.get("username")
+        password = body.get("password")
+
+        user = User.objects.filter(username=username).first()
+
+        if not user:
+
+            tmp_user = User(username=username)
+
+            try:
+                validate_password(password, user=tmp_user)
+            except ValidationError as e:
+                return JsonResponse({
+                    "error": e.messages
+                }, status=400)
+
+            hashed_password = make_password(password)
+
+            User.objects.create(
+                username=username,
+                password=hashed_password,
+                fullname="",
+                role="admin"
+            )
+
+            return JsonResponse({"message": "User created"}, status=201)
+
+>>>>>>> 2d98fb0 (SA)
         else:
             username = request.POST.get("username")
             email    = request.POST.get("email")
@@ -170,8 +207,15 @@ def protected_view(request):
 @csrf_exempt
 @role_required(["admin"])
 def list_users(request):
+<<<<<<< HEAD
     users = list(User.objects.all().values("id", "username", "role"))
     return JsonResponse({"success": True, "data": users})
+=======
+
+    users = User.objects.all().values("id", "username", "role")
+
+    return JsonResponse(list(users), safe=False)
+>>>>>>> 2d98fb0 (SA)
 
 @role_required(["admin"])
 def delete_user(request, user_id):
@@ -249,12 +293,17 @@ def get_user(request):
     if request.method != "GET":
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
+<<<<<<< HEAD
     tmp_user = get_user_from_request(request)
     if not tmp_user:
         return JsonResponse({"error": "Not authenticated"}, status=401)
 
     user = User.objects.filter(id=tmp_user.id).values( 
          "username", "fullname", "avatar", "id"
+=======
+    user = Userobjects.filter(id=user_id).values(
+        "id", "username", "fullname", "role", "is_active"
+>>>>>>> 2d98fb0 (SA)
     ).first()
 
     if not user:

@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
+<<<<<<< HEAD
 import { gameSocket } from "../socket/sock";
+=======
+import { useUser } from "@clerk/clerk-react";
+import { socket } from "../Game/socket/sock";
+>>>>>>> 2d98fb0 (SA)
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 

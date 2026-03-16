@@ -39,6 +39,7 @@ services:
   frontend:
     container_name: frontend
     restart: always
+<<<<<<< HEAD
     networks:
       - app-network
     environment:
@@ -50,6 +51,12 @@ services:
       - ../frontend:/app/
       - /app/node_modules 
 
+=======
+    env_file:
+      - .env
+    build: ../frontend
+  
+>>>>>>> 2d98fb0 (SA)
   nginx:
     build : ./nginx
     container_name: nginx
@@ -61,9 +68,12 @@ services:
       - frontend
       - auth
       - db
+<<<<<<< HEAD
       - game-api
       - chat-api
       
+=======
+>>>>>>> 2d98fb0 (SA)
 
   game:
     build: ../backend/game_service
@@ -73,8 +83,13 @@ services:
       - app-network
     environment:
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+<<<<<<< HEAD
     # env_file:
     #   - .env
+=======
+    env_file:
+      - .env
+>>>>>>> 2d98fb0 (SA)
     depends_on:
       - db
       - auth
@@ -111,6 +126,7 @@ services:
     networks:
       - app-network
 
+<<<<<<< HEAD
   chat:
     build:
         context: ../backend/chat/backend
@@ -165,3 +181,13 @@ networks:
 
 
  
+=======
+  # chat:
+  #   build: ../backend/chat/chat-system/backend
+  #   container_name: chat
+  #   restart: always
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+>>>>>>> 2d98fb0 (SA)

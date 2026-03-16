@@ -295,6 +295,7 @@ export function setupTournamentHandlers(io: Server) {
 
       tournaments.set(tournamentId, tournament);
 
+
       try {
         await prisma.tournament.create({
           data: {
@@ -302,7 +303,12 @@ export function setupTournamentHandlers(io: Server) {
             name: tournament.name,
             status: "waiting",
             creatorId: player.id,
+<<<<<<< HEAD
             created_at: new Date(),
+=======
+            createdAt: new Date(),
+
+>>>>>>> 2d98fb0 (SA)
             TournamentParticipant: {
               create: {
                 id: randomUUID(),
@@ -315,6 +321,7 @@ export function setupTournamentHandlers(io: Server) {
         });
       } catch (err) {
         console.error("Failed to create tournament in DB:", err);
+<<<<<<< HEAD
 
         // rollback in-memory state
         tournaments.delete(tournamentId);
@@ -325,6 +332,8 @@ export function setupTournamentHandlers(io: Server) {
         });
 
         return; // stop flow: do not emit success events
+=======
+>>>>>>> 2d98fb0 (SA)
       }
 
       socket.emit("tournament-created", { tournamentId, tournament });
@@ -375,6 +384,7 @@ export function setupTournamentHandlers(io: Server) {
 
       try {
         await prisma.tournamentParticipant.create({
+<<<<<<< HEAD
           data: {
             id: crypto.randomUUID(),
             tournamentId: data.tournamentId,
@@ -383,6 +393,16 @@ export function setupTournamentHandlers(io: Server) {
             eliminated: false,
           },
         });
+=======
+        data: {
+          id: crypto.randomUUID(),
+          tournamentId: data.tournamentId,
+          userId: data.userId,
+          seed: tournament.players.length,
+          eliminated: false,
+        },
+      });
+>>>>>>> 2d98fb0 (SA)
       } catch (err) {
         console.error('Failed to add tournament participant:', err);
       }

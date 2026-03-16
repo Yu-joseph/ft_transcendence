@@ -53,6 +53,7 @@ export default function BottomNav() {
             }`}
           >
             <span className="font-semibold">Chat</span>
+<<<<<<< HEAD
           </button>
 
           {/* ai agent Button */}
@@ -65,6 +66,8 @@ export default function BottomNav() {
             }`}
           >
             <span className="font-semibold">Ai agent</span>
+=======
+>>>>>>> 2d98fb0 (SA)
           </button>
 
         </div>
