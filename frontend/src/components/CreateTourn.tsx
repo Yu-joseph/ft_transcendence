@@ -36,9 +36,26 @@ function CreateTourn({ isOpen, onClose, onCreate }: Props) {
           className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition mb-4"
         />
         <div className="mb-4">
-          <label className="block text-sm text-amber-500 mb-2">Number of players</label>
-          <input
-            type="number"
+        <label className="block text-amber-500 mb-2">Number of players</label>
+        <div className="flex gap-3">
+          {[4, 8, 16].map((num) => (
+            <button
+              key={num}
+              onClick={() => setMaxPlayers(num)}
+              className={`flex-1 py-3 rounded-xl border font-bold text-lg transition
+                ${maxPlayers === num
+                  ? "bg-amber-500 border-amber-500 text-slate-900"
+                  : "bg-slate-900 border-slate-600 text-white hover:border-amber-500"
+                }`}
+            >
+              {num}
+            </button>
+          ))}
+        </div>
+      </div>
+        {/* <div className="mb-4">
+          <label className="block  text-amber-500 mb-2">Number of players</label>
+          <input type="number"
             min={4}
             max={16}
             step={4}
@@ -46,7 +63,7 @@ function CreateTourn({ isOpen, onClose, onCreate }: Props) {
             onChange={(e) => setMaxPlayers(Number(e.target.value))}
             className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white focus:outline-none focus:border-amber-500 transition"
           />
-        </div>
+        </div> */}
           {/* //e is for events  */}
         <div className="flex gap-3">
           <button onClick={onClose} className="flex-1 py-2 rounded-xl border border-slate-600 text-gray-300 hover:bg-slate-700 transition">Cancel</button>

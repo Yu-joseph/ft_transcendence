@@ -14,7 +14,14 @@ async function ensureUser(id: string, username: string) {
   await prisma.user.upsert({
     where: { id },
     update: { username },
-    create: { id, username },
+    create: {
+      id,
+      username,
+      wins: 0,
+      losses: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
   });
 }
 
@@ -24,16 +31,17 @@ async function ensureUser(id: string, username: string) {
 async function createGameInDB(match: Match) {
   const boardStrings = match.board.map(cell => cell ?? '');
   await prisma.game.create({
-    data: {
-      id: match.id,
-      board: boardStrings,
-      status: 'playing',
-      result: 'PENDING',
-      playerXId: match.players[0].id,
-      playerOId: match.players[1].id,
-      tournamentId: match.tournamentId ?? undefined,
-    },
-  });
+  data: {
+    id: match.id,
+    board: boardStrings,
+    status: 'playing',
+    result: 'PENDING',
+    playerXId: match.players[0].id,
+    playerOId: match.players[1].id,
+    tournamentId: match.tournamentId ?? null,
+    createdAt: new Date(),
+  },
+});
   console.log(`Game created in DB: ${match.id}`);
 }
 

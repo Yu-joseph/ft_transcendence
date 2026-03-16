@@ -2,6 +2,8 @@ services:
   db:
     image: postgres:16
     restart: always
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: sayf
       POSTGRES_PASSWORD: 1234
@@ -34,15 +36,9 @@ services:
   frontend:
     container_name: frontend
     restart: always
-    environment:
-      - VITE_CLERK_PUBLISHABLE_KEY=pk_test_ZGlzY3JldGUtbGlvbmVzcy00LmNsZXJrLmFjY291bnRzLmRldiQ
-      - VITE_API_URL=http://localhost:5173
-      - DATABASE_URL="postgres://sayf:1234@db:5432/mydb"
-      - ft_user=sayf
-      - ft_password=1234
-      - ft_transcendence=mydb
+    env_file:
+      - .env
     build: ../frontend
-    
   
   nginx:
     build : ./nginx
@@ -51,6 +47,8 @@ services:
       - "8080:80"
     depends_on:
       - frontend
+      - auth
+      - db
 
   game:
     build: ../backend/game_service
@@ -58,14 +56,16 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+    env_file:
+      - .env
     depends_on:
       - db
 
-  chat:
-    build: ../backend/chat/chat-system/backend
-    container_name: chat
-    restart: always
-    depends_on:
-      - db
-    environment:
-      DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+  # chat:
+  #   build: ../backend/chat/chat-system/backend
+  #   container_name: chat
+  #   restart: always
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     DATABASE_URL: postgres://sayf:1234@db:5432/mydb

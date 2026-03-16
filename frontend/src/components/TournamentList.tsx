@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { socket } from "../socket/sock";
+import { socket } from "../Game/socket/sock";
 import { useNavigate } from "react-router-dom";
 
 type TournamentEntry = {
@@ -8,6 +8,7 @@ type TournamentEntry = {
   name: string;
   creatorName: string;
   playerCount: number;
+  maxPlayers: number;
 };
 
 export default function TournamentList() {
@@ -58,8 +59,10 @@ export default function TournamentList() {
     };
   }, []);
 
-  const handleJoin = (tournamentId: string) => {
+  const handleJoin = (tournamentId: string, isFull: boolean) => {
     if (!user) 
+      return;
+    if (isFull)
       return;
     const joinInfo = {
       tournamentId,
@@ -81,20 +84,28 @@ export default function TournamentList() {
         <div className="px-6 py-8 text-gray-400">No tournaments available yet.</div>
       ) : (
         <ul className="divide-y divide-blue-800/50">
-          {tournaments.map((t) => (
-            <li key={t.tournamentId} className="flex items-center justify-between px-6 py-4 hover:bg-slate-700/40 transition">
-              <div>
-                <p className="text-white font-semibold">{t.name}</p>
-                <p className="text-sm text-gray-400">by {t.creatorName} · {t.playerCount} player{t.playerCount !== 1 ? "s" : ""}</p>
-              </div>
-              <button
-                onClick={() => handleJoin(t.tournamentId)}
-                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition"
-              >
-                Join
-              </button>
-            </li>
-          ))}
+          {tournaments.map((t) => {
+            const isFull = t.playerCount >= t.maxPlayers;
+            return (
+              <li key={t.tournamentId} className="flex items-center justify-between px-6 py-4 hover:bg-slate-700/40 transition">
+                <div>
+                  <p className="text-white font-semibold">{t.name}</p>
+                  <p className="text-sm text-gray-400">by {t.creatorName} · {t.playerCount}/{t.maxPlayers} players</p>
+                </div>
+                <button
+                  onClick={() => handleJoin(t.tournamentId, isFull)}
+                  disabled={isFull}
+                  className={`px-4 py-2 rounded-xl text-white text-sm font-semibold transition ${
+                    isFull
+                      ? "bg-slate-600 cursor-not-allowed opacity-70"
+                      : "bg-amber-500 hover:bg-amber-600"
+                  }`}
+                >
+                  {isFull ? "Full" : "Join"}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

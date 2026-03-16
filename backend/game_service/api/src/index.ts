@@ -54,8 +54,8 @@ app.get('/api/users/:id/games', async (req: Request, res: Response) => {
         OR: [{ playerXId: req.params.id as string}, { playerOId: req.params.id as string}],
       },
       include: {
-        playerX: { select: { id: true, username: true } },
-        playerO: { select: { id: true, username: true } },
+        User_Game_playerXIdToUser: { select: { id: true, username: true } },
+        User_Game_playerOIdToUser: { select: { id: true, username: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -70,32 +70,32 @@ app.get('/api/users/:id/tournaments', async (req: Request, res: Response) => {
     const entries = await prisma.tournamentParticipant.findMany({
       where: { userId: req.params.id as string},
       include: {
-        tournament: {
+        Tournament: {
           include: {
-            winner: {select: {id: true, username: true}},
-            creator: {select: {id: true, username: true}},
+            User_Tournament_winnerIdToUser: {select: {id: true, username: true}},
+            User_Tournament_creatorIdToUser : {select: {id: true, username: true}},
           }
         }
       },
-      orderBy: { tournament: {createdAt: 'desc'} },
+      orderBy: { Tournament: {createdAt: 'desc'} },
     });
     const result = entries.map(entry => ({
       tournamentId: entry.tournamentId,
-      name: entry.tournament.name,
-      status: entry.tournament.status,
-      creator: entry.tournament.creator,
-      userStatus: entry.tournament.winnerId === req.params.id
+      name: entry.Tournament.name,
+      status: entry.Tournament.status,
+      creator: entry.Tournament.User_Tournament_creatorIdToUser,
+      userStatus: entry.Tournament.winnerId === req.params.id
         ? 'winner'
           : entry.eliminated
             ? 'eliminated'
-            : entry.tournament.status === 'finished'
+            : entry.Tournament.status === 'finished'
               ? 'eliminated'
               : 'playing',
       eliminatedInRound: entry.eliminatedInRound,
       eliminated : entry.eliminated,
       seed: entry.seed,
-      tournamentWinner: entry.tournament.winner,
-      createdAt: entry.tournament.createdAt,
+      tournamentWinner: entry.Tournament.User_Tournament_winnerIdToUser,
+      createdAt: entry.Tournament.createdAt,
     }));
     res.json(result);
   } catch (err) {

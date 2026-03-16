@@ -2,7 +2,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.http import JsonResponse
-from .models import UserAuth
+from .models import User
 from .permissions import role_required  
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -25,7 +25,7 @@ def login(request):
     username = body.get("username")
     password = body.get("password")
 
-    user = UserAuth.objects.filter(username=username).first()
+    user = User.objects.filter(username=username).first()
 
     if not user:
         return JsonResponse({"error": "Invalid credentials"}, status=401)
@@ -75,11 +75,11 @@ def register(request):
         username = body.get("username")
         password = body.get("password")
 
-        user = UserAuth.objects.filter(username=username).first()
+        user = User.objects.filter(username=username).first()
 
         if not user:
 
-            tmp_user = UserAuth(username=username)
+            tmp_user = User(username=username)
 
             try:
                 validate_password(password, user=tmp_user)
@@ -90,7 +90,7 @@ def register(request):
 
             hashed_password = make_password(password)
 
-            UserAuth.objects.create(
+            User.objects.create(
                 username=username,
                 password=hashed_password,
                 fullname="",
@@ -136,7 +136,7 @@ def protected_view(request):
 @role_required(["admin"])
 def list_users(request):
 
-    users = UserAuth.objects.all().values("id", "username", "role")
+    users = User.objects.all().values("id", "username", "role")
 
     return JsonResponse(list(users), safe=False)
 
@@ -146,7 +146,7 @@ def delete_user(request, user_id):
     if request.method != "DELETE":
         return JsonResponse({"error": "DELETE required"}, status=405)
 
-    user = UserAuth.objects.filter(id=user_id).first()
+    user = User.objects.filter(id=user_id).first()
 
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)
@@ -163,7 +163,7 @@ def update_user(request, user_id):
 
     body = json.loads(request.body)
 
-    user = UserAuth.objects.filter(id=user_id).first()
+    user = User.objects.filter(id=user_id).first()
 
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)
@@ -178,7 +178,7 @@ def update_user(request, user_id):
 @role_required(["admin", "moderator"])
 def deactivate_user(request, user_id):
 
-    user = UserAuth.objects.filter(id=user_id).first()
+    user = User.objects.filter(id=user_id).first()
 
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)
@@ -201,7 +201,7 @@ def change_user_role(request, user_id):
     if not new_role:
         return JsonResponse({"error": "Role required"}, status=400)
 
-    user = UserAuth.objects.filter(id=user_id).first()
+    user = User.objects.filter(id=user_id).first()
 
     if not user:
         return JsonResponse({"error": "User not found"}, status=404)
@@ -214,7 +214,7 @@ def change_user_role(request, user_id):
 @role_required(["admin", "moderator"])
 def get_user(request, user_id):
 
-    user = UserAuth.objects.filter(id=user_id).values(
+    user = Userobjects.filter(id=user_id).values(
         "id", "username", "fullname", "role", "is_active"
     ).first()
 

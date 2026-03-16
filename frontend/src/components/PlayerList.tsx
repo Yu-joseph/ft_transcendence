@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
-import { socket } from "../socket/sock";
+import { socket } from "../Game/socket/sock";
 
 import { MdOnlinePrediction } from "react-icons/md";
 // import { error } from "console";

@@ -1,7 +1,7 @@
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.http import JsonResponse
-from .models import UserAuth
+from .models import User
 
 
 def get_user_from_request(request):
@@ -16,7 +16,7 @@ def get_user_from_request(request):
 
         user_id = access["user_id"]
 
-        user = UserAuth.objects.filter(id=user_id).first()
+        user = User.objects.filter(id=user_id).first()
 
         return user
 
