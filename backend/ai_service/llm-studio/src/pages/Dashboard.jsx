@@ -53,7 +53,7 @@ function Dashboard() {
       const data = await res.json()
 
       const messages = (data.messages || []).map(m => ({
-        role: m.role === 'bot' ? 'ai' : m.role,
+        role: m.role === 'assistant' ? 'ai' : m.role,
         text: m.content
       }))
 

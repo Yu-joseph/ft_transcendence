@@ -1,31 +1,47 @@
-
 services:
-  app:
-    build: .
-    container_name: game-app
+
+  game-api:
+    build: ./services/game_api
+    container_name: game-api
+    ports:
+      - "5001:5001"
+    networks:
+      - app-network
+
+  chat-api:
+    build: ./services/chat_api
+    container_name: chat-api
     ports:
       - "5000:5000"
-    env_file:
-      - .env
     depends_on:
       - postgres
+      - game-api
+    env_file:
+      - .env
+    environment:
+      GAME_API_URL: http://game-api:5001
     volumes:
-      - .:/app
-    command: python backend/app.py
+      - ./static:/app/static
+      - ./templates:/app/templates
+      - ./uploads:/app/uploads
+    networks:
+      - app-network
 
   postgres:
     image: postgres:15
-    restart: unless-stopped
     container_name: game-postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: BRAHIM
-      POSTGRES_PASSWORD: "0000"
-      POSTGRES_DB: chatbot_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./initdb:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
@@ -34,4 +50,7 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /Users/bouhammo/data
+      device: ${DATA_PATH}
+
+networks:
+  app-network:

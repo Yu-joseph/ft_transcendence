@@ -1,0 +1,12 @@
+flask
+flask-cors
+flask-sqlalchemy
+psycopg2-binary
+requests
+python-dotenv
+
+langchain-core
+langchain-openai
+langchain-groq
+langchain-google-genai
+huggingface_hub
