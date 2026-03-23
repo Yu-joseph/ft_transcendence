@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 class FriendsStatus(models.TextChoices):
     PENDING  = "PENDING",  "Pending"
@@ -23,12 +24,16 @@ class User(models.Model):
     is_active = models.BooleanField(default=True)
 =======
 import uuid
+=======
+>>>>>>> 358aa23 (SA)
 
+class FriendsStatus(models.TextChoices):
+    PENDING  = "PENDING",  "Pending"
+    ACCEPTED = "ACCEPTED", "Accepted"
+    REJECTED = "REJECTED", "Rejected"
 
-# ------------------------
-# User model
-# ------------------------
 class User(models.Model):
+<<<<<<< HEAD
     id = models.CharField(primary_key=True, max_length=255)  # Clerk user ID
     username = models.CharField(max_length=255)
     wins = models.IntegerField(default=0)
@@ -36,11 +41,28 @@ class User(models.Model):
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
 >>>>>>> 2d98fb0 (SA)
+=======
+    id         = models.CharField(max_length=255, primary_key=True)
+    username   = models.CharField(max_length=255, unique=True, blank=False,null=False)
+    email      = models.CharField(max_length=255, unique=True, blank=False,null=False)
+    fullname   = models.CharField(max_length=255, blank=True)
+    password   = models.CharField(max_length=255, blank=False, null=False)
+    created_at = models.DateTimeField(auto_now_add=True)   
+    updated_at = models.DateTimeField(auto_now=True)   
+    avatar     = models.ImageField(upload_to='images/', blank=True,null=True)
+    status     = models.CharField(max_length=50, default="Online")
+    role       = models.CharField(max_length=50, default="user") 
+    wins       = models.IntegerField(default=0)
+    losses     = models.IntegerField(default=0)
+>>>>>>> 358aa23 (SA)
 
     class Meta:
         db_table = "User"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 358aa23 (SA)
     def __str__(self):
         return self.username
 
@@ -131,6 +153,7 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message({self.sender}, {self.created_at:%Y-%m-%d %H:%M})"
+<<<<<<< HEAD
 
 class Game(models.Model):
     id         = models.CharField(max_length=255, primary_key=True)
@@ -166,11 +189,11 @@ class Game(models.Model):
         blank=True,
         db_column="tournamentId",
 =======
+=======
+>>>>>>> 358aa23 (SA)
 
-# ------------------------
-# Game model
-# ------------------------
 class Game(models.Model):
+<<<<<<< HEAD
     id = models.CharField(primary_key=True, default=uuid.uuid4, max_length=255)
     board = ArrayField(
         base_field=models.CharField(max_length=1, null=True, blank=True),
@@ -253,89 +276,114 @@ class TournamentParticipant(models.Model):
         return f"TournamentParticipant({self.user} in {self.tournament}, seed={self.seed})"
 =======
     playerX = models.ForeignKey(
+=======
+    id         = models.CharField(max_length=255, primary_key=True)
+    board      = ArrayField(models.CharField(max_length=1), size=9)
+    status     = models.CharField(max_length=50)
+    result     = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+    player_x   = models.ForeignKey(
+>>>>>>> 358aa23 (SA)
         User,
-        related_name="gamesAsPlayerX",
-        on_delete=models.CASCADE,
-        db_column="playerXId"
+        on_delete=models.DO_NOTHING,
+        related_name="games_as_x",
+        db_column="playerXId",
     )
-    playerO = models.ForeignKey(
+    player_o   = models.ForeignKey(
         User,
-        related_name="gamesAsPlayerO",
-        on_delete=models.CASCADE,
-        db_column="playerOId"
+        on_delete=models.DO_NOTHING,
+        related_name="games_as_o",
+        db_column="playerOId",
     )
-    winner = models.ForeignKey(
+    winner     = models.ForeignKey(
         User,
-        related_name="wonGames",
-        on_delete=models.SET_NULL,
+        on_delete=models.DO_NOTHING,
+        related_name="games_won",
         null=True,
         blank=True,
-        db_column="winnerId"
+        db_column="winnerId",
     )
     tournament = models.ForeignKey(
         "Tournament",
+        on_delete=models.DO_NOTHING,
         related_name="games",
-        on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        db_column="tournamentId"
+        db_column="tournamentId",
     )
-    createdAt = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "Game"
+        indexes = [
+            models.Index(fields=["player_x"]),
+            models.Index(fields=["player_o"]),
+            models.Index(fields=["winner"]),
+            models.Index(fields=["tournament"]),
+        ]
 
+    def __str__(self):
+        return f"Game({self.id}, {self.status})"
 
-# ------------------------
-# Tournament model
-# ------------------------
 class Tournament(models.Model):
-    id = models.CharField(primary_key=True, default=uuid.uuid4, max_length=255)
-    name = models.CharField(max_length=255)
-    status = models.CharField(max_length=50)
-
-    creator = models.ForeignKey(
+    id         = models.CharField(max_length=255, primary_key=True)
+    name       = models.CharField(max_length=255)
+    status     = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+    creator    = models.ForeignKey(
         User,
-        related_name="createdTournaments",
-        on_delete=models.CASCADE,
-        db_column="creatorId"
+        on_delete=models.DO_NOTHING,
+        related_name="tournaments_created",
+        db_column="creatorId",
     )
-    winner = models.ForeignKey(
+    winner     = models.ForeignKey(
         User,
-        related_name="wonTournaments",
-        on_delete=models.SET_NULL,
+        on_delete=models.DO_NOTHING,
+        related_name="tournaments_won",
         null=True,
         blank=True,
-        db_column="winnerId"
+        db_column="winnerId",
     )
-    createdAt = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "Tournament"
+        indexes = [
+            models.Index(fields=["creator"]),
+            models.Index(fields=["winner"]),
+        ]
 
+    def __str__(self):
+        return f"Tournament({self.name}, {self.status})"
 
-# ------------------------
-# TournamentParticipant model
-# ------------------------
 class TournamentParticipant(models.Model):
-    id = models.CharField(primary_key=True, default=uuid.uuid4, max_length=255)
-    tournament = models.ForeignKey(
+    id                  = models.CharField(max_length=255, primary_key=True)
+    seed                = models.IntegerField()
+    eliminated          = models.BooleanField(default=False)
+    eliminated_in_round = models.IntegerField(null=True, blank=True)
+    tournament          = models.ForeignKey(
         Tournament,
-        related_name="players",
-        on_delete=models.CASCADE,
-        db_column="tournamentId"
+        on_delete=models.DO_NOTHING,
+        related_name="participants",
+        db_column="tournamentId",
     )
-    user = models.ForeignKey(
+    user                = models.ForeignKey(
         User,
-        related_name="tournamentEntries",
-        on_delete=models.CASCADE,
-        db_column="userId"
+        on_delete=models.DO_NOTHING,
+        related_name="tournament_entries",
+        db_column="userId",
     )
-    seed = models.IntegerField()
-    eliminated = models.BooleanField(default=False)
-    eliminatedInRound = models.IntegerField(null=True, blank=True)
 
     class Meta:
         db_table = "TournamentParticipant"
+<<<<<<< HEAD
         unique_together = ("tournament", "user")
 >>>>>>> 2d98fb0 (SA)
+=======
+        unique_together = [("tournament", "user")]
+        indexes = [
+            models.Index(fields=["tournament"]),
+            models.Index(fields=["user"]),
+        ]
+
+    def __str__(self):
+        return f"TournamentParticipant({self.user} in {self.tournament}, seed={self.seed})"
+>>>>>>> 358aa23 (SA)

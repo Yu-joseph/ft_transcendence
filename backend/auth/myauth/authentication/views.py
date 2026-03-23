@@ -30,17 +30,26 @@ def login(request):
         try:
             body     = json.loads(request.body)
             username = body.get("username")
+<<<<<<< HEAD
             email    = body.get("email")
+=======
+>>>>>>> 358aa23 (SA)
             password = body.get("password")
         except json.JSONDecodeError:
             return JsonResponse({"error": "invalid JSON"}, status=400)
     else:
         username = request.POST.get("username")
         password = request.POST.get("password")
+<<<<<<< HEAD
         email    = request.POST.get("email")
     
     if not password:
             return JsonResponse({"error": "password required"}, status=400)
+=======
+
+    if not username or not password:
+        return JsonResponse({"error": "username and password required"}, status=400)
+>>>>>>> 358aa23 (SA)
 
 <<<<<<< HEAD
     if email:
@@ -52,11 +61,14 @@ def login(request):
         user = User.objects.filter(email=email).first()
 =======
     user = User.objects.filter(username=username).first()
+<<<<<<< HEAD
 >>>>>>> 2d98fb0 (SA)
 
     elif username:
         user = User.objects.filter(username=username).first()
     
+=======
+>>>>>>> 358aa23 (SA)
     if not user:
         return JsonResponse({"error": "Invalid credentials"}, status=401)
 
@@ -67,13 +79,18 @@ def login(request):
     access  = refresh.access_token
 
     response = JsonResponse({"message": "Login successful"})
+<<<<<<< HEAD
     response.set_cookie(key="access_token",  value=str(access),  max_age=600,    httponly=True, secure=False, samesite="Lax", path="/")
+=======
+    response.set_cookie(key="access_token",  value=str(access),  max_age=300,    httponly=True, secure=False, samesite="Lax", path="/")
+>>>>>>> 358aa23 (SA)
     response.set_cookie(key="refresh_token", value=str(refresh), max_age=604800, httponly=True, secure=False, samesite="Lax", path="/")
     return response
 
 @csrf_exempt
 def register(request):
     if request.method == "POST":
+<<<<<<< HEAD
 <<<<<<< HEAD
         
         content_type = request.content_type or ""
@@ -119,12 +136,27 @@ def register(request):
             return JsonResponse({"message": "User created"}, status=201)
 
 >>>>>>> 2d98fb0 (SA)
+=======
+        
+        content_type = request.content_type or ""
+        if "application/json" in content_type:
+            try:
+                body     = json.loads(request.body)
+                username = body.get("username")
+                password = body.get("password")
+                email    = body.get("email")
+                fullname = body.get("fullname")
+                
+            except json.JSONDecodeError:
+                return JsonResponse({"error": "invalid JSON"}, status=400)
+>>>>>>> 358aa23 (SA)
         else:
             username = request.POST.get("username")
             email    = request.POST.get("email")
             password = request.POST.get("password")
             fullname = request.POST.get("fullname", "")
 
+<<<<<<< HEAD
         if not email:
             return JsonResponse({"error": "Email required"}, status=400)
 
@@ -134,6 +166,8 @@ def register(request):
         except ValidationError:
             return JsonResponse({"error": "Invalid Email"}, status=400)
 
+=======
+>>>>>>> 358aa23 (SA)
         if not username or not password or not email:
             return JsonResponse({"error": "username, email and password required"}, status=400)
 
@@ -161,11 +195,22 @@ def register(request):
         )
         avatar = request.FILES.get("avatar")
         if avatar:
+<<<<<<< HEAD
             new_user.avatar = avatar 
         new_user.save()  
 
         return JsonResponse({
             "message": "User created"
+=======
+            new_user.avatar = avatar
+        else:
+            new_user.avatar = '/home/sayf/Downloads/pipi.jpg'  
+        new_user.save()  
+
+        return JsonResponse({
+            "message": "User created",
+            "avatar": request.build_absolute_uri(new_user.avatar.url)
+>>>>>>> 358aa23 (SA)
         }, status=201)
 
     return JsonResponse({"error": "POST required"}, status=405)
@@ -173,6 +218,7 @@ def register(request):
 @csrf_exempt
 def logout(request):
     tmp_user = get_user_from_request(request)
+<<<<<<< HEAD
 
     if tmp_user:
         tmp_user.status = "offline"
@@ -184,6 +230,17 @@ def logout(request):
     else:
         response = JsonResponse({"error": "invalid token or user"})
 
+=======
+    if tmp_user :
+        response.delete_cookie("access_token", path="/")
+        response.delete_cookie("refresh_token", path="/")
+        tmp_user.status = "offline"
+        response = JsonResponse({"message": "Logged out"})
+    
+    else :
+        response = JsonResponse({"error": "invalid token or user"})
+    
+>>>>>>> 358aa23 (SA)
     return response
 
 def protected_view(request):

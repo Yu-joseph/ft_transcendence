@@ -10,8 +10,11 @@ services:
       POSTGRES_DB: mydb
     volumes:
       - pgdata:/var/lib/postgresql/data
+<<<<<<< HEAD
     networks:
       - app-network
+=======
+>>>>>>> 358aa23 (SA)
 
   pgadmin:
     image: dpage/pgadmin4
@@ -190,4 +193,10 @@ networks:
   #     - db
   #   environment:
   #     DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+<<<<<<< HEAD
 >>>>>>> 2d98fb0 (SA)
+=======
+
+volumes:
+  pgdata:
+>>>>>>> 358aa23 (SA)
