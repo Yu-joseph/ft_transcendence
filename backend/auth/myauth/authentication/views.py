@@ -1,4 +1,5 @@
 from django.views.decorators.csrf import csrf_exempt
+from .auth_utils import get_user_from_request
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.http import JsonResponse
@@ -12,107 +13,117 @@ from datetime import timedelta
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from django.contrib.auth import authenticate
+import uuid
 from django.middleware import csrf
 import json
 
 @csrf_exempt
 def login(request):
-
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
-    body = json.loads(request.body)
-    username = body.get("username")
-    password = body.get("password")
+    content_type = request.content_type or ""
+    if "application/json" in content_type:
+        try:
+            body     = json.loads(request.body)
+            username = body.get("username")
+            password = body.get("password")
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "invalid JSON"}, status=400)
+    else:
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+    if not username or not password:
+        return JsonResponse({"error": "username and password required"}, status=400)
 
     user = User.objects.filter(username=username).first()
-
     if not user:
         return JsonResponse({"error": "Invalid credentials"}, status=401)
 
     if not check_password(password, user.password):
         return JsonResponse({"error": "Invalid credentials"}, status=401)
 
-    if getattr(user, "is_active", True) is False:
-        return JsonResponse({"error": "Account inactive"}, status=403)
-
     refresh = RefreshToken.for_user(user)
-    access = refresh.access_token
+    access  = refresh.access_token
 
     response = JsonResponse({"message": "Login successful"})
-
-    response.set_cookie(
-        key="access_token",
-        value=str(access),
-        max_age=300,
-        httponly=True,
-        secure=False,
-        samesite="Lax",
-        path="/"
-    )
-
-    response.set_cookie(
-        key="refresh_token",
-        value=str(refresh),
-        max_age=604800,
-        httponly=True,
-        secure=False,
-        samesite="Lax",
-        path="/"
-    )
-
-    csrf.get_token(request)
-
+    response.set_cookie(key="access_token",  value=str(access),  max_age=300,    httponly=True, secure=False, samesite="Lax", path="/")
+    response.set_cookie(key="refresh_token", value=str(refresh), max_age=604800, httponly=True, secure=False, samesite="Lax", path="/")
     return response
 
 @csrf_exempt
 def register(request):
-
     if request.method == "POST":
-
-        body = json.loads(request.body)
-
-        username = body.get("username")
-        password = body.get("password")
-
-        user = User.objects.filter(username=username).first()
-
-        if not user:
-
-            tmp_user = User(username=username)
-
+        
+        content_type = request.content_type or ""
+        if "application/json" in content_type:
             try:
-                validate_password(password, user=tmp_user)
-            except ValidationError as e:
-                return JsonResponse({
-                    "error": e.messages
-                }, status=400)
-
-            hashed_password = make_password(password)
-
-            User.objects.create(
-                username=username,
-                password=hashed_password,
-                fullname="",
-                role="admin"
-            )
-
-            return JsonResponse({"message": "User created"}, status=201)
-
+                body     = json.loads(request.body)
+                username = body.get("username")
+                password = body.get("password")
+                email    = body.get("email")
+                fullname = body.get("fullname")
+                
+            except json.JSONDecodeError:
+                return JsonResponse({"error": "invalid JSON"}, status=400)
         else:
-            return JsonResponse({
-                "error": "User already exists"
-            }, status=400)
+            username = request.POST.get("username")
+            email    = request.POST.get("email")
+            password = request.POST.get("password")
+            fullname = request.POST.get("fullname", "")
+
+        if not username or not password or not email:
+            return JsonResponse({"error": "username, email and password required"}, status=400)
+
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({"error": "User already exists"}, status=400)
+
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({"error": "Email already exists"}, status=400)
+
+        tmp_user = User(username=username)
+        try:
+            validate_password(password, user=tmp_user)
+        except ValidationError as e:
+            return JsonResponse({"error": e.messages}, status=400)
+
+        hashed_password = make_password(password)
+
+        new_user = User.objects.create(
+            id=str(uuid.uuid4()), 
+            username=username,
+            email=email,
+            password=hashed_password,
+            fullname=fullname,
+            role="user"
+        )
+        avatar = request.FILES.get("avatar")
+        if avatar:
+            new_user.avatar = avatar
+        else:
+            new_user.avatar = '/home/sayf/Downloads/pipi.jpg'  
+        new_user.save()  
+
+        return JsonResponse({
+            "message": "User created",
+            "avatar": request.build_absolute_uri(new_user.avatar.url)
+        }, status=201)
 
     return JsonResponse({"error": "POST required"}, status=405)
 
 @csrf_exempt
 def logout(request):
-    response = JsonResponse({"message": "Logged out"})
-
-    response.delete_cookie("access_token", path="/")
-    response.delete_cookie("refresh_token", path="/")
-
+    tmp_user = get_user_from_request(request)
+    if tmp_user :
+        response.delete_cookie("access_token", path="/")
+        response.delete_cookie("refresh_token", path="/")
+        tmp_user.status = "offline"
+        response = JsonResponse({"message": "Logged out"})
+    
+    else :
+        response = JsonResponse({"error": "invalid token or user"})
+    
     return response
 
 def protected_view(request):
