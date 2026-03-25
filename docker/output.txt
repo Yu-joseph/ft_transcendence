@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 1b43044 (fixing authentication && nginx config file)
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1803,6 +1806,9 @@ Exception Value: cannot access local variable &#x27;response&#x27; where it is n
 
 </body>
 </html>
+<<<<<<< HEAD
 =======
 {"error": "invalid JSON"}
 >>>>>>> 358aa23 (SA)
+=======
+>>>>>>> 1b43044 (fixing authentication && nginx config file)

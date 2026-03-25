@@ -17,6 +17,7 @@ class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)   
     updated_at = models.DateTimeField(auto_now=True)   
     avatar     = models.ImageField(upload_to='images/', blank=True,null=True , default='images/pipi.jpg')
+<<<<<<< HEAD
     status     = models.CharField(max_length=50, default="Online")
     role       = models.CharField(max_length=50, default="user") 
     wins       = models.IntegerField(default=0)
@@ -50,11 +51,17 @@ class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)   
     updated_at = models.DateTimeField(auto_now=True)   
     avatar     = models.ImageField(upload_to='images/', blank=True,null=True)
+=======
+>>>>>>> 1b43044 (fixing authentication && nginx config file)
     status     = models.CharField(max_length=50, default="Online")
     role       = models.CharField(max_length=50, default="user") 
     wins       = models.IntegerField(default=0)
     losses     = models.IntegerField(default=0)
+<<<<<<< HEAD
 >>>>>>> 358aa23 (SA)
+=======
+    is_active = models.BooleanField(default=True)
+>>>>>>> 1b43044 (fixing authentication && nginx config file)
 
     class Meta:
         db_table = "User"

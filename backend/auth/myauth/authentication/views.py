@@ -41,11 +41,20 @@ def login(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
 <<<<<<< HEAD
+<<<<<<< HEAD
         email    = request.POST.get("email")
     
     if not password:
             return JsonResponse({"error": "password required"}, status=400)
 =======
+=======
+    
+    validator = EmailValidator()
+    try:
+        validator(email)
+    except ValidationError:
+        return JsonResponse({"error": "Invalid Email"}, status=400)
+>>>>>>> 1b43044 (fixing authentication && nginx config file)
 
     if not username or not password:
         return JsonResponse({"error": "username and password required"}, status=400)
@@ -157,17 +166,25 @@ def register(request):
             fullname = request.POST.get("fullname", "")
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         if not email:
             return JsonResponse({"error": "Email required"}, status=400)
 
         validator = EmailValidator()
+=======
+        validator = EmailValidator()
+
+>>>>>>> 1b43044 (fixing authentication && nginx config file)
         try:
             validator(email)
         except ValidationError:
             return JsonResponse({"error": "Invalid Email"}, status=400)
 
+<<<<<<< HEAD
 =======
 >>>>>>> 358aa23 (SA)
+=======
+>>>>>>> 1b43044 (fixing authentication && nginx config file)
         if not username or not password or not email:
             return JsonResponse({"error": "username, email and password required"}, status=400)
 
@@ -196,6 +213,7 @@ def register(request):
         avatar = request.FILES.get("avatar")
         if avatar:
 <<<<<<< HEAD
+<<<<<<< HEAD
             new_user.avatar = avatar 
         new_user.save()  
 
@@ -211,6 +229,13 @@ def register(request):
             "message": "User created",
             "avatar": request.build_absolute_uri(new_user.avatar.url)
 >>>>>>> 358aa23 (SA)
+=======
+            new_user.avatar = avatar 
+        new_user.save()  
+
+        return JsonResponse({
+            "message": "User created"
+>>>>>>> 1b43044 (fixing authentication && nginx config file)
         }, status=201)
 
     return JsonResponse({"error": "POST required"}, status=405)
@@ -219,11 +244,15 @@ def register(request):
 def logout(request):
     tmp_user = get_user_from_request(request)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 1b43044 (fixing authentication && nginx config file)
 
     if tmp_user:
         tmp_user.status = "offline"
         tmp_user.save()
         response = JsonResponse({"message": "Logged out"})
+<<<<<<< HEAD
         response.delete_cookie("access_token", path="/")
         response.delete_cookie("refresh_token", path="/")
 
@@ -232,15 +261,19 @@ def logout(request):
 
 =======
     if tmp_user :
+=======
+>>>>>>> 1b43044 (fixing authentication && nginx config file)
         response.delete_cookie("access_token", path="/")
         response.delete_cookie("refresh_token", path="/")
-        tmp_user.status = "offline"
-        response = JsonResponse({"message": "Logged out"})
-    
-    else :
+
+    else:
         response = JsonResponse({"error": "invalid token or user"})
+<<<<<<< HEAD
     
 >>>>>>> 358aa23 (SA)
+=======
+
+>>>>>>> 1b43044 (fixing authentication && nginx config file)
     return response
 
 def protected_view(request):
@@ -265,6 +298,7 @@ def protected_view(request):
 @role_required(["admin"])
 def list_users(request):
 <<<<<<< HEAD
+<<<<<<< HEAD
     users = list(User.objects.all().values("id", "username", "role"))
     return JsonResponse({"success": True, "data": users})
 =======
@@ -273,6 +307,10 @@ def list_users(request):
 
     return JsonResponse(list(users), safe=False)
 >>>>>>> 2d98fb0 (SA)
+=======
+    users = list(User.objects.all().values("id", "username", "role"))
+    return JsonResponse({"success": True, "data": users})
+>>>>>>> 1b43044 (fixing authentication && nginx config file)
 
 @role_required(["admin"])
 def delete_user(request, user_id):
