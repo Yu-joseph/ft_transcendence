@@ -8,6 +8,7 @@ from .permissions import role_required
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
+from django.views.decorators.http import require_GET
 from django.contrib.auth.hashers import check_password
 from datetime import timedelta
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -15,6 +16,8 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 import uuid
 from django.middleware import csrf
+from django.core.validators import validate_email
+from django.core.validators import EmailValidator
 import json
 
 @csrf_exempt
@@ -33,6 +36,12 @@ def login(request):
     else:
         username = request.POST.get("username")
         password = request.POST.get("password")
+    
+    validator = EmailValidator()
+    try:
+        validator(email)
+    except ValidationError:
+        return JsonResponse({"error": "Invalid Email"}, status=400)
 
     if not username or not password:
         return JsonResponse({"error": "username and password required"}, status=400)
@@ -73,6 +82,13 @@ def register(request):
             password = request.POST.get("password")
             fullname = request.POST.get("fullname", "")
 
+        validator = EmailValidator()
+
+        try:
+            validator(email)
+        except ValidationError:
+            return JsonResponse({"error": "Invalid Email"}, status=400)
+
         if not username or not password or not email:
             return JsonResponse({"error": "username, email and password required"}, status=400)
 
@@ -100,14 +116,11 @@ def register(request):
         )
         avatar = request.FILES.get("avatar")
         if avatar:
-            new_user.avatar = avatar
-        else:
-            new_user.avatar = '/home/sayf/Downloads/pipi.jpg'  
+            new_user.avatar = avatar 
         new_user.save()  
 
         return JsonResponse({
-            "message": "User created",
-            "avatar": request.build_absolute_uri(new_user.avatar.url)
+            "message": "User created"
         }, status=201)
 
     return JsonResponse({"error": "POST required"}, status=405)
@@ -115,15 +128,17 @@ def register(request):
 @csrf_exempt
 def logout(request):
     tmp_user = get_user_from_request(request)
-    if tmp_user :
+
+    if tmp_user:
+        tmp_user.status = "offline"
+        tmp_user.save()
+        response = JsonResponse({"message": "Logged out"})
         response.delete_cookie("access_token", path="/")
         response.delete_cookie("refresh_token", path="/")
-        tmp_user.status = "offline"
-        response = JsonResponse({"message": "Logged out"})
-    
-    else :
+
+    else:
         response = JsonResponse({"error": "invalid token or user"})
-    
+
     return response
 
 def protected_view(request):
@@ -143,13 +158,12 @@ def protected_view(request):
 
     return JsonResponse({"message": "Authorized", "user_id": user_id})
 
-
+@require_GET
+@csrf_exempt
 @role_required(["admin"])
 def list_users(request):
-
-    users = User.objects.all().values("id", "username", "role")
-
-    return JsonResponse(list(users), safe=False)
+    users = list(User.objects.all().values("id", "username", "role"))
+    return JsonResponse({"success": True, "data": users})
 
 @role_required(["admin"])
 def delete_user(request, user_id):

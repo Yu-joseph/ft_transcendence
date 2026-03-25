@@ -14,11 +14,12 @@ class User(models.Model):
     password   = models.CharField(max_length=255, blank=False, null=False)
     created_at = models.DateTimeField(auto_now_add=True)   
     updated_at = models.DateTimeField(auto_now=True)   
-    avatar     = models.ImageField(upload_to='images/', blank=True,null=True)
+    avatar     = models.ImageField(upload_to='images/', blank=True,null=True , default='images/pipi.jpg')
     status     = models.CharField(max_length=50, default="Online")
     role       = models.CharField(max_length=50, default="user") 
     wins       = models.IntegerField(default=0)
     losses     = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         db_table = "User"
