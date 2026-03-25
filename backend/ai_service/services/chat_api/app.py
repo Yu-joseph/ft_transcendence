@@ -149,6 +149,21 @@ def api_chat_stream():
 
 
 # =====================
+# IMAGE API
+# =====================
+@app.route('/api/image', methods=['POST'])
+def api_image():
+    data    = request.get_json()
+    message = data.get('message', '').strip()
+    if not message:
+        return jsonify({'error': 'Empty prompt'}), 400
+
+    image_url = chat.generate_image(message)
+    return jsonify({ "content": f'<img src="{image_url}"/>' })
+
+
+
+# =====================
 # SESSION API
 # =====================
 @app.route('/api/new-session', methods=['POST'])

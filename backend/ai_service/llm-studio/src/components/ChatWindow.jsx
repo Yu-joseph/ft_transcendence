@@ -17,18 +17,13 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
   const handleFileUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
-
     const formData = new FormData()
     formData.append('file', file)
-
     try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
       const data = await res.json()
       setUploadedFile(data)
-    } catch (error) {
+    } catch {
       console.log('Upload failed')
     }
   }
@@ -61,7 +56,6 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
     if (fileInputRef.current) fileInputRef.current.value = ''
     setLoading(true)
 
-    // Check if image request
     const imageKeywords = [
       'generate image', 'create image', 'draw', 'make image',
       'imagine', 'visualize', 'image of', 'picture of', 'photo of',
@@ -70,7 +64,6 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
     ]
     const isImageRequest = imageKeywords.some(kw => messageText.toLowerCase().includes(kw))
 
-    // Use non-streaming endpoint for images
     if (isImageRequest) {
       try {
         const response = await fetch('/api/chat', {
@@ -80,14 +73,13 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
         })
         const data = await response.json()
         setMessages(prev => [...prev, { role: 'ai', text: data.content }])
-      } catch (error) {
+      } catch {
         setMessages(prev => [...prev, { role: 'ai', text: 'Error generating image.' }])
       }
       setLoading(false)
       return
     }
 
-    // Normal streaming for text
     try {
       const response = await fetch('/api/chat/stream', {
         method: 'POST',
@@ -104,10 +96,8 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
-
         const chunk = decoder.decode(value, { stream: true })
         const lines = chunk.split('\n')
-
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const token = line.slice(6)
@@ -123,7 +113,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
           }
         }
       }
-    } catch (error) {
+    } catch {
       setMessages(prev => [...prev, { role: 'ai', text: 'Error connecting to server.' }])
       setLoading(false)
     }
@@ -139,30 +129,49 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
   return (
     <div className="chat-window">
       <div className="chat-messages">
+
+        {/* Hero — shown when no messages */}
         {messages.length === 0 && !loading && (
-          <div className="empty-chat">
-            <p>Start a conversation...</p>
+          <div className="hero">
+            <div className="hero-icon">#</div>
+            <h1>Hey, Ready to dive in??</h1>
           </div>
         )}
 
         {messages.map((msg, i) => (
           <div key={i} className={`message ${msg.role}-message`}>
-            {msg.role === 'ai' && <div className="ai-icon">AI</div>}
-            <div className={`message-content ${msg.role}-bubble`}>
-              <p dangerouslySetInnerHTML={{ __html: msg.text }} />
-            </div>
-            {msg.role === 'user' && <div className="user-avatar-msg">B</div>}
+
+            {msg.role === 'ai' && (
+              <div className="msg-ai">
+                <div className="ai-header">
+                  <div className="ai-icon">♟</div>
+                  <div className="ai-label">Arena AI</div>
+                </div>
+                <div className="bubble-ai">
+                  <p dangerouslySetInnerHTML={{ __html: msg.text }} />
+                </div>
+              </div>
+            )}
+
+            {msg.role === 'user' && (
+              <div className="msg-user">
+                <div className="msg-label">Commander</div>
+                <div className="bubble-user">{msg.text}</div>
+              </div>
+            )}
+
           </div>
         ))}
 
         {loading && (
-          <div className="message ai-message">
-            <div className="ai-icon">AI</div>
-            <div className="ai-bubble">
+          <div className="msg-ai">
+            <div className="ai-header">
+              <div className="ai-icon">♟</div>
+              <div className="ai-label">Arena AI</div>
+            </div>
+            <div className="bubble-ai">
               <div className="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
+                <span></span><span></span><span></span>
               </div>
             </div>
           </div>
@@ -171,6 +180,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Input */}
       <div className="chat-input-area">
         {uploadedFile && (
           <div className="file-preview">
@@ -195,18 +205,15 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
             📎
           </button>
           <textarea
-            placeholder="Ask the AI about game logic, strategy, or code..."
+            placeholder="Describe the board state or ask for a tactic…"
             rows="1"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
           />
-          <div className="input-right">
-            <span className="token-count">{input.length}/1K</span>
-            <button className="send-btn" onClick={handleSend} disabled={loading}>➤</button>
-          </div>
+          <button className="send-btn" onClick={handleSend} disabled={loading}>↑</button>
         </div>
-        <p className="disclaimer">AI can make mistakes. Consider checking important code logic.</p>
+        <p className="disclaimer">STRATEGY ENGINE V3.0.1 · PRECISION TRAINING MODE</p>
       </div>
     </div>
   )

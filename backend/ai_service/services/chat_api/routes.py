@@ -5,7 +5,6 @@ from datetime import datetime
 from database import save_message, get_messages
 from llm.chains import ask_llm, ask_llm_stream, reset_chat, generate_image
 
-
 class ChatManager:
     def __init__(self):
         self.chat_history = []
@@ -58,3 +57,6 @@ class ChatManager:
     def clear(self):
         self.chat_history.clear()
         reset_chat()
+
+    def generate_image(self, prompt):
+        return generate_image(prompt)

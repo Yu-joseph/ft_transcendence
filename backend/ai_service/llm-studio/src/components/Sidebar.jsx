@@ -4,27 +4,20 @@ import './Sidebar.css'
 function Sidebar({ onNewChat, sessions, activeSession, onSelectSession }) {
   return (
     <aside className="sidebar">
-      <div className="sidebar-logo">
-        <div className="logo-icon">LLM</div>
-        <div>
-          <h2>LLM Studio</h2>
-          <span>Tic-Tac-Toe AI Engine</span>
-        </div>
+      <div className="brand">
+        <div className="brand-title">Tic-Tac-Toe Arena</div>
+        <div className="brand-sub">Grandmaster Strategist</div>
       </div>
 
-      <button className="new-session-btn" onClick={onNewChat}>
+      <button className="btn-new-chat" onClick={onNewChat}>
         + New Chat
       </button>
 
       <div className="session-list">
-        {sessions.length === 0 && (
-          <p className="session-empty">No chats yet</p>
-        )}
-
         {sessions.map(session => (
           <div
             key={session.session_id}
-            className={`session-item ${session.session_id === activeSession ? 'active' : ''}`}
+            className={`session-item ${session.session_id === activeSession ? 'active-session' : ''}`}
             onClick={() => onSelectSession(session.session_id)}
           >
             💬 {session.title}
@@ -32,11 +25,13 @@ function Sidebar({ onNewChat, sessions, activeSession, onSelectSession }) {
         ))}
       </div>
 
-      <div className="sidebar-user">
-        <div className="user-avatar">A</div>
-        <div>
-          <p className="user-name">BRAHIM</p>
-          <span className="user-plan">Go  </span>
+      <div className="sidebar-footer">
+        <div className="user-card">
+          <div className="user-avatar">🧑</div>
+          <div>
+            <div className="user-name">BRAHIM</div>
+            <div className="user-rank">Rank #42</div>
+          </div>
         </div>
       </div>
     </aside>

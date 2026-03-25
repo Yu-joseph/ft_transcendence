@@ -1,71 +1,41 @@
+/* ---- Topbar ---- */
 .topbar {
-    height: 56px;
-    background: #042178;
-    border-bottom: 1px solid #0e4dd5;
+    height: 48px;
+    background: #111;
+    border-bottom: 1px solid #2a2a2a;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
-}
-
-.topbar-left{
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.topbar-workspace {
-    color: #d0d6df;
-    font-size: 15px;
-}
+    padding: 0 24px;
+    flex-shrink: 0;
+  }
   
-.topbar-separator {
-    color: #d0d6df;
-    font-size: 15px;
-}
-  
-.topbar-model {
-    background: #46547c;
-    color: #d0d6df;
-    font-size: 15px;
-    padding: 4px 12px;
-    border-radius: 6px;
-    font-weight: 500;
-}
-
-.topbar-model:hover{
-    background: #657ec1;
-}
-
-.topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.inject-btn {
-    background: #46547c;
-    color: #e2e8f0;
-    padding: 6px 14px;
-    border-radius: 8px;
+  .topbar-title {
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #fff;
+    text-transform: uppercase;
+  }
+  
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .inject-btn {
+    background: #222;
+    color: #aaa;
+    border: 1px solid #2a2a2a;
+    border-radius: 7px;
+    padding: 6px 14px;
+    font-size: 12px;
     cursor: pointer;
-    border: 1px solid #2a3450;
-}
-
-.inject-btn:hover {
-    background: #657ec1;
-}
-
-.topbar-menu {
-    background: none;
-    color: #94a3b8;
-    font-size: 20px;
-    padding: 4px 8px;
-    border-radius: 6px;
-}
-
-.topbar-menu:hover {
-    background: #657ec1;
-}
+    transition: background 0.15s, color 0.15s;
+  }
+  
+  .inject-btn:hover {
+    background: #2a2a2a;
+    color: #ddd;
+  }

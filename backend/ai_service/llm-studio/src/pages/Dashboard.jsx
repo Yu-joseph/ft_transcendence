@@ -9,41 +9,29 @@ function Dashboard() {
   const [loadedMessages, setLoadedMessages] = useState([])
   const [chatKey, setChatKey] = useState(0)
 
-  // Load sessions from database on start
   useEffect(() => {
     fetch('/api/sessions')
       .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setSessions(data)
-        }
-      })
-      .catch(err => console.log('Could not load sessions'))
+      .then(data => { if (Array.isArray(data)) setSessions(data) })
+      .catch(() => console.log('Could not load sessions'))
   }, [])
 
   const handleNewChat = async () => {
     try {
       const res = await fetch('/api/new-session', { method: 'POST' })
       const data = await res.json()
-
-      const newSession = {
-        session_id: data.session_id,
-        title: 'New Chat',
-        message_count: 0
-      }
-
+      const newSession = { session_id: data.session_id, title: 'New Chat', message_count: 0 }
       setSessions(prev => [newSession, ...prev])
       setActiveSession(data.session_id)
       setLoadedMessages([])
       setChatKey(prev => prev + 1)
-    } catch (error) {
+    } catch {
       console.log('Could not create new session')
     }
   }
 
   const handleSelectSession = async (sessionId) => {
     setActiveSession(sessionId)
-
     try {
       const res = await fetch('/api/set-session', {
         method: 'POST',
@@ -51,15 +39,13 @@ function Dashboard() {
         body: JSON.stringify({ session_id: sessionId })
       })
       const data = await res.json()
-
       const messages = (data.messages || []).map(m => ({
         role: m.role === 'assistant' ? 'ai' : m.role,
         text: m.content
       }))
-
       setLoadedMessages(messages)
       setChatKey(prev => prev + 1)
-    } catch (error) {
+    } catch {
       console.log('Could not load session')
     }
   }
