@@ -17,9 +17,6 @@ app = Flask(
 )
 CORS(app)
 
-# =====================
-# DATABASE CONFIG
-# =====================
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     f"postgresql://{os.environ.get('DB_USER')}:"
     f"{os.environ.get('DB_PASSWORD')}@"
@@ -37,8 +34,6 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 db.init_app(app)
 
 
-# FIX 1: db.create_all() can fail if postgres isn't ready yet.
-# Retry up to 5 times with a delay instead of crashing on startup.
 def init_db():
     for attempt in range(1, 6):
         try:
@@ -54,27 +49,14 @@ def init_db():
 
 init_db()
 
-# =====================
-# UPLOAD FOLDER
-# =====================
 UPLOAD_FOLDER = "/app/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# =====================
-# GAME API URL
-# =====================
-# FIX 2: fallback so app doesn't silently break if env var is missing
 GAME_API_URL = os.getenv("GAME_API_URL", "http://game-api:5001")
 
-# =====================
-# CHAT MANAGER
-# =====================
 chat = ChatManager()
 
 
-# =====================
-# PAGE ROUTES
-# =====================
 @app.route('/')
 def home():
     return redirect(url_for('game'))
@@ -85,7 +67,6 @@ def game():
     return render_template('game.html')
 
 
-# The browser fetches /q_table.json directly — proxy it from game_api
 @app.route('/q_table.json')
 def serve_qtable():
     try:
@@ -95,17 +76,11 @@ def serve_qtable():
         return jsonify({'error': str(e)}), 503
 
 
-# =====================
-# STATIC FILES
-# =====================
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
 
-# =====================
-# GAME API PROXY
-# =====================
 @app.route('/api/ai-move', methods=['POST'])
 def proxy_ai():
     try:
@@ -121,9 +96,6 @@ def proxy_ai():
         return jsonify({"error": "Game AI service timed out"}), 504
 
 
-# =====================
-# CHAT API
-# =====================
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
     data   = request.get_json()
@@ -148,9 +120,6 @@ def api_chat_stream():
     )
 
 
-# =====================
-# IMAGE API
-# =====================
 @app.route('/api/image', methods=['POST'])
 def api_image():
     data    = request.get_json()
@@ -163,9 +132,6 @@ def api_image():
 
 
 
-# =====================
-# SESSION API
-# =====================
 @app.route('/api/new-session', methods=['POST'])
 def api_new_session():
     return jsonify({'session_id': chat.new_session()})
@@ -193,9 +159,6 @@ def api_history():
     return jsonify(chat.chat_history)
 
 
-# =====================
-# UPLOAD API
-# =====================
 @app.route('/api/upload', methods=['POST'])
 def api_upload():
     if 'file' not in request.files:
@@ -215,9 +178,6 @@ def api_upload():
     })
 
 
-# =====================
-# FRONTEND (LLM STUDIO)
-# =====================
 @app.route('/studio')
 def studio():
     return send_from_directory("/app/static/llm-studio", "index.html")
@@ -230,24 +190,15 @@ def studio_files(path):
 
 
 
-# =====================
-# HEALTH CHECK
-# =====================
 @app.route('/health')
 def health():
     return jsonify({"status": "ok"})
 
 
-# =====================
-# ERROR HANDLER
-# =====================
 @app.errorhandler(Exception)
 def handle_exception(e):
     return jsonify({"error": str(e)}), 500
 
 
-# =====================
-# RUN
-# =====================
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)

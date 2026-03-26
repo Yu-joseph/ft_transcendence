@@ -30,7 +30,7 @@ def get_available_actions(board, phase, player):
     if phase == 'place':
         return [('place', i) for i, cell in enumerate(board) if cell == '']
     else:
-        # Moving phase: pick one of your pieces, move to empty square
+
         my_pieces = [i for i, cell in enumerate(board) if cell == player]
         empty = [i for i, cell in enumerate(board) if cell == '']
         moves = []
