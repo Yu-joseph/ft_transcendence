@@ -43,7 +43,6 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/AiChallange" element={<ProtectedRoute><Lobby /></ProtectedRoute>} />
         <Route path="/Tournament" element={<ProtectedRoute><Tournament /></ProtectedRoute>} />
         <Route path="/game/:matchId" element={<ProtectedRoute><Game /></ProtectedRoute>} />
-        <Route path="/game/:matchId" element={<ProtectedRoute><Chatbot /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
         {/* <Game /> */}
