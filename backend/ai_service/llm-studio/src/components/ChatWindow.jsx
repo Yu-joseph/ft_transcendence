@@ -66,7 +66,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
 
     if (isImageRequest) {
       try {
-        const response = await fetch('/api/chat', {
+        const response = await fetch('/api/image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: messageText })
@@ -133,8 +133,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
         {/* Hero — shown when no messages */}
         {messages.length === 0 && !loading && (
           <div className="hero">
-            <div className="hero-icon">#</div>
-            <h1>Hey, Ready to dive in??</h1>
+            <div className="hero-icon">Hey, Ready to dive in?</div>
           </div>
         )}
 
@@ -148,7 +147,11 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
                   <div className="ai-label">Arena AI</div>
                 </div>
                 <div className="bubble-ai">
-                  <p dangerouslySetInnerHTML={{ __html: msg.text }} />
+                  {msg.text.includes('<img') ? (
+                    <div dangerouslySetInnerHTML={{ __html: msg.text }} />
+                  ) : (
+                    <p dangerouslySetInnerHTML={{ __html: msg.text }} />
+                  )}
                 </div>
               </div>
             )}

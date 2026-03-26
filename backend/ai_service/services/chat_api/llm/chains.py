@@ -4,10 +4,6 @@ from .config import Config
 from .image import ImageGenerator
 
 
-class TimeoutException(Exception):
-    pass
-
-
 class ChatBot:
     def __init__(self):
         self.config = Config()
@@ -16,7 +12,6 @@ class ChatBot:
         self.is_processing = False
         self.image_gen = ImageGenerator()
 
-        print(self.history)
 
     def _check_rate_limit(self):
         if self.is_processing:
@@ -28,31 +23,10 @@ class ChatBot:
             try:
                 return future.result(timeout=seconds)
             except TimeoutError:
-                raise TimeoutException("Request timed out.")
+                raise Exception("Request timed out.")
 
-    def ask(self, message):
-        try:
-            self._check_rate_limit()
-            self.is_processing = True
-
-            self.history.append(HumanMessage(content=message))
-
-            response = self._run_with_timeout(
-                self.llm.invoke,
-                15,
-                self.history
-            )
-
-            self.history.append(AIMessage(content=response.content))
-
-            return response.content
-
-        except Exception as e:
-            self.history.clear()
-            return Config.handle_error(e)
-
-        finally:
-            self.is_processing = False
+    def ask(self  , message):
+        return "".join(self.ask_stream(message))
 
     def ask_stream(self, message):
         try:
@@ -83,19 +57,25 @@ class ChatBot:
         return self.image_gen.generate(prompt)
 
 
-# Create single instance
-_bot = ChatBot()
+bot = ChatBot()
 
 
-# Functions for app.py (backward compatible)
 def ask_llm(message):
-    return _bot.ask(message)
+    return bot.ask(message)
 
 def ask_llm_stream(message):
-    return _bot.ask_stream(message)
+    return bot.ask_stream(message)
 
 def reset_chat():
-    return _bot.reset()
+    return bot.reset()
+
+def load_history(messages):        
+    bot.history = [bot.config.system_message]
+    for m in messages:
+        if m["role"] == "user":
+            bot.history.append(HumanMessage(content=m["content"]))
+        elif m["role"] == "assistant":
+            bot.history.append(AIMessage(content=m["content"]))
 
 def generate_image(prompt):
-    return _bot.generate_image(prompt)
+    return bot.generate_image(prompt)

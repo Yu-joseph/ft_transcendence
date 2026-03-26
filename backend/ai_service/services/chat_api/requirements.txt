@@ -10,3 +10,4 @@ langchain-openai
 langchain-groq
 langchain-google-genai
 huggingface_hub
+Pillow

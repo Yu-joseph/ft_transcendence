@@ -16,6 +16,7 @@ class ChatSession(db.Model):
 
 
 class Message(db.Model):
+    __tablename__ = 'messages'  
     id = db.Column(db.Integer , primary_key=True , autoincrement=True)
     session_id  = db.Column(db.String, db.ForeignKey('chat_sessions.session_id') , nullable=False)
     role = db.Column(db.String , nullable=False)
@@ -59,7 +60,7 @@ def get_messages(session_id):
             {
                 "role": m.role,
                 "content": m.content,
-                "timestamp": m.timestamp
+                "timestamp": m.timestamp.isoformat() 
             }
             for m in messages
         ]

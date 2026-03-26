@@ -30,20 +30,23 @@ class Chatbot():
                 raise Exception("Request timed out")
             
     
-    def ask(self , message):
-        try:
-            self._check_rate_limit()
-            self.is_processing = True
+    # def ask(self , message):
+    #     try:
+    #         self._check_rate_limit()
+    #         self.is_processing = True
 
-            self.history.append(HumanMessage(content=message))
+    #         self.history.append(HumanMessage(content=message))
 
-            responce = self._run_with_timeout(self.llm.invoke , 15 , self.history)
+    #         responce = self._run_with_timeout(self.llm.invoke , 15 , self.history)
 
-            self.history.append(AIMessage(content=responce.content))
-            return responce.content
-        except Exception as e:
-            self.history.clear() ### --
-            return Config.handle_error(e)
+    #         self.history.append(AIMessage(content=responce.content))
+    #         return responce.content
+    #     except Exception as e:
+    #         self.history.clear() ### --
+    #         return Config.handle_error(e)
+            
+    def ask(self  , message):
+        return "".join(self.ask_stream(message))
         
 
     def ask_stream(self , message):
@@ -59,7 +62,7 @@ class Chatbot():
                 if chunk.content:
                     # print(chunk.content)
                     full_response += chunk.content
-                    yield chunk.content.replace('\n' , '<br>')
+                    yield chunk.content #.replace('\n' , "<br>")
 
         except Exception as e:
             self.history.clear()
@@ -86,6 +89,8 @@ bot = Chatbot()
 
 while True:
     user_input = input("ask AI : ")
-    bot.ask_stream(user_input)
-    # response = bot.ask_stream(user_input)
-    # print(f"AI  :  {response}")
+    # for chunk in bot.ask_stream(user_input):
+    #     print(chunk , end="" , flush=True)
+    # print()
+    response = bot.ask(user_input)
+    print(f"AI  :  {response}")

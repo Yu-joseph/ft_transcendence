@@ -24,6 +24,7 @@ stop:
 
 clean:
 	$(DC) down -v
+	rm -rf  /Users/bouhammo/data/*
 	docker system prune -f
 
 logs:

@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 
 from database import save_message, get_messages
-from llm.chains import ask_llm, ask_llm_stream, reset_chat, generate_image
+from llm.chains import ask_llm, ask_llm_stream, reset_chat, generate_image , load_history
 
 class ChatManager:
     def __init__(self):
@@ -37,9 +37,16 @@ class ChatManager:
         return {"role": "assistant", "content": response}
 
     def chat_stream(self, message):
+        self._save("user", message)          
+        full_response = []  
+
         def generate():
             for chunk in ask_llm_stream(message):
+                full_response.append(chunk)  
                 yield f"data: {chunk}\n\n"
+            
+            complete = "".join(full_response).replace('<br>', '\n')
+            self._save("assistant", complete) 
             yield "data: [DONE]\n\n"
 
         return generate
@@ -52,6 +59,7 @@ class ChatManager:
     def set_session(self, session_id):
         self.session_id = session_id
         self.chat_history = get_messages(session_id)
+        load_history(self.chat_history)
         return self.chat_history
 
     def clear(self):
