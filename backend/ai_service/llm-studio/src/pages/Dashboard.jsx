@@ -10,6 +10,7 @@ function Dashboard() {
   const [chatKey, setChatKey] = useState(0)
 
   useEffect(() => {
+<<<<<<< HEAD
     const init = async () => {
       try {
         const res = await fetch('/api/sessions')
@@ -29,6 +30,14 @@ function Dashboard() {
     init()
   }, [])
   
+=======
+    fetch('/api/sessions')
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data)) setSessions(data) })
+      .catch(() => console.log('Could not load sessions'))
+  }, [])
+
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
   const handleNewChat = async () => {
     try {
       const res = await fetch('/api/new-session', { method: 'POST' })
@@ -85,7 +94,10 @@ function Dashboard() {
         <Topbar />
         <ChatWindow
           key={chatKey}
+<<<<<<< HEAD
           sessionId={activeSession}
+=======
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
           onFirstMessage={updateSessionTitle}
           initialMessages={loadedMessages}
         />

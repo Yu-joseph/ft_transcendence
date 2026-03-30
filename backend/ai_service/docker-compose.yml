@@ -1,5 +1,6 @@
 services:
 
+<<<<<<< HEAD
   game-api:
     build: ./services/game_api
     container_name: game-api
@@ -61,6 +62,12 @@ volumes:
 
 networks:
   app-network:
+=======
+
+  
+
+  
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
 
 
 

@@ -26,9 +26,12 @@ clean:
 	$(DC) down -v
 	rm -rf  /Users/bouhammo/data/*
 <<<<<<< HEAD
+<<<<<<< HEAD
 	rm -rf /Users/bouhammo/ft_transcendence/backend/ai_service/static/generated/*
 =======
 >>>>>>> cbabebc (merging chat-system with main project)
+=======
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
 	docker system prune -f
 
 logs:

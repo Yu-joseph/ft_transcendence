@@ -1,12 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react'
 import './ChatWindow.css'
 
+<<<<<<< HEAD
 function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
+=======
+function ChatWindow({ onFirstMessage, initialMessages = [] }) {
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
   const [messages, setMessages] = useState(initialMessages)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [uploadedFile, setUploadedFile] = useState(null)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
   const hasSentFirst = useRef(initialMessages.length > 0)
   const messagesEndRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -15,6 +22,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
+<<<<<<< HEAD
   // NEW: generate title using LLM
   const generateTitle = async (message) => {
     try {
@@ -42,6 +50,13 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
     const formData = new FormData()
     formData.append('file', file)
 
+=======
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const formData = new FormData()
+    formData.append('file', file)
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       const data = await res.json()
@@ -60,7 +75,10 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
     if ((!input.trim() && !uploadedFile) || loading) return
 
     let messageText = input
+<<<<<<< HEAD
 
+=======
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
     if (uploadedFile) {
       messageText = input
         ? `[File: ${uploadedFile.filename}] ${input}`
@@ -70,9 +88,14 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
     const userMsg = { role: 'user', text: messageText }
     setMessages(prev => [...prev, userMsg])
 
+<<<<<<< HEAD
     // HERE: generate title using LLM
     if (!hasSentFirst.current) {
       generateTitle(messageText)
+=======
+    if (!hasSentFirst.current && onFirstMessage) {
+      onFirstMessage(messageText)
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
       hasSentFirst.current = true
     }
 
@@ -87,17 +110,23 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
       'generate for me image', 'show me image', 'show image',
       'generate me', 'create me', 'make me'
     ]
+<<<<<<< HEAD
 
     const isImageRequest = imageKeywords.some(kw =>
       messageText.toLowerCase().includes(kw)
     )
 
     // IMAGE REQUEST
+=======
+    const isImageRequest = imageKeywords.some(kw => messageText.toLowerCase().includes(kw))
+
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
     if (isImageRequest) {
       try {
         const response = await fetch('/api/image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+<<<<<<< HEAD
           body: JSON.stringify({ message: messageText, session_id: sessionId })
         })
 
@@ -122,16 +151,32 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
         ])
       }
 
+=======
+          body: JSON.stringify({ message: messageText })
+        })
+        const data = await response.json()
+        setMessages(prev => [...prev, { role: 'ai', text: data.content }])
+      } catch {
+        setMessages(prev => [...prev, { role: 'ai', text: 'Error generating image.' }])
+      }
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
       setLoading(false)
       return
     }
 
+<<<<<<< HEAD
     // CHAT STREAM
+=======
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
     try {
       const response = await fetch('/api/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+<<<<<<< HEAD
         body: JSON.stringify({ message: messageText, session_id: sessionId })
+=======
+        body: JSON.stringify({ message: messageText })
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
       })
 
       const reader = response.body.getReader()
@@ -143,6 +188,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
+<<<<<<< HEAD
 
         const chunk = decoder.decode(value, { stream: true })
         const lines = chunk.split('\n')
@@ -153,6 +199,14 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
 
             if (token === '[DONE]') break
 
+=======
+        const chunk = decoder.decode(value, { stream: true })
+        const lines = chunk.split('\n')
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const token = line.slice(6)
+            if (token === '[DONE]') break
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
             setMessages(prev => {
               const updated = [...prev]
               updated[updated.length - 1] = {
@@ -164,12 +218,17 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
           }
         }
       }
+<<<<<<< HEAD
 
     } catch {
       setMessages(prev => [
         ...prev,
         { role: 'ai', text: 'Error connecting to server.' }
       ])
+=======
+    } catch {
+      setMessages(prev => [...prev, { role: 'ai', text: 'Error connecting to server.' }])
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
       setLoading(false)
     }
   }
@@ -185,6 +244,10 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
     <div className="chat-window">
       <div className="chat-messages">
 
+<<<<<<< HEAD
+=======
+        {/* Hero — shown when no messages */}
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
         {messages.length === 0 && !loading && (
           <div className="hero">
             <div className="hero-icon">Hey, Ready to dive in?</div>
@@ -237,7 +300,11 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
         <div ref={messagesEndRef} />
       </div>
 
+<<<<<<< HEAD
       {/* INPUT */}
+=======
+      {/* Input */}
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
       <div className="chat-input-area">
         {uploadedFile && (
           <div className="file-preview">
@@ -254,6 +321,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
             onChange={handleFileUpload}
             style={{ display: 'none' }}
           />
+<<<<<<< HEAD
 
           <button
             className="attach-btn"
@@ -264,16 +332,33 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
 
           <textarea
             placeholder="Ask anything..."
+=======
+          <button
+            className="attach-btn"
+            onClick={() => fileInputRef.current.click()}
+            title="Attach file"
+          >
+            📎
+          </button>
+          <textarea
+            placeholder="Describe the board state or ask for a tactic…"
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
             rows="1"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
           />
+<<<<<<< HEAD
 
           <button className="send-btn" onClick={handleSend} disabled={loading}>
             ↑
           </button>
         </div>
+=======
+          <button className="send-btn" onClick={handleSend} disabled={loading}>↑</button>
+        </div>
+        <p className="disclaimer">STRATEGY ENGINE V3.0.1 · PRECISION TRAINING MODE</p>
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
       </div>
     </div>
   )

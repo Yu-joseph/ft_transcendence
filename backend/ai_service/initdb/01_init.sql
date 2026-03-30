@@ -1,0 +1,14 @@
+-- CREATE TABLE IF NOT EXISTS chat_sessions (
+--     session_id VARCHAR(255) PRIMARY KEY,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     message_count INTEGER DEFAULT 0
+-- );
+
+-- CREATE TABLE IF NOT EXISTS messages (
+--     id SERIAL PRIMARY KEY,
+--     session_id VARCHAR(255) NOT NULL REFERENCES chat_sessions(session_id) ON DELETE CASCADE,
+--     role VARCHAR(10) NOT NULL,
+--     content TEXT NOT NULL,
+--     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );

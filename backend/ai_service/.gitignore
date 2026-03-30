@@ -2,5 +2,9 @@
 __pycache__/
 *.pyc
 test/
+<<<<<<< HEAD
 uploads/*
 Claude_Courses/
+=======
+uploads/*
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)

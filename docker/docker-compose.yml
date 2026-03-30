@@ -108,6 +108,7 @@ services:
     networks:
       - app-network
 
+<<<<<<< HEAD
   chat-api:
     build: ../backend/ai_service/services/chat_api
     container_name: chat-api
@@ -178,13 +179,79 @@ volumes:
       type: none
       o: bind
       device: ${DATA_PATH}
+=======
+#   game-api:
+#     build: ./services/game_api
+#     container_name: game-api
+#     ports:
+#       - "5001:5001"
+#     networks:
+#       - app-network
+  
+#   chat-api:
+#     build: ./services/chat_api
+#     container_name: chat-api
+#     ports:
+#       - "5000:5000"
+#     depends_on:
+#       postgres:
+#         condition: service_healthy    
+#       game-api:
+#         condition: service_started
+#     env_file:
+#       - .env
+#     environment:
+#       GAME_API_URL: http://game-api:5001
+#     volumes:
+#       - ./static:/app/static
+#       - ./templates:/app/templates
+#       - ./uploads:/app/uploads
+#     networks:
+#       - app-network
+  
+#   postgres:
+#     image: postgres:15
+#     container_name: game-postgres
+#     restart: unless-stopped
+#     environment:
+#       POSTGRES_USER: brahim
+#       POSTGRES_PASSWORD: brahim123
+#       POSTGRES_DB: brahim_db
+#     ports:
+#       - "5433:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#       - ./initdb:/docker-entrypoint-initdb.d
+#     networks:
+#       - app-network
+#     healthcheck:
+#       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+#       interval: 5s   
+#       timeout: 5s      
+#       retries: 10       
+
+# volumes:
+#   pgdata:
+#   postgres_data:
+#     name: postgres_data
+#     driver: local
+#     driver_opts:
+#       type: none
+#       o: bind
+#       device: ${DATA_PATH}
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
 
 networks:
   app-network:
 
+<<<<<<< HEAD
 
  
 =======
+=======
+volumes:
+  pgdata:
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
   # chat:
   #   build: ../backend/chat/chat-system/backend
   #   container_name: chat
@@ -192,6 +259,7 @@ networks:
   #   depends_on:
   #     - db
   #   environment:
+<<<<<<< HEAD
   #     DATABASE_URL: postgres://sayf:1234@db:5432/mydb
 <<<<<<< HEAD
 >>>>>>> 2d98fb0 (SA)
@@ -200,3 +268,6 @@ networks:
 volumes:
   pgdata:
 >>>>>>> 358aa23 (SA)
+=======
+  #     DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)

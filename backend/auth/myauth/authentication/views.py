@@ -31,15 +31,20 @@ def login(request):
             body     = json.loads(request.body)
             username = body.get("username")
 <<<<<<< HEAD
+<<<<<<< HEAD
             email    = body.get("email")
 =======
 >>>>>>> 358aa23 (SA)
+=======
+            email    = body.get("email")
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
             password = body.get("password")
         except json.JSONDecodeError:
             return JsonResponse({"error": "invalid JSON"}, status=400)
     else:
         username = request.POST.get("username")
         password = request.POST.get("password")
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         email    = request.POST.get("email")
@@ -78,6 +83,24 @@ def login(request):
     
 =======
 >>>>>>> 358aa23 (SA)
+=======
+        email    = request.POST.get("email")
+    
+    if not password:
+            return JsonResponse({"error": "password required"}, status=400)
+
+    if email:
+        validator = EmailValidator()
+        try:
+            validator(email)
+        except ValidationError:
+            return JsonResponse({"error": "Invalid Email"}, status=400)
+        user = User.objects.filter(email=email).first()
+
+    elif username:
+        user = User.objects.filter(username=username).first()
+    
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
     if not user:
         return JsonResponse({"error": "Invalid credentials"}, status=401)
 
@@ -167,6 +190,7 @@ def register(request):
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         if not email:
             return JsonResponse({"error": "Email required"}, status=400)
 
@@ -175,6 +199,12 @@ def register(request):
         validator = EmailValidator()
 
 >>>>>>> 1b43044 (fixing authentication && nginx config file)
+=======
+        if not email:
+            return JsonResponse({"error": "Email required"}, status=400)
+
+        validator = EmailValidator()
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
         try:
             validator(email)
         except ValidationError:
@@ -389,16 +419,23 @@ def get_user(request):
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
     tmp_user = get_user_from_request(request)
     if not tmp_user:
         return JsonResponse({"error": "Not authenticated"}, status=401)
 
     user = User.objects.filter(id=tmp_user.id).values( 
+<<<<<<< HEAD
          "username", "fullname", "avatar", "id"
 =======
     user = Userobjects.filter(id=user_id).values(
         "id", "username", "fullname", "role", "is_active"
 >>>>>>> 2d98fb0 (SA)
+=======
+         "username", "fullname", "avatar"
+>>>>>>> 22d4bda (adding getuser endpoint in nginx)
     ).first()
 
     if not user:
