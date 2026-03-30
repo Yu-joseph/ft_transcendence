@@ -3,8 +3,8 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="robots" content="NONE,NOARCHIVE">
-  <title>UnboundLocalError
-          at /logout/</title>
+  <title>RuntimeError
+          at /getuser</title>
   <style>
     html * { padding:0; margin:0; }
     body * { padding:10px 20px; }
@@ -100,18 +100,18 @@
 </head>
 <body>
 <header id="summary">
-  <h1>UnboundLocalError
-       at /logout/</h1>
-  <pre class="exception_value">cannot access local variable &#x27;response&#x27; where it is not associated with a value</pre>
+  <h1>RuntimeError
+       at /getuser</h1>
+  <pre class="exception_value">You called this URL via POST, but the URL doesn&#x27;t end in a slash and you have APPEND_SLASH set. Django can&#x27;t redirect to the slash URL while maintaining POST data. Change your form to point to localhost/getuser/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings.</pre>
   <table class="meta">
 
     <tr>
       <th scope="row">Request Method:</th>
-      <td>GET</td>
+      <td>POST</td>
     </tr>
     <tr>
       <th scope="row">Request URL:</th>
-      <td>http://localhost/logout/</td>
+      <td>http://localhost/getuser</td>
     </tr>
 
     <tr>
@@ -121,26 +121,21 @@
 
     <tr>
       <th scope="row">Exception Type:</th>
-      <td>UnboundLocalError</td>
+      <td>RuntimeError</td>
     </tr>
 
 
     <tr>
       <th scope="row">Exception Value:</th>
-      <td><pre>cannot access local variable &#x27;response&#x27; where it is not associated with a value</pre></td>
+      <td><pre>You called this URL via POST, but the URL doesn&#x27;t end in a slash and you have APPEND_SLASH set. Django can&#x27;t redirect to the slash URL while maintaining POST data. Change your form to point to localhost/getuser/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings.</pre></td>
     </tr>
 
 
     <tr>
       <th scope="row">Exception Location:</th>
-      <td><span class="fname">/app/authentication/views.py</span>, line 120, in logout</td>
+      <td><span class="fname">/usr/local/lib/python3.13/site-packages/django/middleware/common.py</span>, line 87, in get_full_path_with_slash</td>
     </tr>
 
-
-    <tr>
-      <th scope="row">Raised during:</th>
-      <td>authentication.views.logout</td>
-    </tr>
 
     <tr>
       <th scope="row">Python Executable:</th>
@@ -160,7 +155,7 @@
     </tr>
     <tr>
       <th scope="row">Server time:</th>
-      <td>Wed, 25 Mar 2026 15:21:13 +0000</td>
+      <td>Mon, 30 Mar 2026 19:39:55 +0000</td>
     </tr>
   </table>
 </header>
@@ -184,44 +179,44 @@
           
 
           
-            <div class="context" id="c135546778789376">
+            <div class="context" id="c124455551235968">
               
-                <ol start="48" class="pre-context" id="pre135546778789376">
+                <ol start="48" class="pre-context" id="pre124455551235968">
                 
-                  <li onclick="toggle('pre135546778789376', 'post135546778789376')"><pre></pre></li>
+                  <li onclick="toggle('pre124455551235968', 'post124455551235968')"><pre></pre></li>
                 
-                  <li onclick="toggle('pre135546778789376', 'post135546778789376')"><pre>        return inner</pre></li>
+                  <li onclick="toggle('pre124455551235968', 'post124455551235968')"><pre>        return inner</pre></li>
                 
-                  <li onclick="toggle('pre135546778789376', 'post135546778789376')"><pre>    else:</pre></li>
+                  <li onclick="toggle('pre124455551235968', 'post124455551235968')"><pre>    else:</pre></li>
                 
-                  <li onclick="toggle('pre135546778789376', 'post135546778789376')"><pre></pre></li>
+                  <li onclick="toggle('pre124455551235968', 'post124455551235968')"><pre></pre></li>
                 
-                  <li onclick="toggle('pre135546778789376', 'post135546778789376')"><pre>        @wraps(get_response)</pre></li>
+                  <li onclick="toggle('pre124455551235968', 'post124455551235968')"><pre>        @wraps(get_response)</pre></li>
                 
-                  <li onclick="toggle('pre135546778789376', 'post135546778789376')"><pre>        def inner(request):</pre></li>
+                  <li onclick="toggle('pre124455551235968', 'post124455551235968')"><pre>        def inner(request):</pre></li>
                 
-                  <li onclick="toggle('pre135546778789376', 'post135546778789376')"><pre>            try:</pre></li>
+                  <li onclick="toggle('pre124455551235968', 'post124455551235968')"><pre>            try:</pre></li>
                 
                 </ol>
               
               <ol start="55" class="context-line">
-                <li onclick="toggle('pre135546778789376', 'post135546778789376')"><pre>                response = get_response(request)
+                <li onclick="toggle('pre124455551235968', 'post124455551235968')"><pre>                response = get_response(request)
                                ^^^^^^^^^^^^^^^^^^^^^</pre> <span>…</span></li>
               </ol>
               
-                <ol start='56' class="post-context" id="post135546778789376">
+                <ol start='56' class="post-context" id="post124455551235968">
                   
-                  <li onclick="toggle('pre135546778789376', 'post135546778789376')"><pre>            except Exception as exc:</pre></li>
+                  <li onclick="toggle('pre124455551235968', 'post124455551235968')"><pre>            except Exception as exc:</pre></li>
                   
-                  <li onclick="toggle('pre135546778789376', 'post135546778789376')"><pre>                response = response_for_exception(request, exc)</pre></li>
+                  <li onclick="toggle('pre124455551235968', 'post124455551235968')"><pre>                response = response_for_exception(request, exc)</pre></li>
                   
-                  <li onclick="toggle('pre135546778789376', 'post135546778789376')"><pre>            return response</pre></li>
+                  <li onclick="toggle('pre124455551235968', 'post124455551235968')"><pre>            return response</pre></li>
                   
-                  <li onclick="toggle('pre135546778789376', 'post135546778789376')"><pre></pre></li>
+                  <li onclick="toggle('pre124455551235968', 'post124455551235968')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre135546778789376', 'post135546778789376')"><pre>        return inner</pre></li>
+                  <li onclick="toggle('pre124455551235968', 'post124455551235968')"><pre>        return inner</pre></li>
                   
-                  <li onclick="toggle('pre135546778789376', 'post135546778789376')"><pre></pre></li>
+                  <li onclick="toggle('pre124455551235968', 'post124455551235968')"><pre></pre></li>
                   
               </ol>
               
@@ -233,7 +228,7 @@
               <details>
                 <summary class="commands">Local vars</summary>
             
-            <table class="vars" id="v135546778789376">
+            <table class="vars" id="v124455551235968">
               <thead>
                 <tr>
                   <th scope="col">Variable</th>
@@ -244,17 +239,17 @@
                 
                   <tr>
                     <td>exc</td>
-                    <td class="code"><pre>UnboundLocalError(&quot;cannot access local variable &#x27;response&#x27; where it is not associated with a value&quot;)</pre></td>
+                    <td class="code"><pre>RuntimeError(&quot;You called this URL via POST, but the URL doesn&#x27;t end in a slash and you have APPEND_SLASH set. Django can&#x27;t redirect to the slash URL while maintaining POST data. Change your form to point to localhost/getuser/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings.&quot;)</pre></td>
                   </tr>
                 
                   <tr>
                     <td>get_response</td>
-                    <td class="code"><pre>&lt;bound method BaseHandler._get_response of &lt;django.core.handlers.wsgi.WSGIHandler object at 0x7b47735fb380&gt;&gt;</pre></td>
+                    <td class="code"><pre>&lt;CommonMiddleware get_response=convert_exception_to_response.&lt;locals&gt;.inner&gt;</pre></td>
                   </tr>
                 
                   <tr>
                     <td>request</td>
-                    <td class="code"><pre>&lt;WSGIRequest: GET &#x27;/logout/&#x27;&gt;</pre></td>
+                    <td class="code"><pre>&lt;WSGIRequest: POST &#x27;/getuser&#x27;&gt;</pre></td>
                   </tr>
                 
               </tbody>
@@ -266,48 +261,48 @@
         
         <li class="frame django">
           
-            <code class="fname">/usr/local/lib/python3.13/site-packages/django/core/handlers/base.py</code>, line 197, in _get_response
+            <code class="fname">/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py</code>, line 122, in __call__
           
 
           
-            <div class="context" id="c135546790657664">
+            <div class="context" id="c124455551236288">
               
-                <ol start="190" class="pre-context" id="pre135546790657664">
+                <ol start="115" class="pre-context" id="pre124455551236288">
                 
-                  <li onclick="toggle('pre135546790657664', 'post135546790657664')"><pre></pre></li>
+                  <li onclick="toggle('pre124455551236288', 'post124455551236288')"><pre>        if self.async_mode:</pre></li>
                 
-                  <li onclick="toggle('pre135546790657664', 'post135546790657664')"><pre>        if response is None:</pre></li>
+                  <li onclick="toggle('pre124455551236288', 'post124455551236288')"><pre>            return self.__acall__(request)</pre></li>
                 
-                  <li onclick="toggle('pre135546790657664', 'post135546790657664')"><pre>            wrapped_callback = self.make_view_atomic(callback)</pre></li>
+                  <li onclick="toggle('pre124455551236288', 'post124455551236288')"><pre>        response = None</pre></li>
                 
-                  <li onclick="toggle('pre135546790657664', 'post135546790657664')"><pre>            # If it is an asynchronous view, run it in a subthread.</pre></li>
+                  <li onclick="toggle('pre124455551236288', 'post124455551236288')"><pre>        if hasattr(self, &quot;process_request&quot;):</pre></li>
                 
-                  <li onclick="toggle('pre135546790657664', 'post135546790657664')"><pre>            if iscoroutinefunction(wrapped_callback):</pre></li>
+                  <li onclick="toggle('pre124455551236288', 'post124455551236288')"><pre>            response = self.process_request(request)</pre></li>
                 
-                  <li onclick="toggle('pre135546790657664', 'post135546790657664')"><pre>                wrapped_callback = async_to_sync(wrapped_callback)</pre></li>
+                  <li onclick="toggle('pre124455551236288', 'post124455551236288')"><pre>        response = response or self.get_response(request)</pre></li>
                 
-                  <li onclick="toggle('pre135546790657664', 'post135546790657664')"><pre>            try:</pre></li>
+                  <li onclick="toggle('pre124455551236288', 'post124455551236288')"><pre>        if hasattr(self, &quot;process_response&quot;):</pre></li>
                 
                 </ol>
               
-              <ol start="197" class="context-line">
-                <li onclick="toggle('pre135546790657664', 'post135546790657664')"><pre>                response = wrapped_callback(request, *callback_args, **callback_kwargs)
-                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre> <span>…</span></li>
+              <ol start="122" class="context-line">
+                <li onclick="toggle('pre124455551236288', 'post124455551236288')"><pre>            response = self.process_response(request, response)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre> <span>…</span></li>
               </ol>
               
-                <ol start='198' class="post-context" id="post135546790657664">
+                <ol start='123' class="post-context" id="post124455551236288">
                   
-                  <li onclick="toggle('pre135546790657664', 'post135546790657664')"><pre>            except Exception as e:</pre></li>
+                  <li onclick="toggle('pre124455551236288', 'post124455551236288')"><pre>        return response</pre></li>
                   
-                  <li onclick="toggle('pre135546790657664', 'post135546790657664')"><pre>                response = self.process_exception_by_middleware(e, request)</pre></li>
+                  <li onclick="toggle('pre124455551236288', 'post124455551236288')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre135546790657664', 'post135546790657664')"><pre>                if response is None:</pre></li>
+                  <li onclick="toggle('pre124455551236288', 'post124455551236288')"><pre>    async def __acall__(self, request):</pre></li>
                   
-                  <li onclick="toggle('pre135546790657664', 'post135546790657664')"><pre>                    raise</pre></li>
+                  <li onclick="toggle('pre124455551236288', 'post124455551236288')"><pre>        &quot;&quot;&quot;</pre></li>
                   
-                  <li onclick="toggle('pre135546790657664', 'post135546790657664')"><pre></pre></li>
+                  <li onclick="toggle('pre124455551236288', 'post124455551236288')"><pre>        Async version of __call__ that is swapped in when an async request</pre></li>
                   
-                  <li onclick="toggle('pre135546790657664', 'post135546790657664')"><pre>        # Complain if the view returned None (a common error).</pre></li>
+                  <li onclick="toggle('pre124455551236288', 'post124455551236288')"><pre>        is running.</pre></li>
                   
               </ol>
               
@@ -319,7 +314,7 @@
               <details>
                 <summary class="commands">Local vars</summary>
             
-            <table class="vars" id="v135546790657664">
+            <table class="vars" id="v124455551236288">
               <thead>
                 <tr>
                   <th scope="col">Variable</th>
@@ -329,43 +324,18 @@
               <tbody>
                 
                   <tr>
-                    <td>callback</td>
-                    <td class="code"><pre>&lt;function logout at 0x7b47735a9d00&gt;</pre></td>
-                  </tr>
-                
-                  <tr>
-                    <td>callback_args</td>
-                    <td class="code"><pre>()</pre></td>
-                  </tr>
-                
-                  <tr>
-                    <td>callback_kwargs</td>
-                    <td class="code"><pre>{}</pre></td>
-                  </tr>
-                
-                  <tr>
-                    <td>middleware_method</td>
-                    <td class="code"><pre>&lt;bound method CsrfViewMiddleware.process_view of &lt;CsrfViewMiddleware get_response=convert_exception_to_response.&lt;locals&gt;.inner&gt;&gt;</pre></td>
-                  </tr>
-                
-                  <tr>
                     <td>request</td>
-                    <td class="code"><pre>&lt;WSGIRequest: GET &#x27;/logout/&#x27;&gt;</pre></td>
+                    <td class="code"><pre>&lt;WSGIRequest: POST &#x27;/getuser&#x27;&gt;</pre></td>
                   </tr>
                 
                   <tr>
                     <td>response</td>
-                    <td class="code"><pre>None</pre></td>
+                    <td class="code"><pre>&lt;HttpResponseNotFound status_code=404, &quot;text/html; charset=utf-8&quot;&gt;</pre></td>
                   </tr>
                 
                   <tr>
                     <td>self</td>
-                    <td class="code"><pre>&lt;django.core.handlers.wsgi.WSGIHandler object at 0x7b47735fb380&gt;</pre></td>
-                  </tr>
-                
-                  <tr>
-                    <td>wrapped_callback</td>
-                    <td class="code"><pre>&lt;function logout at 0x7b47735a9d00&gt;</pre></td>
+                    <td class="code"><pre>&lt;CommonMiddleware get_response=convert_exception_to_response.&lt;locals&gt;.inner&gt;</pre></td>
                   </tr>
                 
               </tbody>
@@ -377,44 +347,48 @@
         
         <li class="frame django">
           
-            <code class="fname">/usr/local/lib/python3.13/site-packages/django/views/decorators/csrf.py</code>, line 65, in _view_wrapper
+            <code class="fname">/usr/local/lib/python3.13/site-packages/django/middleware/common.py</code>, line 108, in process_response
           
 
           
-            <div class="context" id="c135546790651648">
+            <div class="context" id="c124455616336960">
               
-                <ol start="58" class="pre-context" id="pre135546790651648">
+                <ol start="101" class="pre-context" id="pre124455616336960">
                 
-                  <li onclick="toggle('pre135546790651648', 'post135546790651648')"><pre></pre></li>
+                  <li onclick="toggle('pre124455616336960', 'post124455616336960')"><pre>        &quot;&quot;&quot;</pre></li>
                 
-                  <li onclick="toggle('pre135546790651648', 'post135546790651648')"><pre>        async def _view_wrapper(request, *args, **kwargs):</pre></li>
+                  <li onclick="toggle('pre124455616336960', 'post124455616336960')"><pre>        When the status code of the response is 404, it may redirect to a path</pre></li>
                 
-                  <li onclick="toggle('pre135546790651648', 'post135546790651648')"><pre>            return await view_func(request, *args, **kwargs)</pre></li>
+                  <li onclick="toggle('pre124455616336960', 'post124455616336960')"><pre>        with an appended slash if should_redirect_with_slash() returns True.</pre></li>
                 
-                  <li onclick="toggle('pre135546790651648', 'post135546790651648')"><pre></pre></li>
+                  <li onclick="toggle('pre124455616336960', 'post124455616336960')"><pre>        &quot;&quot;&quot;</pre></li>
                 
-                  <li onclick="toggle('pre135546790651648', 'post135546790651648')"><pre>    else:</pre></li>
+                  <li onclick="toggle('pre124455616336960', 'post124455616336960')"><pre>        # If the given URL is &quot;Not Found&quot;, then check if we should redirect to</pre></li>
                 
-                  <li onclick="toggle('pre135546790651648', 'post135546790651648')"><pre></pre></li>
+                  <li onclick="toggle('pre124455616336960', 'post124455616336960')"><pre>        # a path with a slash appended.</pre></li>
                 
-                  <li onclick="toggle('pre135546790651648', 'post135546790651648')"><pre>        def _view_wrapper(request, *args, **kwargs):</pre></li>
+                  <li onclick="toggle('pre124455616336960', 'post124455616336960')"><pre>        if response.status_code == 404 and self.should_redirect_with_slash(request):</pre></li>
                 
                 </ol>
               
-              <ol start="65" class="context-line">
-                <li onclick="toggle('pre135546790651648', 'post135546790651648')"><pre>            return view_func(request, *args, **kwargs)
-                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre> <span>…</span></li>
+              <ol start="108" class="context-line">
+                <li onclick="toggle('pre124455616336960', 'post124455616336960')"><pre>            return self.response_redirect_class(self.get_full_path_with_slash(request))
+                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre> <span>…</span></li>
               </ol>
               
-                <ol start='66' class="post-context" id="post135546790651648">
+                <ol start='109' class="post-context" id="post124455616336960">
                   
-                  <li onclick="toggle('pre135546790651648', 'post135546790651648')"><pre></pre></li>
+                  <li onclick="toggle('pre124455616336960', 'post124455616336960')"><pre></pre></li>
                   
-                  <li onclick="toggle('pre135546790651648', 'post135546790651648')"><pre>    _view_wrapper.csrf_exempt = True</pre></li>
+                  <li onclick="toggle('pre124455616336960', 'post124455616336960')"><pre>        # Add the Content-Length header to non-streaming responses if not</pre></li>
                   
-                  <li onclick="toggle('pre135546790651648', 'post135546790651648')"><pre></pre></li>
+                  <li onclick="toggle('pre124455616336960', 'post124455616336960')"><pre>        # already set.</pre></li>
                   
-                  <li onclick="toggle('pre135546790651648', 'post135546790651648')"><pre>    return wraps(view_func)(_view_wrapper)</pre></li>
+                  <li onclick="toggle('pre124455616336960', 'post124455616336960')"><pre>        if not response.streaming and not response.has_header(&quot;Content-Length&quot;):</pre></li>
+                  
+                  <li onclick="toggle('pre124455616336960', 'post124455616336960')"><pre>            response.headers[&quot;Content-Length&quot;] = str(len(response.content))</pre></li>
+                  
+                  <li onclick="toggle('pre124455616336960', 'post124455616336960')"><pre></pre></li>
                   
               </ol>
               
@@ -426,7 +400,7 @@
               <details>
                 <summary class="commands">Local vars</summary>
             
-            <table class="vars" id="v135546790651648">
+            <table class="vars" id="v124455616336960">
               <thead>
                 <tr>
                   <th scope="col">Variable</th>
@@ -436,23 +410,18 @@
               <tbody>
                 
                   <tr>
-                    <td>args</td>
-                    <td class="code"><pre>()</pre></td>
-                  </tr>
-                
-                  <tr>
-                    <td>kwargs</td>
-                    <td class="code"><pre>{}</pre></td>
-                  </tr>
-                
-                  <tr>
                     <td>request</td>
-                    <td class="code"><pre>&lt;WSGIRequest: GET &#x27;/logout/&#x27;&gt;</pre></td>
+                    <td class="code"><pre>&lt;WSGIRequest: POST &#x27;/getuser&#x27;&gt;</pre></td>
                   </tr>
                 
                   <tr>
-                    <td>view_func</td>
-                    <td class="code"><pre>&lt;function logout at 0x7b47735a9c60&gt;</pre></td>
+                    <td>response</td>
+                    <td class="code"><pre>&lt;HttpResponseNotFound status_code=404, &quot;text/html; charset=utf-8&quot;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>&lt;CommonMiddleware get_response=convert_exception_to_response.&lt;locals&gt;.inner&gt;</pre></td>
                   </tr>
                 
               </tbody>
@@ -462,50 +431,50 @@
         </li>
       
         
-        <li class="frame user">
+        <li class="frame django">
           
-            <code class="fname">/app/authentication/views.py</code>, line 120, in logout
+            <code class="fname">/usr/local/lib/python3.13/site-packages/django/middleware/common.py</code>, line 87, in get_full_path_with_slash
           
 
           
-            <div class="context" id="c135546790618368">
+            <div class="context" id="c124455539173376">
               
-                <ol start="113" class="pre-context" id="pre135546790618368">
+                <ol start="80" class="pre-context" id="pre124455539173376">
                 
-                  <li onclick="toggle('pre135546790618368', 'post135546790618368')"><pre></pre></li>
+                  <li onclick="toggle('pre124455539173376', 'post124455539173376')"><pre>        Raise a RuntimeError if settings.DEBUG is True and request.method is</pre></li>
                 
-                  <li onclick="toggle('pre135546790618368', 'post135546790618368')"><pre>    return JsonResponse({&quot;error&quot;: &quot;POST required&quot;}, status=405)</pre></li>
+                  <li onclick="toggle('pre124455539173376', 'post124455539173376')"><pre>        DELETE, POST, PUT, or PATCH.</pre></li>
                 
-                  <li onclick="toggle('pre135546790618368', 'post135546790618368')"><pre></pre></li>
+                  <li onclick="toggle('pre124455539173376', 'post124455539173376')"><pre>        &quot;&quot;&quot;</pre></li>
                 
-                  <li onclick="toggle('pre135546790618368', 'post135546790618368')"><pre>@csrf_exempt</pre></li>
+                  <li onclick="toggle('pre124455539173376', 'post124455539173376')"><pre>        new_path = request.get_full_path(force_append_slash=True)</pre></li>
                 
-                  <li onclick="toggle('pre135546790618368', 'post135546790618368')"><pre>def logout(request):</pre></li>
+                  <li onclick="toggle('pre124455539173376', 'post124455539173376')"><pre>        # Prevent construction of scheme relative urls.</pre></li>
                 
-                  <li onclick="toggle('pre135546790618368', 'post135546790618368')"><pre>    tmp_user = get_user_from_request(request)</pre></li>
+                  <li onclick="toggle('pre124455539173376', 'post124455539173376')"><pre>        new_path = escape_leading_slashes(new_path)</pre></li>
                 
-                  <li onclick="toggle('pre135546790618368', 'post135546790618368')"><pre>    if tmp_user :</pre></li>
+                  <li onclick="toggle('pre124455539173376', 'post124455539173376')"><pre>        if settings.DEBUG and request.method in (&quot;DELETE&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;PATCH&quot;):</pre></li>
                 
                 </ol>
               
-              <ol start="120" class="context-line">
-                <li onclick="toggle('pre135546790618368', 'post135546790618368')"><pre>        response.delete_cookie(&quot;access_token&quot;, path=&quot;/&quot;)
-             ^^^^^^^^</pre> <span>…</span></li>
+              <ol start="87" class="context-line">
+                <li onclick="toggle('pre124455539173376', 'post124455539173376')"><pre>            raise RuntimeError(
+                ^</pre> <span>…</span></li>
               </ol>
               
-                <ol start='121' class="post-context" id="post135546790618368">
+                <ol start='88' class="post-context" id="post124455539173376">
                   
-                  <li onclick="toggle('pre135546790618368', 'post135546790618368')"><pre>        response.delete_cookie(&quot;refresh_token&quot;, path=&quot;/&quot;)</pre></li>
+                  <li onclick="toggle('pre124455539173376', 'post124455539173376')"><pre>                &quot;You called this URL via %(method)s, but the URL doesn&#x27;t end &quot;</pre></li>
                   
-                  <li onclick="toggle('pre135546790618368', 'post135546790618368')"><pre>        tmp_user.status = &quot;offline&quot;</pre></li>
+                  <li onclick="toggle('pre124455539173376', 'post124455539173376')"><pre>                &quot;in a slash and you have APPEND_SLASH set. Django can&#x27;t &quot;</pre></li>
                   
-                  <li onclick="toggle('pre135546790618368', 'post135546790618368')"><pre>        response = JsonResponse({&quot;message&quot;: &quot;Logged out&quot;})</pre></li>
+                  <li onclick="toggle('pre124455539173376', 'post124455539173376')"><pre>                &quot;redirect to the slash URL while maintaining %(method)s data. &quot;</pre></li>
                   
-                  <li onclick="toggle('pre135546790618368', 'post135546790618368')"><pre>    </pre></li>
+                  <li onclick="toggle('pre124455539173376', 'post124455539173376')"><pre>                &quot;Change your form to point to %(url)s (note the trailing &quot;</pre></li>
                   
-                  <li onclick="toggle('pre135546790618368', 'post135546790618368')"><pre>    else :</pre></li>
+                  <li onclick="toggle('pre124455539173376', 'post124455539173376')"><pre>                &quot;slash), or set APPEND_SLASH=False in your Django settings.&quot;</pre></li>
                   
-                  <li onclick="toggle('pre135546790618368', 'post135546790618368')"><pre>        response = JsonResponse({&quot;error&quot;: &quot;invalid token or user&quot;})</pre></li>
+                  <li onclick="toggle('pre124455539173376', 'post124455539173376')"><pre>                % {</pre></li>
                   
               </ol>
               
@@ -517,7 +486,7 @@
               <details>
                 <summary class="commands">Local vars</summary>
             
-            <table class="vars" id="v135546790618368">
+            <table class="vars" id="v124455539173376">
               <thead>
                 <tr>
                   <th scope="col">Variable</th>
@@ -527,13 +496,18 @@
               <tbody>
                 
                   <tr>
-                    <td>request</td>
-                    <td class="code"><pre>&lt;WSGIRequest: GET &#x27;/logout/&#x27;&gt;</pre></td>
+                    <td>new_path</td>
+                    <td class="code"><pre>&#x27;/getuser/&#x27;</pre></td>
                   </tr>
                 
                   <tr>
-                    <td>tmp_user</td>
-                    <td class="code"><pre>&lt;User: 0xSAyf&gt;</pre></td>
+                    <td>request</td>
+                    <td class="code"><pre>&lt;WSGIRequest: POST &#x27;/getuser&#x27;&gt;</pre></td>
+                  </tr>
+                
+                  <tr>
+                    <td>self</td>
+                    <td class="code"><pre>&lt;CommonMiddleware get_response=convert_exception_to_response.&lt;locals&gt;.inner&gt;</pre></td>
                   </tr>
                 
               </tbody>
@@ -549,15 +523,15 @@
   <div id="pastebinTraceback" class="pastebin">
     <input type="hidden" name="language" value="PythonConsole">
     <input type="hidden" name="title"
-      value="UnboundLocalError at /logout/">
+      value="RuntimeError at /getuser">
     <input type="hidden" name="source" value="Django Dpaste Agent">
     <input type="hidden" name="poster" value="Django">
     <textarea name="content" id="traceback_area" cols="140" rows="25">
 Environment:
 
 
-Request Method: GET
-Request URL: http://localhost/logout/
+Request Method: POST
+Request URL: http://localhost/getuser
 
 Django Version: 5.2.12
 Python Version: 3.13.12
@@ -588,18 +562,18 @@ Traceback (most recent call last):
   File "/usr/local/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
     response = get_response(request)
                ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/authentication/views.py", line 120, in logout
-    response.delete_cookie(&quot;access_token&quot;, path=&quot;/&quot;)
-    ^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/django/utils/deprecation.py", line 122, in __call__
+    response = self.process_response(request, response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/django/middleware/common.py", line 108, in process_response
+    return self.response_redirect_class(self.get_full_path_with_slash(request))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/django/middleware/common.py", line 87, in get_full_path_with_slash
+    raise RuntimeError(
+    ^
 
-Exception Type: UnboundLocalError at /logout/
-Exception Value: cannot access local variable &#x27;response&#x27; where it is not associated with a value
+Exception Type: RuntimeError at /getuser
+Exception Value: You called this URL via POST, but the URL doesn&#x27;t end in a slash and you have APPEND_SLASH set. Django can&#x27;t redirect to the slash URL while maintaining POST data. Change your form to point to localhost/getuser/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings.
 </textarea>
   <br><br>
   <input type="submit" value="Share this traceback on a public website">
@@ -649,11 +623,6 @@ Exception Value: cannot access local variable &#x27;response&#x27; where it is n
             <td class="code"><pre>&#x27;********************&#x27;</pre></td>
           </tr>
         
-          <tr>
-            <td>access_token</td>
-            <td class="code"><pre>&#x27;********************&#x27;</pre></td>
-          </tr>
-        
       </tbody>
     </table>
   
@@ -700,7 +669,7 @@ Exception Value: cannot access local variable &#x27;response&#x27; where it is n
       
         <tr>
           <td>HOSTNAME</td>
-          <td class="code"><pre>&#x27;50741cecf91a&#x27;</pre></td>
+          <td class="code"><pre>&#x27;24c140a31aac&#x27;</pre></td>
         </tr>
       
         <tr>
@@ -750,7 +719,7 @@ Exception Value: cannot access local variable &#x27;response&#x27; where it is n
       
         <tr>
           <td>PATH_INFO</td>
-          <td class="code"><pre>&#x27;/logout/&#x27;</pre></td>
+          <td class="code"><pre>&#x27;/getuser&#x27;</pre></td>
         </tr>
       
         <tr>
@@ -790,7 +759,7 @@ Exception Value: cannot access local variable &#x27;response&#x27; where it is n
       
         <tr>
           <td>REQUEST_METHOD</td>
-          <td class="code"><pre>&#x27;GET&#x27;</pre></td>
+          <td class="code"><pre>&#x27;POST&#x27;</pre></td>
         </tr>
       
         <tr>
@@ -805,7 +774,7 @@ Exception Value: cannot access local variable &#x27;response&#x27; where it is n
       
         <tr>
           <td>SERVER_NAME</td>
-          <td class="code"><pre>&#x27;50741cecf91a&#x27;</pre></td>
+          <td class="code"><pre>&#x27;24c140a31aac&#x27;</pre></td>
         </tr>
       
         <tr>
@@ -840,7 +809,7 @@ Exception Value: cannot access local variable &#x27;response&#x27; where it is n
       
         <tr>
           <td>wsgi.input</td>
-          <td class="code"><pre>&lt;django.core.handlers.wsgi.LimitedStream object at 0x7b47727ed450&gt;</pre></td>
+          <td class="code"><pre>&lt;django.core.handlers.wsgi.LimitedStream object at 0x713110316e00&gt;</pre></td>
         </tr>
       
         <tr>
