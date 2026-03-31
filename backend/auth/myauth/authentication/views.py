@@ -247,7 +247,11 @@ def change_user_role(request, user_id):
 @role_required(["admin", "moderator"])
 def get_user(request, user_id):
 
+<<<<<<< HEAD
     user = Userobjects.filter(id=user_id).values(
+=======
+    user = User.objects.filter(id=user_id).values(
+>>>>>>> 103627e (merging game with main and fixing login page with jwt)
         "id", "username", "fullname", "role", "is_active"
     ).first()
 

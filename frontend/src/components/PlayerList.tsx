@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import { useUser } from "@clerk/clerk-react";
 import { socket } from "../Game/socket/sock";
+=======
+import { socket } from "../Game/socket/sock";
+import { getAuthUser } from "../hooks/useCustomAuth";
+>>>>>>> 103627e (merging game with main and fixing login page with jwt)
 
 import { MdOnlinePrediction } from "react-icons/md";
 // import { error } from "console";
@@ -25,7 +30,7 @@ export default function PlayerList() {
   const [onlineCount, setOnlineCount] = useState<number>(0);
   const [pendingInvite, setPendingInvite] = useState<Invite | null>(null);
   const [sentToast, setSentToast] = useState<string | null>(null);
-  const { user } = useUser();
+  const user = getAuthUser();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,11 +42,7 @@ export default function PlayerList() {
     const handleConnect = () => {
       socket.emit("join-lobby", {
         id: user.id,
-        username:
-          user.fullName ??
-          user.username ??
-          user.primaryEmailAddress?.emailAddress ??
-          "Guest",
+        username: user.fullName ?? user.username ?? "Guest",
       });
     };
 

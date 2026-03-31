@@ -1,11 +1,23 @@
-import { useUser } from "@clerk/clerk-react"
 import { useNavigate } from "react-router-dom"
-import { SignedIn, UserButton } from "@clerk/clerk-react";
 import { GiTicTacToe } from "react-icons/gi";
+import { getAuthUser } from "../hooks/useCustomAuth";
 
 function Bar() {
   const navigate = useNavigate();
-  const {user} = useUser();
+  const user = getAuthUser();
+
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8080/authent/logout/", {
+        method: "POST",
+        credentials: "include",
+      });
+    } finally {
+      localStorage.removeItem("authUser");
+      navigate("/");
+    }
+  };
+
   return (
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -28,14 +40,18 @@ function Bar() {
           </button>
           <p className="text-gray-300">Play online multiplayer tic-tac-toe games and tournaments</p>
         </div>
-        <SignedIn>
-          <div className="flex items-center gap-3">
-            <UserButton afterSignOutUrl="/" />
-            <span className="text-white text-sm">
-              {user?.fullName ?? user?.username ?? "Player"}
-            </span>
-          </div>
-        </SignedIn>
+        <div className="flex items-center gap-3">
+          <span className="text-white text-sm">
+            {user?.fullName ?? user?.username ?? "Player"}
+          </span>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="px-3 py-1.5 rounded-md text-sm font-semibold bg-slate-700 text-white hover:bg-slate-600"
+          >
+            Logout
+          </button>
+        </div>
       </div>
     </header>
   );

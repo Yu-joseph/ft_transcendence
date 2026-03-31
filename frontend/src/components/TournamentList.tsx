@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
+<<<<<<< HEAD
 import { useUser } from "@clerk/clerk-react";
 <<<<<<< HEAD
 import { socket } from "../Game/socket/sock";
 =======
 import { socket } from "../socket/sock";
 >>>>>>> 7b21cd9 (adding tournmanet list)
+=======
+import { socket } from "../Game/socket/sock";
+>>>>>>> 103627e (merging game with main and fixing login page with jwt)
 import { useNavigate } from "react-router-dom";
+import { getAuthUser } from "../hooks/useCustomAuth";
 
 type TournamentEntry = {
   tournamentId: string;
@@ -24,7 +29,7 @@ type TournamentEntry = {
 
 export default function TournamentList() {
   const [tournaments, setTournaments] = useState<TournamentEntry[]>([]);
-  const { user } = useUser();
+  const user = getAuthUser();
   const navigate = useNavigate();
 
   useEffect(() => {

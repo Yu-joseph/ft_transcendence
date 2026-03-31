@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
+=======
+>>>>>>> 103627e (merging game with main and fixing login page with jwt)
 import BottomNav from "../components/BottomNav";
 import PlayerList from "../components/PlayerList";
 import PlayerState from "../components/PlayerState";
@@ -13,13 +16,22 @@ import { TbTournament } from "react-icons/tb";
 import Bar from '../components/Bar'
 import CreateTourn from "../components/CreateTourn";
 import { socket } from "./socket/sock";
+<<<<<<< HEAD
+=======
+import { getAuthUser, useCustomAuth } from "../hooks/useCustomAuth";
+>>>>>>> 103627e (merging game with main and fixing login page with jwt)
 
 
 
 
 export default function Dashboard() {
   const navigate = useNavigate();
+<<<<<<< HEAD
   const { user } = useUser();
+=======
+  const { isSignedIn } = useCustomAuth();
+  const user = getAuthUser();
+>>>>>>> 103627e (merging game with main and fixing login page with jwt)
   const [opnePop, setOpenPop] = useState<boolean>(false);
 
   useEffect(() => {
@@ -39,11 +51,31 @@ export default function Dashboard() {
     };
   }, [navigate, user]);
 
+<<<<<<< HEAD
+=======
+  if (!isSignedIn) {
+    return (
+      <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-white text-xl mb-4">You need to sign in to continue.</p>
+          <button
+            onClick={() => navigate("/")}
+            className="px-6 py-3 text-lg font-semibold rounded-xl bg-linear-to-r from-indigo-500 to-purple-600 text-white hover:scale-105 transition"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+>>>>>>> 103627e (merging game with main and fixing login page with jwt)
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
       <Bar />
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8 sm:px-6 lg:px-8 pb-32">
+<<<<<<< HEAD
         <SignedOut>
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -59,6 +91,8 @@ export default function Dashboard() {
         </SignedOut>
 
         <SignedIn>
+=======
+>>>>>>> 103627e (merging game with main and fixing login page with jwt)
           <div className="flex flex-col lg:flex-row gap-8 w-full">
 
             {/* Left column */}
@@ -96,7 +130,10 @@ export default function Dashboard() {
             </div>
 
           </div>
+<<<<<<< HEAD
         </SignedIn>
+=======
+>>>>>>> 103627e (merging game with main and fixing login page with jwt)
       </main>
 
       <BottomNav />

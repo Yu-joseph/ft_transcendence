@@ -1,11 +1,15 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+<<<<<<< HEAD
 import { ClerkProvider } from '@clerk/clerk-react'
+=======
+>>>>>>> 103627e (merging game with main and fixing login page with jwt)
 import Game from './Game.tsx'
 import Lobby from './Lobby.tsx'
 import Login from './Login.tsx'
 import Dashboard from "./Dashboard.tsx";
+<<<<<<< HEAD
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Tournament from './Tournament.tsx'
 <<<<<<< HEAD:frontend/src/Game/main.tsx
@@ -46,12 +50,26 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/" element={<Login />} />
 <<<<<<< HEAD:frontend/src/Game/main.tsx
 <<<<<<< HEAD:frontend/src/Game/main.tsx
+=======
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Tournament from './Tournament.tsx'
+import ProtectedRoute from '../components/ProtectedRoute.tsx'
+// import Lobby from './Lobby.tsx'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+>>>>>>> 103627e (merging game with main and fixing login page with jwt)
         <Route path="/Dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path ="/Chat" element={<ProtectedRoute><div>chat</div></ProtectedRoute>} />
         <Route path ="/Friends" element={<ProtectedRoute><div>Friend</div></ProtectedRoute>} />
         <Route path="/AiChallange" element={<ProtectedRoute><Lobby /></ProtectedRoute>} />
         <Route path="/Tournament" element={<ProtectedRoute><Tournament /></ProtectedRoute>} />
         <Route path="/game/:matchId" element={<ProtectedRoute><Game /></ProtectedRoute>} />
+<<<<<<< HEAD
 =======
         <Route path= "/Dashboard" element={<Dashboard />} />
         <Route path="/AiChallange" element={<Lobby />} />
@@ -71,5 +89,11 @@ createRoot(document.getElementById('root')!).render(
     ) : (
       <MissingClerkKey />
     )}
+=======
+        <Route path="*" element={<Navigate to="/" replace />} />
+        //// this route privante bad url 
+      </Routes>
+    </BrowserRouter>
+>>>>>>> 103627e (merging game with main and fixing login page with jwt)
   </StrictMode>,
 )
