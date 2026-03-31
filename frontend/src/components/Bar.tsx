@@ -1,10 +1,58 @@
-import { useNavigate } from "react-router-dom"
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { GiTicTacToe } from "react-icons/gi";
-import { getAuthUser } from "../hooks/useCustomAuth";
 
 function Bar() {
   const navigate = useNavigate();
-  const user = getAuthUser();
+  const [user, setUser] = useState<{ username?: string; fullName?: string; avatar?: string } | null>(null);
+
+  // Normalize avatar URL to hit the auth service media endpoint via nginx (/authent/ -> auth:8000)
+  const normalizeAvatarUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (/^https?:\/\//i.test(url)) return url; // already absolute
+
+    const base = "http://localhost:8080/authent";
+    // Ensure we always request /media/<file>
+    const withMediaPrefix = url.startsWith("/media/")
+      ? url
+      : url.startsWith("media/")
+        ? `/${url}`
+        : `/media/${url}`;
+
+    return `${base}${withMediaPrefix}`;
+  };
+
+  useEffect(() => {
+    let alive = true;
+
+    const loadUser = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/authent/getuser/", {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!res.ok) {
+          console.error("getuser failed", res.status);
+          return;
+        }
+        const data = await res.json();
+        if (!alive) 
+          return;
+        setUser({
+          username: data.username,
+          fullName: data.fullname ?? data.fullName,
+          avatar: normalizeAvatarUrl(data.avatar ?? data.profile?.avatar),
+        });
+      } catch (err) {
+        console.error("getuser error", err);
+      }
+    };
+
+    void loadUser();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -16,6 +64,13 @@ function Bar() {
       localStorage.removeItem("authUser");
       navigate("/");
     }
+  };
+
+  const displayName = user?.fullName ?? user?.username ?? "Player";
+  const displayInitial = displayName.trim().charAt(0).toUpperCase() || "P";
+
+  const handleAvatarError = () => {
+    setUser((prev) => (prev ? { ...prev, avatar: undefined } : prev));
   };
 
   return (
@@ -33,8 +88,20 @@ function Bar() {
           <p className="text-gray-300">Play online multiplayer tic-tac-toe games and tournaments</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-white text-sm">
-            {user?.fullName ?? user?.username ?? "Player"}
+          {user?.avatar ? (
+            <img
+              src={user.avatar}
+              alt={displayName}
+              className="h-9 w-9 rounded-full object-cover border border-amber-400"
+              onError={handleAvatarError}
+            />
+          ) : (
+            <span className="h-9 w-9 rounded-full bg-amber-500 text-slate-900 flex items-center justify-center font-semibold border border-amber-400">
+              {displayInitial}
+            </span>
+          )}
+          <span className="text-amber-500 text-sm">
+            {displayName}
           </span>
           <button
             type="button"

@@ -155,99 +155,101 @@ function Login() {
     void submitSignup();
   };
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center">
-      <h1 className="text-5xl font-bold text-center mb-10">
-        <span className="bg-linear-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
-          Tic
-        </span>{" "}
-        <span className="bg-linear-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
-          Tac
-        </span>{" "}
-        <span className="bg-linear-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
-          Toe
-        </span>{" "}
-        <span className="bg-linear-to-r from-amber-500 to-indigo-500 bg-clip-text text-transparent">
-          Game
-        </span>
-      </h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        <div className="text-center md:text-left space-y-4">
+          <h1 className="text-5xl font-extrabold leading-tight text-white">
+            <span className="bg-linear-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">Tic</span>{" "}
+            <span className="bg-linear-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">Tac</span>{" "}
+            <span className="bg-linear-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">Toe</span>{" "}
+            <span className="bg-linear-to-r from-amber-500 to-indigo-500 bg-clip-text text-transparent">Arena</span>
+          </h1>
+          <p className="text-slate-200 text-lg max-w-lg">
+            Sign in to join live matches, climb the ladder, and create tournaments with your friends.
+          </p>
+          <div className="flex items-center gap-2 justify-center md:justify-start text-amber-300 text-sm">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden />
+            Secure sign-in with server-side session cookies.
+          </div>
+        </div>
 
-      <div className="flex flex-col items-center gap-6 w-full max-w-sm px-4">
-        <p className="text-white text-xl">Please sign in to play.</p>
-
-        <form className="w-full space-y-4" onSubmit={handleLoginSubmit}>
-          {/* Email or Username */}
-          <div>
-            <label htmlFor="emailOrUsername" className="block mb-2 text-sm font-medium text-amber-300">
-              Email or Username
-            </label>
-            <input
-              type="text"
-              id="emailOrUsername"
-              value={emailOrUsername}
-              onChange={(e) => setEmailOrUsername(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
-              placeholder="Enter email or username"
-              required
-            />
+        <div className="bg-slate-900/80 border border-amber-400/20 shadow-2xl shadow-amber-900/20 rounded-2xl p-6 backdrop-blur">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold text-white">Sign in</h2>
+            <span className="text-xs text-amber-200 bg-amber-900/30 px-2 py-1 rounded-full">Play now</span>
           </div>
 
-          {/* Password */}
-          <div>
-            <label htmlFor="password" className="block mb-2 text-sm font-medium text-amber-300">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
-              placeholder="Enter password"
-              required
-            />
-          </div>
+          <form className="space-y-4" onSubmit={handleLoginSubmit}>
+            <div className="space-y-2">
+              <label htmlFor="emailOrUsername" className="block text-sm font-medium text-amber-200">
+                Email or Username
+              </label>
+              <input
+                type="text"
+                id="emailOrUsername"
+                value={emailOrUsername}
+                onChange={(e) => setEmailOrUsername(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg bg-slate-800 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                placeholder="Enter email or username"
+                required
+              />
+            </div>
 
-          {/* Error message */}
-          {error && (
-            <p className="text-red-400 text-sm bg-red-900 bg-opacity-30 p-2 rounded">
-              {error}
-            </p>
-          )}
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium text-amber-200">
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg bg-slate-800 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                placeholder="Enter password"
+                required
+              />
+            </div>
 
-          {/* Submit button */}
-          <button
-            type="button"
-            disabled={loading}
-            onClick={handleLoginClick}
-            className="w-full py-2.5 px-4 rounded-lg bg-linear-to-r from-green-700 to-amber-500 text-white font-semibold hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
+            {error && (
+              <p className="text-red-300 text-sm bg-red-900/50 border border-red-500/30 p-2 rounded">
+                {error}
+              </p>
+            )}
 
-          <p className="text-sm text-slate-300 text-center">
-            Don't have an account?{" "}
             <button
               type="button"
-              onClick={() => {
-                setSignupError(null);
-                setSignupSuccess(null);
-                setShowSignup(true);
-              }}
-              className="text-amber-300 hover:text-amber-200 underline"
+              disabled={loading}
+              onClick={handleLoginClick}
+              className="w-full py-2.5 px-4 rounded-lg bg-linear-to-r from-amber-600 to-amber-500 text-slate-950 font-semibold shadow-lg shadow-amber-900/30 hover:scale-[1.01] transition disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Sign up
+              {loading ? "Signing in..." : "Sign In"}
             </button>
-          </p>
-        </form>
+
+            <p className="text-sm text-slate-300 text-center">
+              Don't have an account?{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setSignupError(null);
+                  setSignupSuccess(null);
+                  setShowSignup(true);
+                }}
+                className="text-amber-300 hover:text-amber-200 underline"
+              >
+                Create one
+              </button>
+            </p>
+          </form>
+        </div>
       </div>
 
       {showSignup && (
         <div
-          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-4"
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm"
           onClick={() => setShowSignup(false)}
         >
           <div
-            className="w-full max-w-md rounded-xl bg-slate-800 p-5 border border-slate-700"
+            className="w-full max-w-md rounded-xl bg-slate-950/90 border border-amber-400/30 shadow-2xl shadow-amber-900/30 p-5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
@@ -272,7 +274,7 @@ function Login() {
                   id="signupUsername"
                   value={signupUsername}
                   onChange={(e) => setSignupUsername(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
                   placeholder="Choose a unsername"
                   required
                 />
@@ -287,7 +289,7 @@ function Login() {
                   id="signupEmail"
                   value={signupEmail}
                   onChange={(e) => setSignupEmail(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
                   placeholder="Enter email"
                   required
                 />
@@ -302,7 +304,7 @@ function Login() {
                   id="signupFullname"
                   value={signupFullname}
                   onChange={(e) => setSignupFullname(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
                   placeholder="Enter full name"
                 />
               </div>
@@ -316,7 +318,7 @@ function Login() {
                   id="signupPassword"
                   value={signupPassword}
                   onChange={(e) => setSignupPassword(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
                   placeholder="Choose password"
                   required
                 />
@@ -336,7 +338,7 @@ function Login() {
                 onClick={() => {
                   void submitSignup();
                 }}
-                className="w-full py-2.5 px-4 rounded-lg bg-linear-to-r from-blue-700 to-cyan-500 text-amber-500 font-semibold hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-2.5 px-4 rounded-lg bg-linear-to-r from-amber-800 to-amber-800 text-white font-semibold hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {signupLoading ? "Creating account..." : "sign up"}
               </button>

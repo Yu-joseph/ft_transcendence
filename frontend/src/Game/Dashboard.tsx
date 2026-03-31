@@ -12,7 +12,7 @@ import { TbTournament } from "react-icons/tb";
 import Bar from '../components/Bar'
 import CreateTourn from "../components/CreateTourn";
 import { socket } from "./socket/sock";
-import { getAuthUser, useCustomAuth } from "../hooks/useCustomAuth";
+import { type AuthUser, useCustomAuth } from "../hooks/useCustomAuth";
 
 
 
@@ -20,8 +20,57 @@ import { getAuthUser, useCustomAuth } from "../hooks/useCustomAuth";
 export default function Dashboard() {
   const navigate = useNavigate();
   const { isSignedIn } = useCustomAuth();
-  const user = getAuthUser();
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [opnePop, setOpenPop] = useState<boolean>(false);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/authent/getuser/", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          console.error("getuser failed", response.status, response.statusText);
+          return;
+        }
+
+        const data = await response.json();
+        console.log("getuser response", data);
+
+        // Use the username directly from the endpoint payload; only fallback if it's completely absent
+        const rawId = data.id ?? data.user?.id ?? data.profile?.id;
+        const rawUsername = data.username ?? data.user?.username ?? data.profile?.username ?? "";
+
+        const normalized: AuthUser = {
+          id: rawId ? String(rawId) : "",
+          username: rawUsername,
+          fullName: rawUsername, // keep UI consistent with username
+          email: data.email ?? data.user?.email ?? data.profile?.email,
+        };
+        console.log("getuser normalized", normalized);
+
+        if (!normalized.id && !normalized.username) {
+          console.error("getuser missing id/username", data);
+          return;
+        }
+        if (isActive) {
+          setUser(normalized);
+        }
+      } catch (error) {
+        console.error("Failed to load user profile", error);
+      }
+    };
+
+    void fetchUserProfile();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   useEffect(() => {
     const onTournamentCreated = (data: { tournamentId: string; tournament: { name: string; creatorId: string } }) => {
