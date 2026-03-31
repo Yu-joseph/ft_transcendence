@@ -35,12 +35,6 @@ services:
   frontend:
     container_name: frontend
     restart: always
-<<<<<<< HEAD
-    env_file:
-      - .env
-    build: ../frontend
-  
-=======
     environment:
       - VITE_CLERK_PUBLISHABLE_KEY=pk_test_ZGlzY3JldGUtbGlvbmVzcy00LmNsZXJrLmFjY291bnRzLmRldiQ
       - VITE_API_URL=http://localhost:5173
@@ -51,7 +45,6 @@ services:
     build: ../frontend
     volumes:
       - ../frontend:/app/
->>>>>>> 103627e (merging game with main and fixing login page with jwt)
   nginx:
     build : ./nginx
     container_name: nginx
