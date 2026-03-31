@@ -31,14 +31,6 @@ async function ensureUser(id: string, username: string) {
 async function createGameInDB(match: Match) {
   const boardStrings = match.board.map(cell => cell ?? '');
   await prisma.game.create({
-<<<<<<< HEAD
-<<<<<<<< HEAD:backend/game_service/api/src/socket/handlers.ts
-=======
-<<<<<<<< HEAD:game_service/api/src/socket/handlers.ts
-<<<<<<<< HEAD:backend/game_service/api/src/socket/handlers.ts
-========
->>>>>>>> 103627e (merging game with main and fixing login page with jwt):backend/game_service/api/src/socket/handlers.ts
->>>>>>> 103627e (merging game with main and fixing login page with jwt)
   data: {
     id: match.id,
     board: boardStrings,
@@ -50,27 +42,6 @@ async function createGameInDB(match: Match) {
     createdAt: new Date(),
   },
 });
-<<<<<<< HEAD
-=======
-<<<<<<<< HEAD:game_service/api/src/socket/handlers.ts
->>>>>>> 103627e (merging game with main and fixing login page with jwt)
-========
-    data: {
-      id: match.id,
-      board: boardStrings,
-      status: 'playing',
-      result: 'PENDING',
-      playerXId: match.players[0].id,
-      playerOId: match.players[1].id,
-      tournamentId: match.tournamentId ?? undefined,
-    },
-  });
->>>>>>>> 1ce0a68 (put the game service in a container):game_service/api/src/socket/handlers.ts
-<<<<<<< HEAD
-=======
-========
->>>>>>>> 103627e (merging game with main and fixing login page with jwt):backend/game_service/api/src/socket/handlers.ts
->>>>>>> 103627e (merging game with main and fixing login page with jwt)
   console.log(`Game created in DB: ${match.id}`);
 }
 

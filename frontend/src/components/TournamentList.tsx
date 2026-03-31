@@ -1,14 +1,5 @@
 import { useEffect, useState } from "react";
-<<<<<<< HEAD
-import { useUser } from "@clerk/clerk-react";
-<<<<<<< HEAD
 import { socket } from "../Game/socket/sock";
-=======
-import { socket } from "../socket/sock";
->>>>>>> 7b21cd9 (adding tournmanet list)
-=======
-import { socket } from "../Game/socket/sock";
->>>>>>> 103627e (merging game with main and fixing login page with jwt)
 import { useNavigate } from "react-router-dom";
 import { getAuthUser } from "../hooks/useCustomAuth";
 
@@ -17,14 +8,7 @@ type TournamentEntry = {
   name: string;
   creatorName: string;
   playerCount: number;
-<<<<<<< HEAD
-<<<<<<< HEAD
   maxPlayers: number;
-=======
->>>>>>> 7b21cd9 (adding tournmanet list)
-=======
-  maxPlayers: number;
->>>>>>> 3bf2605 ( fixing amount of player for each tournamnet)
 };
 
 export default function TournamentList() {
@@ -75,10 +59,6 @@ export default function TournamentList() {
     };
   }, []);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 3bf2605 ( fixing amount of player for each tournamnet)
   const handleJoin = (tournamentId: string, isFull: boolean) => {
     if (!user) 
       return;
@@ -92,24 +72,6 @@ export default function TournamentList() {
     sessionStorage.setItem("activeTournament", JSON.stringify(joinInfo));
     socket.emit("join-tournament", joinInfo);
     navigate("/Tournament", { state: joinInfo });
-=======
-  const handleJoin = (tournamentId: string) => {
-    if (!user) 
-      return;
-    const joinInfo = {
-      tournamentId,
-      userId: user.id,
-      username: user.username ?? user.fullName ?? "Player",
-<<<<<<< HEAD
-    });
-    navigate("/tournament");
->>>>>>> 7b21cd9 (adding tournmanet list)
-=======
-    };
-    sessionStorage.setItem("activeTournament", JSON.stringify(joinInfo));
-    socket.emit("join-tournament", joinInfo);
-    navigate("/Tournament", { state: joinInfo });
->>>>>>> 7df0ecb (verfiying files)
   };
 
   return (
@@ -122,10 +84,6 @@ export default function TournamentList() {
         <div className="px-6 py-8 text-gray-400">No tournaments available yet.</div>
       ) : (
         <ul className="divide-y divide-blue-800/50">
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 3bf2605 ( fixing amount of player for each tournamnet)
           {tournaments.map((t) => {
             const isFull = t.playerCount >= t.maxPlayers;
             return (
@@ -148,25 +106,6 @@ export default function TournamentList() {
               </li>
             );
           })}
-<<<<<<< HEAD
-=======
-          {tournaments.map((t) => (
-            <li key={t.tournamentId} className="flex items-center justify-between px-6 py-4 hover:bg-slate-700/40 transition">
-              <div>
-                <p className="text-white font-semibold">{t.name}</p>
-                <p className="text-sm text-gray-400">by {t.creatorName} · {t.playerCount} player{t.playerCount !== 1 ? "s" : ""}</p>
-              </div>
-              <button
-                onClick={() => handleJoin(t.tournamentId)}
-                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition"
-              >
-                Join
-              </button>
-            </li>
-          ))}
->>>>>>> 7b21cd9 (adding tournmanet list)
-=======
->>>>>>> 3bf2605 ( fixing amount of player for each tournamnet)
         </ul>
       )}
     </section>

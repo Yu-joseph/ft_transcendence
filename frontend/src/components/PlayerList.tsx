@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
-import { useUser } from "@clerk/clerk-react";
-import { socket } from "../Game/socket/sock";
-=======
 import { socket } from "../Game/socket/sock";
 import { getAuthUser } from "../hooks/useCustomAuth";
->>>>>>> 103627e (merging game with main and fixing login page with jwt)
 
 import { MdOnlinePrediction } from "react-icons/md";
 // import { error } from "console";

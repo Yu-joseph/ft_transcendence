@@ -31,7 +31,6 @@ export default function BottomNav() {
             }`}
           >
             <span className="font-semibold">Tournament</span>
-<<<<<<< HEAD
           </button>
           <button
             onClick={() => navigate("/Friends")}
@@ -42,11 +41,6 @@ export default function BottomNav() {
             }`}
           >
             <span className="font-semibold">Friend</span>
-<<<<<<< HEAD
-=======
->>>>>>> 8dd1c5b (fixing tournament cancel match)
-=======
->>>>>>> 103627e (merging game with main and fixing login page with jwt)
           </button>
 
           {/* Game Button */}

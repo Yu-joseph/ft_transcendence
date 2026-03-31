@@ -70,11 +70,6 @@ app.get('/api/users/:id/tournaments', async (req: Request, res: Response) => {
     const entries = await prisma.tournamentParticipant.findMany({
       where: { userId: req.params.id as string},
       include: {
-<<<<<<< HEAD
-=======
-<<<<<<<< HEAD:game_service/api/src/index.ts
->>>>>>> 103627e (merging game with main and fixing login page with jwt)
-<<<<<<<< HEAD:backend/game_service/api/src/index.ts
         Tournament: {
           include: {
             User_Tournament_winnerIdToUser: {select: {id: true, username: true}},
@@ -94,79 +89,13 @@ app.get('/api/users/:id/tournaments', async (req: Request, res: Response) => {
           : entry.eliminated
             ? 'eliminated'
             : entry.Tournament.status === 'finished'
-========
-        tournament: {
-<<<<<<< HEAD
-          include: {
-            winner: {select: {id: true, username: true}},
-            creator: {select: {id: true, username: true}},
-          }
-        }
-      },
-      orderBy: { tournament: {createdAt: 'desc'} },
-    });
-    const result = entries.map(entry => ({
-      tournamentId: entry.tournamentId,
-      name: entry.tournament.name,
-      status: entry.tournament.status,
-      creator: entry.tournament.creator,
-      userStatus: entry.tournament.winnerId === req.params.id
-        ? 'winner'
-          : entry.eliminated
-            ? 'eliminated'
-            : entry.tournament.status === 'finished'
->>>>>>>> 1ce0a68 (put the game service in a container):game_service/api/src/index.ts
-=======
-========
-        Tournament: {
->>>>>>>> 103627e (merging game with main and fixing login page with jwt):backend/game_service/api/src/index.ts
-          include: {
-            User_Tournament_winnerIdToUser: {select: {id: true, username: true}},
-            User_Tournament_creatorIdToUser : {select: {id: true, username: true}},
-          }
-        }
-      },
-      orderBy: { Tournament: {createdAt: 'desc'} },
-    });
-    const result = entries.map(entry => ({
-      tournamentId: entry.tournamentId,
-      name: entry.Tournament.name,
-      status: entry.Tournament.status,
-      creator: entry.Tournament.User_Tournament_creatorIdToUser,
-      userStatus: entry.Tournament.winnerId === req.params.id
-        ? 'winner'
-          : entry.eliminated
-            ? 'eliminated'
-<<<<<<<< HEAD:game_service/api/src/index.ts
-            : entry.tournament.status === 'finished'
->>>>>>>> 1ce0a68 (put the game service in a container):game_service/api/src/index.ts
-========
-            : entry.Tournament.status === 'finished'
->>>>>>>> 103627e (merging game with main and fixing login page with jwt):backend/game_service/api/src/index.ts
->>>>>>> 103627e (merging game with main and fixing login page with jwt)
               ? 'eliminated'
               : 'playing',
       eliminatedInRound: entry.eliminatedInRound,
       eliminated : entry.eliminated,
       seed: entry.seed,
-<<<<<<< HEAD
-=======
-<<<<<<<< HEAD:game_service/api/src/index.ts
->>>>>>> 103627e (merging game with main and fixing login page with jwt)
-<<<<<<<< HEAD:backend/game_service/api/src/index.ts
       tournamentWinner: entry.Tournament.User_Tournament_winnerIdToUser,
       createdAt: entry.Tournament.createdAt,
-========
-      tournamentWinner: entry.tournament.winner,
-      createdAt: entry.tournament.createdAt,
->>>>>>>> 1ce0a68 (put the game service in a container):game_service/api/src/index.ts
-<<<<<<< HEAD
-=======
-========
-      tournamentWinner: entry.Tournament.User_Tournament_winnerIdToUser,
-      createdAt: entry.Tournament.createdAt,
->>>>>>>> 103627e (merging game with main and fixing login page with jwt):backend/game_service/api/src/index.ts
->>>>>>> 103627e (merging game with main and fixing login page with jwt)
     }));
     res.json(result);
   } catch (err) {

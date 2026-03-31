@@ -11,19 +11,8 @@ interface WinModalProps {
   isWinner: boolean;
   winnerName: string;
   message?: string;
-<<<<<<< HEAD
-<<<<<<< HEAD
   timerTransfer?: number; // ms, default 4000
   redirectTo?: string; // default /Dashboard
-<<<<<<< HEAD
-=======
-  redirectDelay?: number; // ms, default 4000
->>>>>>> e2ddfd1 (adding win medals)
-=======
-  timerTransfer?: number; // ms, default 4000
->>>>>>> 6d4554a (frontend)
-=======
->>>>>>> eef5d5f (fixing bug in torunamnet player redrcted to tournamnet after he win)
 }
 
 export default function WinModal({
@@ -31,19 +20,8 @@ export default function WinModal({
   isWinner,
   winnerName,
   message,
-<<<<<<< HEAD
-<<<<<<< HEAD
   timerTransfer = 4000,
   redirectTo = '/Dashboard',
-<<<<<<< HEAD
-=======
-  redirectDelay = 4000,
->>>>>>> e2ddfd1 (adding win medals)
-=======
-  timerTransfer = 4000,
->>>>>>> 6d4554a (frontend)
-=======
->>>>>>> eef5d5f (fixing bug in torunamnet player redrcted to tournamnet after he win)
 }: WinModalProps) {
   const navigate = useNavigate();
 
@@ -51,19 +29,7 @@ export default function WinModal({
   useEffect(() => {
     if (!show) 
         return;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     const timer = setTimeout(() => navigate(redirectTo), timerTransfer);
-=======
-    const timer = setTimeout(() => navigate("/Dashboard"), redirectDelay);
->>>>>>> e2ddfd1 (adding win medals)
-=======
-    const timer = setTimeout(() => navigate("/Dashboard"), timerTransfer);
->>>>>>> 6d4554a (frontend)
-=======
-    const timer = setTimeout(() => navigate(redirectTo), timerTransfer);
->>>>>>> eef5d5f (fixing bug in torunamnet player redrcted to tournamnet after he win)
     return () => clearTimeout(timer);
   }, [show]);
 
@@ -110,15 +76,7 @@ export default function WinModal({
           <span className="text-amber-400 font-semibold">{winnerName}</span>
         </div>
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         <p className="text-slate-400 text-sm mt-3">Redirecting{redirectTo === '/Tournament' ? ' to Tournament…' : ' to Dashboard…'}</p>
-=======
-        <p className="text-slate-400 text-sm mt-3">Redirecting to Dashboard...</p>
->>>>>>> e2ddfd1 (adding win medals)
-=======
-        <p className="text-slate-400 text-sm mt-3">Redirecting{redirectTo === '/Tournament' ? ' to Tournament…' : ' to Dashboard…'}</p>
->>>>>>> eef5d5f (fixing bug in torunamnet player redrcted to tournamnet after he win)
       </div>
     </div>
   );

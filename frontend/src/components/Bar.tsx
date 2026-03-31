@@ -19,15 +19,7 @@ function Bar() {
   };
 
   return (
-<<<<<<< HEAD
-<<<<<<< HEAD
     <header className="bg-slate-900 border-b border-amber-400 shadow-lg">
-=======
-    <header className="bg-slate-900 border-b border-blue-800 shadow-lg">
->>>>>>> e2ddfd1 (adding win medals)
-=======
-    <header className="bg-slate-900 border-b border-amber-400 shadow-lg">
->>>>>>> 6d4554a (frontend)
       <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex items-center justify-between">
         <div>
           <button

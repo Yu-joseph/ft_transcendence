@@ -2,18 +2,8 @@ import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { socket } from "./socket/sock";
-<<<<<<< HEAD
-<<<<<<< HEAD:frontend/src/Game/Game.tsx
 import BottomNav from "../components/BottomNav";
 import WinModal from "../components/WinModal";
-=======
-import BottomNav from "./components/BottomNav";
-import WinModal from "./components/WinModal";
->>>>>>> e2ddfd1 (adding win medals):frontend/src/Game.tsx
-=======
-import BottomNav from "../components/BottomNav";
-import WinModal from "../components/WinModal";
->>>>>>> 103627e (merging game with main and fixing login page with jwt)
 
 
 type CellValue = "X" | "O" | null;
@@ -404,14 +394,7 @@ function Game() {
           isWinner={true}
           winnerName={user?.fullName ?? user?.username ?? "You"}
           message="Your opponent left the match."
-<<<<<<< HEAD:frontend/src/Game/Game.tsx
-<<<<<<< HEAD:frontend/src/Game/Game.tsx
           redirectTo={backToRef.current}
-=======
->>>>>>> e2ddfd1 (adding win medals):frontend/src/Game.tsx
-=======
-          redirectTo={backToRef.current}
->>>>>>> eef5d5f (fixing bug in torunamnet player redrcted to tournamnet after he win):frontend/src/Game.tsx
         />
 
         {/* Regular game end */}
@@ -420,14 +403,7 @@ function Game() {
             show={showWinModal}
             isWinner={!!winner && players.find(p => p.id === user?.id)?.username === winner}
             winnerName={winner ?? ""}
-<<<<<<< HEAD:frontend/src/Game/Game.tsx
-<<<<<<< HEAD:frontend/src/Game/Game.tsx
             redirectTo={backToRef.current}
-=======
->>>>>>> e2ddfd1 (adding win medals):frontend/src/Game.tsx
-=======
-            redirectTo={backToRef.current}
->>>>>>> eef5d5f (fixing bug in torunamnet player redrcted to tournamnet after he win):frontend/src/Game.tsx
           />
         )}
       </SignedIn>

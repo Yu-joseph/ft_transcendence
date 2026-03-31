@@ -20,15 +20,7 @@ export default function Leaderboard() {
       try {
         setLoading(true)
         setError(null)
-<<<<<<< HEAD
-<<<<<<< HEAD
         const response = await fetch(`http://${window.location.hostname}:3000/api/leaderboard`)
-=======
-        const response = await fetch('http://localhost:3000/api/leaderboard')
->>>>>>> eef5d5f (fixing bug in torunamnet player redrcted to tournamnet after he win)
-=======
-        const response = await fetch(`http://${window.location.hostname}:3000/api/leaderboard`)
->>>>>>> 3bf2605 ( fixing amount of player for each tournamnet)
         if (!response.ok) 
             throw new Error(`Failed to load leaderboard (${response.status})`)
         const data = (await response.json()) as LeaderboardPlayer[]
