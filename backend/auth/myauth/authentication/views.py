@@ -244,15 +244,17 @@ def change_user_role(request, user_id):
 
     return JsonResponse({"message": "Role updated"})
 
-@role_required(["admin", "moderator"])
-def get_user(request, user_id):
+@csrf_exempt
+def get_user(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
 
-<<<<<<< HEAD
-    user = Userobjects.filter(id=user_id).values(
-=======
-    user = User.objects.filter(id=user_id).values(
->>>>>>> 103627e (merging game with main and fixing login page with jwt)
-        "id", "username", "fullname", "role", "is_active"
+    tmp_user = get_user_from_request(request)
+    if not tmp_user:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    user = User.objects.filter(id=tmp_user.id).values( 
+         "username", "fullname", "avatar"
     ).first()
 
     if not user:
