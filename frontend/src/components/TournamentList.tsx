@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useUser } from "@clerk/clerk-react";
 import { socket } from "../Game/socket/sock";
 import { useNavigate } from "react-router-dom";
+import { getAuthUser } from "../hooks/useCustomAuth";
 
 type TournamentEntry = {
   tournamentId: string;
@@ -13,7 +13,7 @@ type TournamentEntry = {
 
 export default function TournamentList() {
   const [tournaments, setTournaments] = useState<TournamentEntry[]>([]);
-  const { user } = useUser();
+  const user = getAuthUser();
   const navigate = useNavigate();
 
   useEffect(() => {

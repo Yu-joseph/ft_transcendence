@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
 import BottomNav from "../components/BottomNav";
 import PlayerList from "../components/PlayerList";
 import PlayerState from "../components/PlayerState";
@@ -13,13 +12,15 @@ import { TbTournament } from "react-icons/tb";
 import Bar from '../components/Bar'
 import CreateTourn from "../components/CreateTourn";
 import { socket } from "./socket/sock";
+import { getAuthUser, useCustomAuth } from "../hooks/useCustomAuth";
 
 
 
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { isSignedIn } = useCustomAuth();
+  const user = getAuthUser();
   const [opnePop, setOpenPop] = useState<boolean>(false);
 
   useEffect(() => {
@@ -39,26 +40,27 @@ export default function Dashboard() {
     };
   }, [navigate, user]);
 
+  if (!isSignedIn) {
+    return (
+      <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-white text-xl mb-4">You need to sign in to continue.</p>
+          <button
+            onClick={() => navigate("/")}
+            className="px-6 py-3 text-lg font-semibold rounded-xl bg-linear-to-r from-indigo-500 to-purple-600 text-white hover:scale-105 transition"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
       <Bar />
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8 sm:px-6 lg:px-8 pb-32">
-        <SignedOut>
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <p className="text-white text-xl mb-4">You need to sign in to continue.</p>
-              <button
-                onClick={() => navigate("/")}
-                className="px-6 py-3 text-lg font-semibold rounded-xl bg-linear-to-r from-indigo-500 to-purple-600 text-white hover:scale-105 transition"
-              >
-                Go to Login
-              </button>
-            </div>
-          </div>
-        </SignedOut>
-
-        <SignedIn>
           <div className="flex flex-col lg:flex-row gap-8 w-full">
 
             {/* Left column */}
@@ -96,7 +98,6 @@ export default function Dashboard() {
             </div>
 
           </div>
-        </SignedIn>
       </main>
 
       <BottomNav />

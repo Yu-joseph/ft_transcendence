@@ -10,6 +10,8 @@ services:
       POSTGRES_DB: mydb
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-network
 
   pgadmin:
     image: dpage/pgadmin4
@@ -27,6 +29,8 @@ services:
     build: ../backend/auth
     command: python3 manage.py runserver 0.0.0.0:8000
     restart: always
+    networks:
+      - app-network
     volumes:
       - ../backend/auth/myauth:/app
     depends_on:
@@ -35,96 +39,107 @@ services:
   frontend:
     container_name: frontend
     restart: always
-    env_file:
-      - .env
+    networks:
+      - app-network
+    environment:
+      - VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
+      - VITE_API_URL=http://localhost:5173
     build: ../frontend
-  
+    volumes:
+      - ../frontend:/app/
+      - /app/node_modules 
+
   nginx:
     build : ./nginx
     container_name: nginx
     ports:
       - "8080:80"
+    networks:
+      - app-network
     depends_on:
       - frontend
       - auth
       - db
+      - game-api
+      - chat-api
+      
 
   game:
     build: ../backend/game_service
     container_name: game
     restart: unless-stopped
+    networks:
+      - app-network
     environment:
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
-    env_file:
-      - .env
+    # env_file:
+    #   - .env
     depends_on:
       - db
-
-#   game-api:
-#     build: ./services/game_api
-#     container_name: game-api
-#     ports:
-#       - "5001:5001"
-#     networks:
-#       - app-network
   
-#   chat-api:
-#     build: ./services/chat_api
-#     container_name: chat-api
-#     ports:
-#       - "5000:5000"
-#     depends_on:
-#       postgres:
-#         condition: service_healthy    
-#       game-api:
-#         condition: service_started
-#     env_file:
-#       - .env
-#     environment:
-#       GAME_API_URL: http://game-api:5001
-#     volumes:
-#       - ./static:/app/static
-#       - ./templates:/app/templates
-#       - ./uploads:/app/uploads
-#     networks:
-#       - app-network
-  
-#   postgres:
-#     image: postgres:15
-#     container_name: game-postgres
-#     restart: unless-stopped
-#     environment:
-#       POSTGRES_USER: brahim
-#       POSTGRES_PASSWORD: brahim123
-#       POSTGRES_DB: brahim_db
-#     ports:
-#       - "5433:5432"
-#     volumes:
-#       - postgres_data:/var/lib/postgresql/data
-#       - ./initdb:/docker-entrypoint-initdb.d
-#     networks:
-#       - app-network
-#     healthcheck:
-#       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
-#       interval: 5s   
-#       timeout: 5s      
-#       retries: 10       
+  game-api:
+    build: ../backend/ai_service/services/game_api
+    container_name: game-api
+    ports:
+      - "5001:5001"
+    networks:
+      - app-network
 
-# volumes:
-#   pgdata:
-#   postgres_data:
-#     name: postgres_data
-#     driver: local
-#     driver_opts:
-#       type: none
-#       o: bind
-#       device: ${DATA_PATH}
+  chat-api:
+    build: ../backend/ai_service/services/chat_api
+    container_name: chat-api
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy    
+      game-api:
+        condition: service_started
+    env_file:
+      - .env
+    environment:
+      GAME_API_URL: http://game-api:5001
+    volumes:
+      - ../backend/ai_service/static:/app/static
+      - ../backend/ai_service/templates:/app/templates
+      - ../backend/ai_service/uploads:/app/uploads
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:15
+    container_name: game-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s   
+      timeout: 5s      
+      retries: 10       
+
+volumes:
+  pgdata:
+  postgres_data:
+    name: postgres_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}
 
 networks:
   app-network:
 
-volumes:
-  pgdata:
+
   # chat:
   #   build: ../backend/chat/chat-system/backend
   #   container_name: chat
