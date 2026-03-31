@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useNavigate } from "react-router-dom";
 import { GiTicTacToe } from "react-icons/gi";
 import { useAuth } from "../auth/useAuth";
@@ -21,6 +22,15 @@ function Bar() {
 
     return `${base}${withMediaPrefix}`;
   };
+=======
+import { useNavigate } from "react-router-dom"
+import { GiTicTacToe } from "react-icons/gi";
+import { getAuthUser } from "../hooks/useCustomAuth";
+
+function Bar() {
+  const navigate = useNavigate();
+  const user = getAuthUser();
+>>>>>>> fa260b3 (merging AI service with docker and nginx)
 
   const handleLogout = async () => {
     try {
@@ -29,14 +39,21 @@ function Bar() {
         credentials: "include",
       });
     } finally {
+<<<<<<< HEAD
+=======
+      localStorage.removeItem("authUser");
+>>>>>>> fa260b3 (merging AI service with docker and nginx)
       navigate("/");
     }
   };
 
+<<<<<<< HEAD
   const displayName = user?.fullName ?? user?.username ?? "Player";
   const displayInitial = displayName.trim().charAt(0).toUpperCase() || "P";
   const avatarUrl = user?.avatar ? normalizeAvatarUrl(user.avatar) : undefined;
 
+=======
+>>>>>>> fa260b3 (merging AI service with docker and nginx)
   return (
     <header className="bg-slate-900 border-b border-amber-400 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -52,6 +69,7 @@ function Bar() {
           <p className="text-gray-300">Play online multiplayer tic-tac-toe games and tournaments</p>
         </div>
         <div className="flex items-center gap-3">
+<<<<<<< HEAD
           {avatarUrl ? (
             <img
               src={avatarUrl}
@@ -65,6 +83,10 @@ function Bar() {
           )}
           <span className="text-amber-500 text-sm">
             {displayName}
+=======
+          <span className="text-white text-sm">
+            {user?.fullName ?? user?.username ?? "Player"}
+>>>>>>> fa260b3 (merging AI service with docker and nginx)
           </span>
           <button
             type="button"

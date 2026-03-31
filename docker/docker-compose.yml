@@ -11,10 +11,15 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 <<<<<<< HEAD
+<<<<<<< HEAD
     networks:
       - app-network
 =======
 >>>>>>> 358aa23 (SA)
+=======
+    networks:
+      - app-network
+>>>>>>> fa260b3 (merging AI service with docker and nginx)
 
   pgadmin:
     image: dpage/pgadmin4
@@ -43,11 +48,15 @@ services:
     container_name: frontend
     restart: always
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> fa260b3 (merging AI service with docker and nginx)
     networks:
       - app-network
     environment:
       - VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
       - VITE_API_URL=http://localhost:5173
+<<<<<<< HEAD
       - VITE_CHAT_API=http://localhost:8080/api
     build: ../frontend
     volumes:
@@ -60,6 +69,13 @@ services:
     build: ../frontend
   
 >>>>>>> 2d98fb0 (SA)
+=======
+    build: ../frontend
+    volumes:
+      - ../frontend:/app/
+      - /app/node_modules 
+
+>>>>>>> fa260b3 (merging AI service with docker and nginx)
   nginx:
     build : ./nginx
     container_name: nginx
@@ -72,11 +88,17 @@ services:
       - auth
       - db
 <<<<<<< HEAD
+<<<<<<< HEAD
       - game-api
       - chat-api
       
 =======
 >>>>>>> 2d98fb0 (SA)
+=======
+      - game-api
+      - chat-api
+      
+>>>>>>> fa260b3 (merging AI service with docker and nginx)
 
   game:
     build: ../backend/game_service
@@ -86,6 +108,7 @@ services:
       - app-network
     environment:
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+<<<<<<< HEAD
 <<<<<<< HEAD
     # env_file:
     #   - .env
@@ -187,49 +210,22 @@ volumes:
 #       - "5001:5001"
 #     networks:
 #       - app-network
+=======
+    # env_file:
+    #   - .env
+    depends_on:
+      - db
+>>>>>>> fa260b3 (merging AI service with docker and nginx)
   
-#   chat-api:
-#     build: ./services/chat_api
-#     container_name: chat-api
-#     ports:
-#       - "5000:5000"
-#     depends_on:
-#       postgres:
-#         condition: service_healthy    
-#       game-api:
-#         condition: service_started
-#     env_file:
-#       - .env
-#     environment:
-#       GAME_API_URL: http://game-api:5001
-#     volumes:
-#       - ./static:/app/static
-#       - ./templates:/app/templates
-#       - ./uploads:/app/uploads
-#     networks:
-#       - app-network
-  
-#   postgres:
-#     image: postgres:15
-#     container_name: game-postgres
-#     restart: unless-stopped
-#     environment:
-#       POSTGRES_USER: brahim
-#       POSTGRES_PASSWORD: brahim123
-#       POSTGRES_DB: brahim_db
-#     ports:
-#       - "5433:5432"
-#     volumes:
-#       - postgres_data:/var/lib/postgresql/data
-#       - ./initdb:/docker-entrypoint-initdb.d
-#     networks:
-#       - app-network
-#     healthcheck:
-#       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
-#       interval: 5s   
-#       timeout: 5s      
-#       retries: 10       
+  game-api:
+    build: ../backend/ai_service/services/game_api
+    container_name: game-api
+    ports:
+      - "5001:5001"
+    networks:
+      - app-network
 
+<<<<<<< HEAD
 # volumes:
 #   pgdata:
 #   postgres_data:
@@ -240,10 +236,63 @@ volumes:
 #       o: bind
 #       device: ${DATA_PATH}
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+  chat-api:
+    build: ../backend/ai_service/services/chat_api
+    container_name: chat-api
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy    
+      game-api:
+        condition: service_started
+    env_file:
+      - .env
+    environment:
+      GAME_API_URL: http://game-api:5001
+    volumes:
+      - ../backend/ai_service/static:/app/static
+      - ../backend/ai_service/templates:/app/templates
+      - ../backend/ai_service/uploads:/app/uploads
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:15
+    container_name: game-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s   
+      timeout: 5s      
+      retries: 10       
+
+volumes:
+  pgdata:
+  postgres_data:
+    name: postgres_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}
+>>>>>>> fa260b3 (merging AI service with docker and nginx)
 
 networks:
   app-network:
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 
  
@@ -252,6 +301,9 @@ networks:
 volumes:
   pgdata:
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+
+>>>>>>> fa260b3 (merging AI service with docker and nginx)
   # chat:
   #   build: ../backend/chat/chat-system/backend
   #   container_name: chat
@@ -259,6 +311,7 @@ volumes:
   #   depends_on:
   #     - db
   #   environment:
+<<<<<<< HEAD
 <<<<<<< HEAD
   #     DATABASE_URL: postgres://sayf:1234@db:5432/mydb
 <<<<<<< HEAD
@@ -271,3 +324,6 @@ volumes:
 =======
   #     DATABASE_URL: postgres://sayf:1234@db:5432/mydb
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+  #     DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+>>>>>>> fa260b3 (merging AI service with docker and nginx)
