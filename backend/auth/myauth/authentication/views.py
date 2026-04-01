@@ -428,6 +428,7 @@ def get_user(request):
 
     user = User.objects.filter(id=tmp_user.id).values( 
 <<<<<<< HEAD
+<<<<<<< HEAD
          "username", "fullname", "avatar", "id"
 =======
     user = Userobjects.filter(id=user_id).values(
@@ -436,6 +437,9 @@ def get_user(request):
 =======
          "username", "fullname", "avatar"
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+         "username", "fullname", "avatar", "id"
+>>>>>>> 138f0d3 (passing user 'id' with user object in getuser endpoint)
     ).first()
 
     if not user:
