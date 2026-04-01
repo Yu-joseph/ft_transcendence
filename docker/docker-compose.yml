@@ -120,8 +120,11 @@ services:
       - db
       - auth
       - frontend
+<<<<<<< HEAD
     ports:
       - "1339:3000"
+=======
+>>>>>>> dc8dfb9 (SA)
   
   game-api:
     build: ../backend/ai_service/services/game_api
@@ -269,7 +272,7 @@ volumes:
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pp_data:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
@@ -280,6 +283,7 @@ volumes:
 
 volumes:
   pgdata:
+  pp_data:
   postgres_data:
     name: postgres_data
     driver: local
