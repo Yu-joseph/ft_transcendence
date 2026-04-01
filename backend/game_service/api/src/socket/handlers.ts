@@ -10,21 +10,6 @@ export const matches = new Map<string, Match>();
 const disconnectTimeouts = new Map<string, NodeJS.Timeout>();
 export { createGameInDB, finalizeGame, updateGameInDB };
 
-async function ensureUser(id: string, username: string) {
-  await prisma.user.upsert({
-    where: { id },
-    update: { username },
-    create: {
-      id,
-      username,
-      wins: 0,
-      losses: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  });
-}
-
 /**
  * Save a new match to DB when it starts.
  */
@@ -134,17 +119,16 @@ export function setupSocketHandlers(io: Server) {
 
     socket.on('join-lobby', async (data: { id: string; username: string }) => {
       for (const [existingSocketId, existing] of players) {
-        if (existing.id === data.id)
-        {
+        if (existing.id === data.id) {
           players.delete(existingSocketId);
           existing.socketId = socket.id;
           players.set(socket.id, existing);
-          socket.emit('players-update', Array.from(players.values()));
+          io.emit('players-update', Array.from(players.values()));
+          io.emit('enlineusers', players.size);
           return;
         }
       }
-      await ensureUser(data.id, data.username);
-
+      
       const player: Player = {
         id: data.id,
         username: data.username,
@@ -154,6 +138,7 @@ export function setupSocketHandlers(io: Server) {
 
       players.set(socket.id, player);
       io.emit('players-update', Array.from(players.values()));
+      io.emit('enlineusers', players.size);
       console.log(`${data.username} joined the lobby`);
     });
 
@@ -312,7 +297,7 @@ export function setupSocketHandlers(io: Server) {
       }
       players.delete(socket.id);
       io.emit('players-update', Array.from(players.values()));
-
+      io.emit('enlineusers', players.size);
       console.log('User disconnected:', player?.username || socket.id);
     });
   });

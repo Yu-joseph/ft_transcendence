@@ -114,36 +114,31 @@ export default function Dashboard() {
 
             {/* Left column */}
             <div className="flex flex-col gap-6 flex-1">
-            <h2 className="text-2xl font-bold text-white">Welcome, {user?.fullName ?? user?.username ?? "Player"}!</h2>
-            <p className="text-gray-300">Choose an option below to get started.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-lg mt-4">
-              <button
-                onClick={() => navigate("/AiChallange")}
-                className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-amber-500 hover:scale-105 transition-all duration-300 shadow-lg"
-              >
-                <span className="text-4xl"><PiGameControllerFill /></span>
-                <span className="text-amber-500 text-xl font-semibold">AiChallange</span>
-                <span className="text-gray-400 text-sm">Find players and start a match</span>
-              </button>
-              <button
-                onClick={() => setOpenPop(true)}
-                className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-amber-500 hover:scale-105 transition-all duration-300 shadow-lg"
-              >
-                <span className="text-4xl"><TbTournament /></span>
-                <span className="text-amber-500 text-xl font-semibold">Create Tournament</span>
-                <span className="text-gray-400 text-sm">Create Tournmanet</span>
-              </button>
-            </div>
-            {/* <div className="grid grid-cols-1 gap-6"> */}
-              <PlayerList />
+              <h2 className="text-2xl font-bold text-white">Welcome, {user?.fullName ?? user?.username ?? "Player"}!</h2>
+              <p className="text-gray-300">Choose an option below to get started.</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-lg mt-4">
+                <button onClick={() => navigate("/AiChallange")} className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-amber-500 hover:scale-105 transition-all duration-300 shadow-lg">
+                  <span className="text-4xl"><PiGameControllerFill /></span>
+                  <span className="text-amber-500 text-xl font-semibold">AiChallange</span>
+                  <span className="text-gray-400 text-sm">Find players and start a match</span>
+                </button>
+                <button onClick={() => setOpenPop(true)} className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-amber-500 hover:scale-105 transition-all duration-300 shadow-lg">
+                  <span className="text-4xl"><TbTournament /></span>
+                  <span className="text-amber-500 text-xl font-semibold">Create Tournament</span>
+                  <span className="text-gray-400 text-sm">Create Tournmanet</span>
+                </button>
+              </div>
+              
+              {/* Pass the exact 'user' prop down */}
+              <PlayerList user={user} />
               <TournamentList />
-            {/* </div> */}
             </div>
 
             {/* Right column */}
             <div className="flex flex-col gap-6 w-full max-w-xl">
-            <PlayerState userId={user?.id ?? ""} />
-            <Leaderboard />
+              <PlayerState userId={user?.id ?? ""} />
+              <Leaderboard />
             </div>
 
           </div>
