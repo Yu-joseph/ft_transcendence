@@ -17,12 +17,14 @@ type StoredAuthUser = Partial<AuthUser> & {
 };
 
 export function getAuthUser(): AuthUser | null {
+  // Pull the cached auth payload from localStorage if it exists.
   const rawUser = localStorage.getItem('authUser');
   if (!rawUser) {
     return null;
   }
 
   try {
+    // Parse the stored JSON and normalize field names.
     const parsed = JSON.parse(rawUser) as StoredAuthUser;
     if (!parsed.id) {
       return null;
@@ -35,21 +37,25 @@ export function getAuthUser(): AuthUser | null {
       email: parsed.email,
     };
   } catch {
+    // If parsing fails, treat as unauthenticated.
     return null;
   }
 }
 
 export function useCustomAuth(): AuthState {
+  // Track whether the user is signed in and whether the check has finished.
   const [state, setState] = useState<AuthState>({
     isSignedIn: false,
     isLoaded: false,
   });
 
   useEffect(() => {
+    // Guard to ignore async results if the component unmounts.
     let isActive = true;
 
     const checkSession = async () => {
       try {
+        // Ask the backend if the session is valid using the auth cookie.
         const response = await fetch("http://localhost:8080/authent/protected/", {
           method: "GET",
           credentials: "include",
@@ -68,6 +74,7 @@ export function useCustomAuth(): AuthState {
           return;
         }
 
+        // Network or server error → assume not signed in but mark as loaded.
         setState({
           isSignedIn: false,
           isLoaded: true,
@@ -75,9 +82,11 @@ export function useCustomAuth(): AuthState {
       }
     };
 
+    // Kick off the session check on mount.
     void checkSession();
 
     return () => {
+      // Prevent state updates after unmount.
       isActive = false;
     };
   }, []);

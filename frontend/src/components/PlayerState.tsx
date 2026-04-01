@@ -24,7 +24,7 @@ export default function PlayerState({ userId }: PlayerStateProps) {
       try {
         setLoading(true);
         setError(null);
-        const response  = await fetch(`http://${window.location.hostname}:3000/api/users/${userId}/stats`);
+        const response  = await fetch(`http://${window.location.hostname}:1339/api/users/${userId}/stats`);
         if (!response.ok) 
           throw new Error("User not found");
         const data = (await response.json()) as PlayerStats;
