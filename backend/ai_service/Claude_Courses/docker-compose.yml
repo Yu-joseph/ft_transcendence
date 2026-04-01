@@ -1,0 +1,8 @@
+services:
+  game-api:
+    build: .
+    container_name: llm
+    ports:
+      - "5001:5001"
+    stdin_open: true  
+    tty: true      
