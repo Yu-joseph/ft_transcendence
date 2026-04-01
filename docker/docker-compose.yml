@@ -76,6 +76,8 @@ services:
     #   - .env
     depends_on:
       - db
+      - auth
+      - frontend
   
   game-api:
     build: ../backend/ai_service/services/game_api
@@ -117,7 +119,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pp_data:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
@@ -128,6 +130,7 @@ services:
 
 volumes:
   pgdata:
+  pp_data:
   postgres_data:
     name: postgres_data
     driver: local
