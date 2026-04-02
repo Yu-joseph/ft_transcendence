@@ -12,4 +12,5 @@ COPY . .
 
 EXPOSE 5001
 
-CMD ["python", "llm.py"]
+# CMD ["python", "llm.py"]
+CMD ["uvicorn", "main:APP", "--host", "0.0.0.0", "--port", "9001"]

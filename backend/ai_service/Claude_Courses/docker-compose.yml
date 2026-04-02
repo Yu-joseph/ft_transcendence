@@ -3,6 +3,8 @@ services:
     build: .
     container_name: llm
     ports:
-      - "5001:5001"
+      - "9001:9001"
     stdin_open: true  
     tty: true      
+    env_file:
+      - .env

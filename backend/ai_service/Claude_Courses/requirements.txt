@@ -3,6 +3,10 @@ Flask-Cors
 Flask-Limiter
 flask-sqlalchemy
 
+fastapi
+uvicorn
+
+
 langchain
 langchain-core
 langchain-community

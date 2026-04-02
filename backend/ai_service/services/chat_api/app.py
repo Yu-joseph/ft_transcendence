@@ -7,6 +7,7 @@ import requests
 from dotenv import load_dotenv
 from database import db, get_sessions
 from routes import ChatManager
+from llm.chains import generate_title
 
 load_dotenv()
 
@@ -199,6 +200,17 @@ def health():
 def handle_exception(e):
     return jsonify({"error": str(e)}), 500
 
+
+@app.route("/api/generate-title", methods=['POST'])
+def generate_title_route():
+    data = request.json
+    message = data.get("message", "")
+
+    if not message:
+        return jsonify({"title": "New Chat"})
+
+    title = generate_title(message)
+    return jsonify({"title": title})
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)

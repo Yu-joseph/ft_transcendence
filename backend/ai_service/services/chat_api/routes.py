@@ -1,9 +1,8 @@
 import uuid
 import re
 from datetime import datetime
-
 from database import save_message, get_messages
-from llm.chains import ask_llm, ask_llm_stream, reset_chat, generate_image , load_history
+from llm.chains import ask_llm, ask_llm_stream, reset_chat, generate_image , load_history , generate_title
 
 class ChatManager:
     def __init__(self):
@@ -68,3 +67,4 @@ class ChatManager:
 
     def generate_image(self, prompt):
         return generate_image(prompt)
+    
