@@ -1,10 +1,10 @@
 import { Navigate } from 'react-router-dom'
-import { useCustomAuth } from '../hooks/useCustomAuth'
+import { useAuth } from '../contexts/useAuth'
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isSignedIn, isLoaded } = useCustomAuth()
+  const { user, loading } = useAuth()
 
-  if (!isLoaded)
+  if (loading)
     return (
       <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center">
         Checking session...
@@ -13,7 +13,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   // Using `replace` prevents navigating back to protected pages after redirect.
 
-  if (!isSignedIn) 
+  if (!user) 
     return <Navigate to="/" replace />
 
   return <>{children}</>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../Game/socket/sock";
-import { getAuthUser, type AuthUser } from "../hooks/useCustomAuth";
+import { useAuth } from "../contexts/useAuth";
 import { MdOnlinePrediction } from "react-icons/md";
 
 type Player = {
@@ -16,15 +16,13 @@ type Invite = {
   inviteId: string;
 };
 
-// Accept user as an optional prop with a default fallback
-export default function PlayerList({ user: propUser }: { user?: AuthUser | null } = {}) {
+// Use the global auth context
+export default function PlayerList() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [pendingInvite, setPendingInvite] = useState<Invite | null>(null);
   const [sentToast, setSentToast] = useState<string | null>(null);
   const navigate = useNavigate();
-
-  const customUser = getAuthUser();
-  const user = propUser || customUser;
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!user) return; // Wait until user is fully loaded

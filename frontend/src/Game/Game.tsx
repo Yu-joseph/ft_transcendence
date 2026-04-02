@@ -3,7 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { socket } from "./socket/sock";
 import BottomNav from "../components/BottomNav";
 import WinModal from "../components/WinModal";
-import { getAuthUser, useCustomAuth, type AuthUser } from "../hooks/useCustomAuth";
+import { useAuth } from "../contexts/useAuth";
 
 
 type CellValue = "X" | "O" | null;
@@ -25,8 +25,7 @@ interface Match {
 }
 
 function Game() {
-  const { isSignedIn, isLoaded } = useCustomAuth();
-  const [authUser, setAuthUser] = useState<AuthUser | null>(() => getAuthUser());
+  const { user: authUser } = useAuth();
   const authUserId = authUser?.id;
   const navigate = useNavigate();
   const { matchId } = useParams<{ matchId: string }>();
@@ -56,65 +55,14 @@ function Game() {
   const [openmentLeaver, setopLeave] = useState(false);
   const [showWinModal, setShowWinModal] = useState(false);
 
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn || authUserId) {
-      return;
-    }
-
-    let isActive = true;
-
-    const fetchUserProfile = async () => {
-      try {
-        const response = await fetch("http://localhost:8080/authent/getuser/", {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          console.error("getuser failed", response.status, response.statusText);
-          return;
-        }
-
-        const data = await response.json();
-
-        const rawId = data.id ?? data.user?.id ?? data.profile?.id;
-        const rawUsername = data.username ?? data.user?.username ?? data.profile?.username ?? "";
-
-        const normalized: AuthUser = {
-          id: rawId ? String(rawId) : "",
-          username: rawUsername,
-          fullName: rawUsername,
-          email: data.email ?? data.user?.email ?? data.profile?.email,
-        };
-
-        if (!normalized.id && !normalized.username) {
-          console.error("getuser missing id/username", data);
-          return;
-        }
-
-        if (isActive) {
-          setAuthUser(normalized);
-        }
-      } catch (error) {
-        console.error("Failed to load user profile", error);
-      }
-    };
-
-    void fetchUserProfile();
-
-    return () => {
-      isActive = false;
-    };
-  }, [authUserId, isLoaded, isSignedIn]);
   // Derive move count from the current board state
   const getMoveCount = (symbol: "X" | "O"): number => {
     return board.filter(cell => cell === symbol).length;
   };
 
-  // Ensure socket is connected
+  // Ensure socket is connected and rejoin match if needed
   useEffect(() => {
-    if (!isLoaded) return;
-    if (!isSignedIn || !authUserId || !matchId) return;
+    if (!authUserId || !matchId) return;
 
     if (!socket.connected) {
       socket.connect();
@@ -142,7 +90,7 @@ function Game() {
       socket.off('connect', handleConnect);
       socket.off('reconnect-match-failed', handleReconnectFailed);
     };
-  }, [authUserId, backTo, isLoaded, isSignedIn, matchId, navigate]);
+  }, [authUserId, backTo, matchId, navigate]);
 
   // Listen for match updates from server
   useEffect(() => {
@@ -332,12 +280,8 @@ function Game() {
           Game
         </span>
       </h1>
-      {/* <Lobby /> */}
-      {!isLoaded && (
-        <p className="text-white text-sm">Checking your session...</p>
-      )}
 
-      {isLoaded && !isSignedIn ? (
+      {!authUser ? (
         <div className="flex flex-col items-center gap-4 mt-6">
           <p className="text-white text-xl">Please sign in to play.</p>
           <button
@@ -348,10 +292,6 @@ function Game() {
           >
             Go to Login
           </button>
-        </div>
-      ) : isLoaded && isSignedIn && !authUser ? (
-        <div className="flex flex-col items-center gap-4 mt-6">
-          <p className="text-white text-xl">Loading your player profile...</p>
         </div>
       ) : (
         <>

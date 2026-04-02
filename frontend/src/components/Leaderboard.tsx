@@ -57,14 +57,14 @@ export default function Leaderboard() {
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            {/* <thead className="bg-slate-900"> */}
+            <thead className="bg-slate-900">
               <tr>
                 <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Rank</th>
                 <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Player</th>
                 <th className="px-8 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Wins</th>
                 <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Losses</th>
               </tr>
-            {/* </thead> */}
+            </thead>
             <tbody>
               {leaderboard.map((player, index) => (
                 <tr key={player.id} className="border-t border-slate-700/70 hover:bg-slate-700/40">

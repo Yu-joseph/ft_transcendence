@@ -1,7 +1,7 @@
 // import { SignedIn, SignedOut, SignInButton } from "@clerk/clerk-react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useCustomAuth } from "../hooks/useCustomAuth";
+import { useAuth } from "../contexts/useAuth";
 
 function Login() {
   const [emailOrUsername, setEmailOrUsername] = useState("");
@@ -16,21 +16,21 @@ function Login() {
   const [signupError, setSignupError] = useState<string | null>(null);
   const [signupSuccess, setSignupSuccess] = useState<string | null>(null);
   const [signupLoading, setSignupLoading] = useState(false);
-  const { isSignedIn, isLoaded } = useCustomAuth();
+  const { user, loading: authLoading, setUser } = useAuth();
   const navigate = useNavigate();
 
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center">
-        Checking session...
-      </div>
-    );
+  
+
+  // Show loading state while auth context is still fetching
+  if (authLoading) {
+    return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><p className="text-white">Loading...</p></div>;
   }
 
-  if (isSignedIn) {
+  if (user) {
     return <Navigate to="/Dashboard" replace />;
   }
 
+  // Reads any API response safely, handling JSON and plain text payloads.
   const readApiResponse = async (response: Response) => {
     const contentType = response.headers.get("content-type") ?? "";
     const raw = await response.text();
@@ -50,11 +50,13 @@ function Login() {
     return { data: raw, isJson: false };
   };
 
+  // Submits login credentials, stores returned user data, and redirects on success.
   const submitLogin = async () => {
     setError(null);
     setLoading(true);
 
     try {
+      //trim to remove spaces from start and end
       const loginId = emailOrUsername.trim();
       const isEmail = loginId.includes("@");
       const response = await fetch("http://localhost:8080/authent/login/", {
@@ -80,9 +82,24 @@ function Login() {
         throw new Error(message);
       }
 
-      // Store user object directly when backend returns it.
-      if (data.user && typeof data.user === "object") {
-        localStorage.setItem("authUser", JSON.stringify(data.user));
+      // Fetch authenticated profile and push it into global auth context.
+      const userResponse = await fetch("http://localhost:8080/authent/getuser/", {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        setUser({
+          id: String(userData.id ?? userData.user?.id ?? ""),
+          username: userData.username ?? userData.user?.username ?? loginId ?? "Player",
+          fullName: userData.fullname ?? userData.fullName ?? userData.user?.fullname,
+          email: userData.email ?? userData.user?.email,
+          avatar: userData.avatar ?? userData.profile?.avatar,
+        });
+      } else {
+        // Treat 401/not-ok as unauthenticated without raising an error.
+        setUser(null);
       }
 
       // Redirect to dashboard
@@ -94,15 +111,18 @@ function Login() {
     }
   };
 
+  // Handles form submit and prevents page reload.
   const handleLoginSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     void submitLogin();
   };
 
+  // Handles click on the sign-in button.
   const handleLoginClick = () => {
     void submitLogin();
   };
 
+  // Submits sign-up data and resets form state when account creation succeeds.
   const submitSignup = async () => {
     setSignupError(null);
     setSignupSuccess(null);
@@ -150,6 +170,7 @@ function Login() {
     }
   };
 
+  // Handles sign-up form submit and prevents page reload.
   const handleSignupSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     void submitSignup();

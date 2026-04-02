@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GiTicTacToe } from "react-icons/gi";
+import { useAuth } from "../contexts/useAuth";
 
 function Bar() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{ username?: string; fullName?: string; avatar?: string } | null>(null);
+  const { user } = useAuth();
 
   // Normalize avatar URL to hit the auth service media endpoint via nginx (/authent/ -> auth:8000)
   const normalizeAvatarUrl = (url?: string) => {
@@ -22,38 +22,6 @@ function Bar() {
     return `${base}${withMediaPrefix}`;
   };
 
-  useEffect(() => {
-    let alive = true;
-
-    const loadUser = async () => {
-      try {
-        const res = await fetch("http://localhost:8080/authent/getuser/", {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!res.ok) {
-          console.error("getuser failed", res.status);
-          return;
-        }
-        const data = await res.json();
-        if (!alive) 
-          return;
-        setUser({
-          username: data.username,
-          fullName: data.fullname ?? data.fullName,
-          avatar: normalizeAvatarUrl(data.avatar ?? data.profile?.avatar),
-        });
-      } catch (err) {
-        console.error("getuser error", err);
-      }
-    };
-
-    void loadUser();
-    return () => {
-      alive = false;
-    };
-  }, []);
-
   const handleLogout = async () => {
     try {
       await fetch("http://localhost:8080/authent/logout/", {
@@ -61,17 +29,13 @@ function Bar() {
         credentials: "include",
       });
     } finally {
-      localStorage.removeItem("authUser");
       navigate("/");
     }
   };
 
   const displayName = user?.fullName ?? user?.username ?? "Player";
   const displayInitial = displayName.trim().charAt(0).toUpperCase() || "P";
-
-  const handleAvatarError = () => {
-    setUser((prev) => (prev ? { ...prev, avatar: undefined } : prev));
-  };
+  const avatarUrl = user?.avatar ? normalizeAvatarUrl(user.avatar) : undefined;
 
   return (
     <header className="bg-slate-900 border-b border-amber-400 shadow-lg">
@@ -88,12 +52,11 @@ function Bar() {
           <p className="text-gray-300">Play online multiplayer tic-tac-toe games and tournaments</p>
         </div>
         <div className="flex items-center gap-3">
-          {user?.avatar ? (
+          {avatarUrl ? (
             <img
-              src={user.avatar}
+              src={avatarUrl}
               alt={displayName}
               className="h-9 w-9 rounded-full object-cover border border-amber-400"
-              onError={handleAvatarError}
             />
           ) : (
             <span className="h-9 w-9 rounded-full bg-amber-500 text-slate-900 flex items-center justify-center font-semibold border border-amber-400">
