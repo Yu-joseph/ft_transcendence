@@ -295,7 +295,6 @@ export function setupTournamentHandlers(io: Server) {
 
       tournaments.set(tournamentId, tournament);
 
-
       try {
         await prisma.tournament.create({
           data: {
@@ -303,8 +302,7 @@ export function setupTournamentHandlers(io: Server) {
             name: tournament.name,
             status: "waiting",
             creatorId: player.id,
-            createdAt: new Date(),
-
+            created_at: new Date(),
             TournamentParticipant: {
               create: {
                 id: randomUUID(),
@@ -317,11 +315,20 @@ export function setupTournamentHandlers(io: Server) {
         });
       } catch (err) {
         console.error("Failed to create tournament in DB:", err);
+
+        // rollback in-memory state
+        tournaments.delete(tournamentId);
+
+        // notify client
+        socket.emit("tournament-error", {
+          message: "Failed to create tournament. Please try again.",
+        });
+
+        return; // stop flow: do not emit success events
       }
 
-      socket.emit('tournament-created', { tournamentId, tournament });
-
-      io.emit('tournament-available', {
+      socket.emit("tournament-created", { tournamentId, tournament });
+      io.emit("tournament-available", {
         tournamentId,
         name: tournament.name,
         creatorName: player.username,
@@ -368,14 +375,14 @@ export function setupTournamentHandlers(io: Server) {
 
       try {
         await prisma.tournamentParticipant.create({
-        data: {
-          id: crypto.randomUUID(),
-          tournamentId: data.tournamentId,
-          userId: data.userId,
-          seed: tournament.players.length,
-          eliminated: false,
-        },
-      });
+          data: {
+            id: crypto.randomUUID(),
+            tournamentId: data.tournamentId,
+            userId: data.userId,
+            seed: tournament.players.length,
+            eliminated: false,
+          },
+        });
       } catch (err) {
         console.error('Failed to add tournament participant:', err);
       }
