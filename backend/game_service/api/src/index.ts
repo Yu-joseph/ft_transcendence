@@ -91,7 +91,7 @@ app.get('/api/users/:id/tournaments', async (req: Request, res: Response) => {
             : entry.Tournament.status === 'finished'
               ? 'eliminated'
               : 'playing',
-      eliminatedInRound: entry.eliminatedInRound,
+      eliminatedInRound: entry.eliminated_in_round,
       eliminated : entry.eliminated,
       seed: entry.seed,
       tournamentWinner: entry.Tournament.User_Tournament_winnerIdToUser,

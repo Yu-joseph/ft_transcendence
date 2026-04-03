@@ -7,7 +7,7 @@ import { advanceTournamentBracket } from './tournament';
 const searchQueue: string[] = [];
 export const players = new Map<string, Player>();
 export const matches = new Map<string, Match>();
-const disconnectTimeouts = new Map<string, NodeJS.Timeout>();
+const disconnectTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 export { createGameInDB, finalizeGame, updateGameInDB };
 
 /**
@@ -274,6 +274,7 @@ export function setupSocketHandlers(io: Server) {
         clearTimeout(timeout);
         disconnectTimeouts.delete(data.userId);
       }
+
       const match = matches.get(data.matchId);
       if (!match) {
         socket.emit('reconnect-match-failed', { reason: 'Match not found' });
@@ -286,13 +287,16 @@ export function setupSocketHandlers(io: Server) {
         return;
       }
 
-      player.socketId = socket.id;
-      players.set(socket.id, player);
+      bindPlayerToSocket(player, socket.id);
       const symbol = match.players[0].id === data.userId ? 'X' : 'O';
       socket.emit('match-found', { matchId: data.matchId, match, symbol });
-      console.log(`${player.username} reconnected to match ${data.matchId}`);
     });
     socket.on('leave-match', async (data: { matchId: string; userId: string }) => {
+      const pending = disconnectTimeouts.get(data.userId);
+      if (pending) {
+        clearTimeout(pending);
+        disconnectTimeouts.delete(data.userId);
+      }
       await forfeitMatch(io, data.matchId, data.userId);
     });
     socket.on('disconnect', () => {
@@ -300,24 +304,30 @@ export function setupSocketHandlers(io: Server) {
 
       const queueIndex = searchQueue.indexOf(socket.id);
       if (queueIndex > -1) searchQueue.splice(queueIndex, 1);
+
       if (player) {
+        const existingTimeout = disconnectTimeouts.get(player.id);
+        if (existingTimeout) clearTimeout(existingTimeout);
+
         for (const [matchId, match] of matches) {
           if (match.status === 'playing' && match.players.some(p => p.id === player.id)) {
-            if (match.tournamentId) {
-              // Tournament match: give 15s grace period for reconnect (page refresh)
-              const timeout = setTimeout(() => {
-                disconnectTimeouts.delete(player.id);
-                forfeitMatch(io, matchId, player.id);
-              }, 15000);
-              disconnectTimeouts.set(player.id, timeout);
-            } else {
-              // Regular 1v1: forfeit immediately
-              forfeitMatch(io, matchId, player.id);
-            }
+            const timeout = setTimeout(() => {
+              disconnectTimeouts.delete(player.id);
+
+              const reconnectedElsewhere = Array.from(players.entries()).some(
+                ([sid, p]) => sid !== socket.id && p.id === player.id
+              );
+              if (!reconnectedElsewhere) {
+                void forfeitMatch(io, matchId, player.id);
+              }
+            }, RECONNECT_GRACE_MS);
+
+            disconnectTimeouts.set(player.id, timeout);
             break;
           }
         }
       }
+
       players.delete(socket.id);
       io.emit('players-update', Array.from(players.values()));
       io.emit('enlineusers', players.size);
@@ -338,4 +348,16 @@ function checkWinner(board: (string | null)[]): string | null {
     }
   }
   return null;
+}
+
+const RECONNECT_GRACE_MS = 15000;
+
+function bindPlayerToSocket(player: Player, socketId: string) {
+  for (const [existingSocketId, existing] of players) {
+    if (existing.id === player.id && existingSocketId !== socketId) {
+      players.delete(existingSocketId);
+    }
+  }
+  player.socketId = socketId;
+  players.set(socketId, player);
 }
