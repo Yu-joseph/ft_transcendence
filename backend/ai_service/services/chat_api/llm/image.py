@@ -42,7 +42,7 @@ class ImageGenerator:
             else:
                 return Config.handle_error(e)
 
-        existing_file = []
+        existing_file = [] 
         for f in os.listdir(self.static_dir):
             if f.startswith("image_") and f.endswith(".jpg"):
                 existing_file.append(f)

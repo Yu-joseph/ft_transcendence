@@ -127,9 +127,10 @@ def api_image():
     message = data.get('message', '').strip()
     if not message:
         return jsonify({'error': 'Empty prompt'}), 400
+    result = chat.generate_image(message)
 
-    image_url = chat.generate_image(message)
-    return jsonify({ "content": f'<img src="{image_url}"/>' })
+    if isinstance(result, str) and result.startswith('/static/'):
+        return jsonify({'image_url': result})
 
 
 

@@ -48,6 +48,7 @@ def ai_move():
         board = data.get("board")
         phase = data.get("phase")
         player = data.get("player", "O")
+        
 
         if not isinstance(board, list):
             return jsonify({"error": "'board' must be a list"}), 400
