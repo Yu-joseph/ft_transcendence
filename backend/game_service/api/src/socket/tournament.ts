@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io';
 import { Player, Match, Tournament, TournamentMatch } from '../types/game';
 import { players, matches, createGameInDB } from './handlers';
 import prisma from '../lib/prisma';
+import { randomUUID } from "crypto";
 
 // In-memory tournament storage
 const tournaments = new Map<string, Tournament>();
@@ -294,20 +295,28 @@ export function setupTournamentHandlers(io: Server) {
 
       tournaments.set(tournamentId, tournament);
 
+
       try {
         await prisma.tournament.create({
           data: {
             id: tournamentId,
             name: tournament.name,
-            status: 'waiting',
+            status: "waiting",
             creatorId: player.id,
-            players: {
-              create: { userId: player.id, seed: 1 },
+            createdAt: new Date(),
+
+            TournamentParticipant: {
+              create: {
+                id: randomUUID(),
+                userId: player.id,
+                seed: 1,
+                eliminated: false,
+              },
             },
           },
         });
       } catch (err) {
-        console.error('Failed to create tournament in DB:', err);
+        console.error("Failed to create tournament in DB:", err);
       }
 
       socket.emit('tournament-created', { tournamentId, tournament });
@@ -359,12 +368,14 @@ export function setupTournamentHandlers(io: Server) {
 
       try {
         await prisma.tournamentParticipant.create({
-          data: {
-            tournamentId: data.tournamentId,
-            userId: data.userId,
-            seed: tournament.players.length,
-          },
-        });
+        data: {
+          id: crypto.randomUUID(),
+          tournamentId: data.tournamentId,
+          userId: data.userId,
+          seed: tournament.players.length,
+          eliminated: false,
+        },
+      });
       } catch (err) {
         console.error('Failed to add tournament participant:', err);
       }

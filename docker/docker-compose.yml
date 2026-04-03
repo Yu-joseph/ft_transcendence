@@ -9,9 +9,7 @@ services:
       POSTGRES_PASSWORD: 1234
       POSTGRES_DB: mydb
     volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - app-network
+      - ./db:/var/lib/postgresql/data
 
   pgadmin:
     image: dpage/pgadmin4
@@ -47,8 +45,7 @@ services:
     build: ../frontend
     volumes:
       - ../frontend:/app/
-      - /app/node_modules 
-
+  
   nginx:
     build : ./nginx
     container_name: nginx
@@ -59,10 +56,6 @@ services:
     depends_on:
       - frontend
       - auth
-      - db
-      - game-api
-      - chat-api
-      
 
   game:
     build: ../backend/game_service
@@ -76,75 +69,15 @@ services:
     #   - .env
     depends_on:
       - db
-  
-  game-api:
-    build: ../backend/ai_service/services/game_api
-    container_name: game-api
-    ports:
-      - "5001:5001"
-    networks:
-      - app-network
 
-  chat-api:
-    build: ../backend/ai_service/services/chat_api
-    container_name: chat-api
-    ports:
-      - "5000:5000"
+  chat:
+    build: ../backend/chat/chat-system/backend
+    container_name: chat
+    restart: always
     depends_on:
-      postgres:
-        condition: service_healthy    
-      game-api:
-        condition: service_started
-    env_file:
-      - .env
+      - db
     environment:
-      GAME_API_URL: http://game-api:5001
-    volumes:
-      - ../backend/ai_service/static:/app/static
-      - ../backend/ai_service/templates:/app/templates
-      - ../backend/ai_service/uploads:/app/uploads
-    networks:
-      - app-network
-
-  postgres:
-    image: postgres:15
-    container_name: game-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "5433:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
-      interval: 5s   
-      timeout: 5s      
-      retries: 10       
+      DATABASE_URL: postgres://sayf:1234@db:5432/mydb
 
 volumes:
   pgdata:
-  postgres_data:
-    name: postgres_data
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${DATA_PATH}
-
-networks:
-  app-network:
-
-
-  # chat:
-  #   build: ../backend/chat/chat-system/backend
-  #   container_name: chat
-  #   restart: always
-  #   depends_on:
-  #     - db
-  #   environment:
-  #     DATABASE_URL: postgres://sayf:1234@db:5432/mydb
