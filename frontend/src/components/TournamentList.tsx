@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { socket } from "../Game/socket/sock";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/useAuth";
+import { useAuth } from "../auth/useAuth";
 
 type TournamentEntry = {
   tournamentId: string;

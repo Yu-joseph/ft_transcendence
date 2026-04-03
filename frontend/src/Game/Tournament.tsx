@@ -5,7 +5,7 @@ import BottomNav from '../components/BottomNav'
 import TournamentLoadingPage from '../components/TournamentLoadingPage'
 import { socket } from './socket/sock'
 import { GiPodiumWinner } from "react-icons/gi";
-import { useAuth } from '../contexts/useAuth'
+import { useAuth } from '../auth/useAuth'
 
 
 interface Player {
@@ -217,7 +217,7 @@ function Tournament()
     socket.on('match-found', onMatchFound)
     socket.on('tournament-error', onError)
 
-    // Re-emit join so the server resends tournament-update to this freshly mounted page
+    // Re-emit join so the server resends tournament-update after page reload
     // location.state is used on normal navigation; sessionStorage survives refresh
     if (joinInfo?.tournamentId && joinInfo?.userId) {
       socket.emit('join-tournament', {

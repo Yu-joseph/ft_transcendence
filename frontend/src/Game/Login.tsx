@@ -1,7 +1,7 @@
 // import { SignedIn, SignedOut, SignInButton } from "@clerk/clerk-react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useAuth } from "../contexts/useAuth";
+import { useAuth } from "../auth/useAuth";
 
 function Login() {
   const [emailOrUsername, setEmailOrUsername] = useState("");

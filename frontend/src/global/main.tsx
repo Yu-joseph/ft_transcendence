@@ -1,14 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
-import Game from './Game.tsx'
-import Lobby from './Lobby.tsx'
-import Login from './Login.tsx'
+import '../Game/index.css'
+import Game from '../Game/Game.tsx'
+import Lobby from '../Game/Lobby.tsx'
+import Login from '../Game/Login.tsx'
 import Dashboard from "./Dashboard.tsx";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Tournament from './Tournament.tsx'
+import Tournament from '../Game/Tournament.tsx'
 import ProtectedRoute from '../components/ProtectedRoute.tsx'
-import { AuthProvider } from '../contexts/AuthContext'
+import { AuthProvider } from '../auth/AuthContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

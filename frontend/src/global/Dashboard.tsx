@@ -11,15 +11,15 @@ import { TbTournament } from "react-icons/tb";
 // import { GiTicTacToe } from "react-icons/gi";
 import Bar from '../components/Bar'
 import CreateTourn from "../components/CreateTourn";
-import { socket } from "./socket/sock";
-import { useAuth } from "../contexts/useAuth";
+import { socket } from "../Game/socket/sock";
+import { useAuth } from "../auth/useAuth";
 
 
 
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [opnePop, setOpenPop] = useState<boolean>(false);
 
   useEffect(() => {
@@ -38,6 +38,14 @@ export default function Dashboard() {
       socket.off("tournament-created", onTournamentCreated);
     };
   }, [navigate, user]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex items-center justify-center px-4">
+        <p className="text-white text-lg">Loading session...</p>
+      </div>
+    );
+  }
 
   if (!user) {
     return (

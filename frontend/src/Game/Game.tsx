@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { socket } from "./socket/sock";
-import BottomNav from "../components/BottomNav";
+// import BottomNav from "../components/BottomNav";
 import WinModal from "../components/WinModal";
-import { useAuth } from "../contexts/useAuth";
+import { useAuth } from "../auth/useAuth";
 
 
 type CellValue = "X" | "O" | null;
@@ -402,7 +402,7 @@ function Game() {
           )}
         </>
       )}
-      <BottomNav />
+      {/* <BottomNav /> */}
     </header>
     </div>
   );

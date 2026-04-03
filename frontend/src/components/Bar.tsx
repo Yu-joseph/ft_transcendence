@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { GiTicTacToe } from "react-icons/gi";
-import { useAuth } from "../contexts/useAuth";
+import { useAuth } from "../auth/useAuth";
 
 function Bar() {
   const navigate = useNavigate();

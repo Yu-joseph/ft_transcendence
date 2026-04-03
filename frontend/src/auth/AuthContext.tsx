@@ -1,9 +1,11 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { AuthContext, type AuthUser } from './auth-context';
 
-// Cache the fetch promise so multiple component mounts don't cause duplicate requests
+// Cache the fetch promise so repeated component loads do not cause duplicate requests
 let fetchUserPromise: Promise<AuthUser | null> | null = null;
 
+// Fetches the authenticated user from the backend and normalizes the response shape.
+// Uses a shared in-flight promise to avoid duplicate network requests.
 function fetchAuthUser(): Promise<AuthUser | null> {
   // Return cached promise if already in flight
   if (fetchUserPromise) {
@@ -41,13 +43,16 @@ function fetchAuthUser(): Promise<AuthUser | null> {
   return fetchUserPromise;
 }
 
+// Provides auth state to the app and initializes user data once when it first loads.
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Prevent state updates if this provider closes before fetch completes.
     let isActive = true;
 
+    // Loads current session user and flips loading off when finished.
     const initializeAuth = async () => {
       const userData = await fetchAuthUser();
       
