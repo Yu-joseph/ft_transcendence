@@ -57,7 +57,7 @@ app.get('/api/users/:id/games', async (req: Request, res: Response) => {
         User_Game_playerXIdToUser: { select: { id: true, username: true } },
         User_Game_playerOIdToUser: { select: { id: true, username: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { created_at: 'desc' },
     });
     res.json(games);
   } catch (err) {
@@ -77,7 +77,7 @@ app.get('/api/users/:id/tournaments', async (req: Request, res: Response) => {
           }
         }
       },
-      orderBy: { Tournament: {createdAt: 'desc'} },
+      orderBy: { Tournament: {created_at: 'desc'} },
     });
     const result = entries.map(entry => ({
       tournamentId: entry.tournamentId,
@@ -91,11 +91,11 @@ app.get('/api/users/:id/tournaments', async (req: Request, res: Response) => {
             : entry.Tournament.status === 'finished'
               ? 'eliminated'
               : 'playing',
-      eliminatedInRound: entry.eliminatedInRound,
+      eliminatedInRound: entry.eliminated_in_round,
       eliminated : entry.eliminated,
       seed: entry.seed,
       tournamentWinner: entry.Tournament.User_Tournament_winnerIdToUser,
-      createdAt: entry.Tournament.createdAt,
+      createdAt: entry.Tournament.created_at,
     }));
     res.json(result);
   } catch (err) {

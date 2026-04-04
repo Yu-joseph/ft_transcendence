@@ -63,7 +63,7 @@ def login(request):
     access  = refresh.access_token
 
     response = JsonResponse({"message": "Login successful"})
-    response.set_cookie(key="access_token",  value=str(access),  max_age=300,    httponly=True, secure=False, samesite="Lax", path="/")
+    response.set_cookie(key="access_token",  value=str(access),  max_age=600,    httponly=True, secure=False, samesite="Lax", path="/")
     response.set_cookie(key="refresh_token", value=str(refresh), max_age=604800, httponly=True, secure=False, samesite="Lax", path="/")
     return response
 
@@ -254,7 +254,7 @@ def get_user(request):
         return JsonResponse({"error": "Not authenticated"}, status=401)
 
     user = User.objects.filter(id=tmp_user.id).values( 
-         "username", "fullname", "avatar"
+         "username", "fullname", "avatar", "id"
     ).first()
 
     if not user:

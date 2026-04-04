@@ -1,9 +1,9 @@
-import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { socket } from "./socket/sock";
-import BottomNav from "../components/BottomNav";
+// import BottomNav from "../components/BottomNav";
 import WinModal from "../components/WinModal";
+import { useAuth } from "../auth/useAuth";
 
 
 type CellValue = "X" | "O" | null;
@@ -25,48 +25,44 @@ interface Match {
 }
 
 function Game() {
-  const { user } = useUser();
+  const { user: authUser } = useAuth();
+  const authUserId = authUser?.id;
   const navigate = useNavigate();
   const { matchId } = useParams<{ matchId: string }>();
   const location = useLocation();
-  //useLocation to access url info
-  const tournamentId = (location.state as { tournamentId?: string } | null)?.tournamentId ?? null
-  const backToRef = useRef(tournamentId ? '/Tournament' : '/Dashboard')
-  const [board, setBoard] = useState<CellValue[]>(Array(9).fill(null));
-  const [mySymbol, setMySymbol] = useState<"X" | "O" | null>(null);
-  const [currentTurn, setCurrentTurn] = useState<string | null>(null);
-  const [winner, setWinner] = useState<string | null>(null);
-  const [matchStatus, setMatchStatus] = useState<string>("waiting");
-  const [players, setPlayers] = useState<Player[]>([]);
+  // useLocation to access navigation state (symbol/match/tournament)
+  const locationState = location.state as { symbol?: string; match?: Match; tournamentId?: string } | null;
+  const tournamentId = locationState?.tournamentId ?? null;
+  const initialMatch = locationState?.match;
+
+  const [backTo, setBackTo] = useState(tournamentId ? "/Tournament" : "/Dashboard");
+  const [board, setBoard] = useState<CellValue[]>(() =>
+    (initialMatch?.board as CellValue[]) ?? Array(9).fill(null)
+  );
+  const [mySymbol, setMySymbol] = useState<"X" | "O" | null>(
+    () => (locationState?.symbol as "X" | "O" | undefined) ?? null
+  );
+  const [currentTurn, setCurrentTurn] = useState<string | null>(() => initialMatch?.currentTurn ?? null);
+  const [winner, setWinner] = useState<string | null>(() => {
+    if (!initialMatch?.winner) return null;
+    const winnerPlayer = initialMatch.players.find(p => p.id === initialMatch.winner);
+    return winnerPlayer?.username ?? initialMatch.winner;
+  });
+  const [matchStatus, setMatchStatus] = useState<string>(() => initialMatch?.status ?? "waiting");
+  const [players, setPlayers] = useState<Player[]>(() => initialMatch?.players ?? []);
   const [pieceToRemove, setPieceToRemove] = useState<number | null>(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [openmentLeaver, setopLeave] = useState(false);
   const [showWinModal, setShowWinModal] = useState(false);
+
   // Derive move count from the current board state
   const getMoveCount = (symbol: "X" | "O"): number => {
     return board.filter(cell => cell === symbol).length;
   };
 
-  // Get symbol and initial match from location state (passed from Lobby)
+  // Ensure socket is connected and rejoin match if needed
   useEffect(() => {
-    const state = location.state as { symbol?: string; match?: Match; tournamentId?: string } | null;
-    if (state?.symbol) {
-      setMySymbol(state.symbol as "X" | "O");
-    }
-    if (state?.match) {
-      console.log("Initializing match from state:", state.match);
-      setBoard(state.match.board as CellValue[]);
-      // casted CellValue cuz the ts should know this protcted before ( and convert it to cellValue)
-      setCurrentTurn(state.match.currentTurn);
-      setMatchStatus(state.match.status);
-      setPlayers(state.match.players);
-    }
-  },[]);
-
-  // Ensure socket is connected
-  useEffect(() => {
-     if (!user || !matchId) 
-      return;
+    if (!authUserId || !matchId) return;
 
     if (!socket.connected) {
       socket.connect();
@@ -74,7 +70,7 @@ function Game() {
 
     // If we dont have match state (after refresh), ask server to rejoin
     const handleConnect = () => {
-      socket.emit('reconnect-match', { userId: user.id, matchId });
+      socket.emit('reconnect-match', { userId: authUserId, matchId });
     };
 
     if (socket.connected) {
@@ -85,7 +81,7 @@ function Game() {
 
     const handleReconnectFailed = (data: { reason: string }) => {
       console.log('Reconnect failed:', data.reason);
-      navigate(backToRef.current);
+      navigate(backTo);
     };
 
     socket.on('reconnect-match-failed', handleReconnectFailed);
@@ -94,7 +90,7 @@ function Game() {
       socket.off('connect', handleConnect);
       socket.off('reconnect-match-failed', handleReconnectFailed);
     };
-  }, [user, matchId, navigate]);
+  }, [authUserId, backTo, matchId, navigate]);
 
   // Listen for match updates from server
   useEffect(() => {
@@ -121,12 +117,12 @@ function Game() {
 
     const handleOpponentForfeited = () => {
       setopLeave(true);
-      setTimeout(() => navigate(backToRef.current), 4000);
+      setTimeout(() => navigate(backTo), 4000);
     };
 
     const handleTournamentFinished = () => {
       // whole tournament is over — always go back to Dashboard, not Tournament page
-      backToRef.current = '/Dashboard'
+      setBackTo('/Dashboard')
     };
 
     socket.on("match-update", handleMatchUpdate);
@@ -138,7 +134,7 @@ function Game() {
       socket.off("opponent-forfeited", handleOpponentForfeited);
       socket.off("tournament-finished", handleTournamentFinished);
     };
-  }, [matchId]);
+  }, [backTo, matchId, navigate]);
 
     useEffect(() => {
     if (!matchId) return;
@@ -181,27 +177,27 @@ function Game() {
     if (matchStatus === "playing" && !winner) {
       setShowLeaveConfirm(true);
     } else {
-      navigate(backToRef.current);
+      navigate(backTo);
     }
   };
 
   const handleConfirmLeave = () => {
-    socket.emit("leave-match", { matchId, userId: user?.id });
+    socket.emit("leave-match", { matchId, userId: authUser?.id });
     setShowLeaveConfirm(false);
-    navigate(backToRef.current);
+    navigate(backTo);
   };
 
   // Determine if it's my turn
-  const isMyTurn = user && currentTurn === user.id;
+  const isMyTurn = authUser && currentTurn === authUser.id;
 
   // Debug states
   useEffect(() => {
-    console.log("Debug - user.id:", user?.id);
+    console.log("Debug - user.id:", authUser?.id);
     console.log("Debug - currentTurn:", currentTurn);
     console.log("Debug - isMyTurn:", isMyTurn);
     console.log("Debug - matchStatus:", matchStatus);
     console.log("Debug - mySymbol:", mySymbol);
-  }, [user, currentTurn, isMyTurn, matchStatus, mySymbol]);
+  }, [authUser, currentTurn, isMyTurn, matchStatus, mySymbol]);
 
   // Determine status text
   let statusText: string;
@@ -219,6 +215,7 @@ function Game() {
   }
 
   const handleClick = (index: number) => {
+    if (!authUser) return;
     if (!isMyTurn || winner || matchStatus !== "playing") return;
 
     const symbol = mySymbol as "X" | "O";
@@ -232,7 +229,7 @@ function Game() {
         matchId,
         oldindex: -1,          // no removal
         newindex: index,
-        userId: user!.id
+        userId: authUser.id
       });
 
       return;
@@ -260,7 +257,7 @@ function Game() {
         matchId,
         oldindex: pieceToRemove,
         newindex: index,
-        userId: user!.id
+        userId: authUser.id
       });
 
       setPieceToRemove(null);
@@ -283,8 +280,8 @@ function Game() {
           Game
         </span>
       </h1>
-      {/* <Lobby /> */}
-      <SignedOut>
+
+      {!authUser ? (
         <div className="flex flex-col items-center gap-4 mt-6">
           <p className="text-white text-xl">Please sign in to play.</p>
           <button
@@ -296,118 +293,116 @@ function Game() {
             Go to Login
           </button>
         </div>
-      </SignedOut> 
-
-      <SignedIn>
-        {/* Using Clerk to show the player info */}
-        <div className="flex items-center justify-center gap-3 mt-2">
-          <UserButton afterSignOutUrl="/" />
-          <span className="text-white text-sm">
-            {user?.fullName ?? user?.username ?? user?.primaryEmailAddress?.emailAddress}
-            {mySymbol && <span className="ml-2 text-emerald-400">({mySymbol})</span>}
-          </span>
-        </div>
-
-        {/* Show players in match */}
-        {players.length === 2 && (
-          <div className="text-slate-400 text-sm">
-            {players[0].username} (X) vs {players[1].username} (O)
+      ) : (
+        <>
+          <div className="flex items-center justify-center gap-3 mt-2">
+            <span className="text-white text-sm">
+              {authUser?.fullName ?? authUser?.username ?? authUser?.email ?? "Player"}
+              {mySymbol && <span className="ml-2 text-emerald-400">({mySymbol})</span>}
+            </span>
           </div>
-        )}
 
-        <p className="text-white text-xl">{statusText}</p>
+          {/* Show players in match */}
+          {players.length === 2 && (
+            <div className="text-slate-400 text-sm">
+              {players[0].username} (X) vs {players[1].username} (O)
+            </div>
+          )}
 
-        {/* Instructions when need to remove a piece */}
-        {isMyTurn && mySymbol && getMoveCount(mySymbol) >= 3 && pieceToRemove === null && !winner && (
-          <p className="text-yellow-400 text-sm">Click one of your pieces to remove it first</p>
-        )}
-        {pieceToRemove !== null && (
-          <p className="text-green-400 text-sm">Now click an empty cell to place your piece</p>
-        )}
+          <p className="text-white text-xl">{statusText}</p>
 
-        {/* Board */}
-        <div className="grid grid-cols-3 gap-3 mt-6">
-          {board.map((cell, index) => {
-            const isSelectedForRemoval = pieceToRemove === index;
-            const isMyPiece = cell === mySymbol;
-            const needsToSelectPiece = isMyTurn && mySymbol && getMoveCount(mySymbol) >= 3 && pieceToRemove === null;
-            
-            return (
-              <button
-                key={index}
-                onClick={() => handleClick(index)}
-                disabled={!isMyTurn || !!winner}
-                className={`w-20 h-20 text-3xl font-bold rounded-lg
-                          ${isSelectedForRemoval 
-                            ? "bg-red-600 ring-4 ring-red-400" 
-                            : needsToSelectPiece && isMyPiece
-                              ? "bg-yellow-700 hover:bg-yellow-600"
-                              : "bg-slate-800"}
-                          text-white
-                          ${isMyTurn && !winner ? "hover:bg-slate-700 cursor-pointer" : "cursor-not-allowed opacity-80"}
-                          transition`}
-              >
-                {cell}
-              </button>
-            );
-          })}
-        </div>
+          {/* Instructions when need to remove a piece */}
+          {isMyTurn && mySymbol && getMoveCount(mySymbol) >= 3 && pieceToRemove === null && !winner && (
+            <p className="text-yellow-400 text-sm">Click one of your pieces to remove it first</p>
+          )}
+          {pieceToRemove !== null && (
+            <p className="text-green-400 text-sm">Now click an empty cell to place your piece</p>
+          )}
 
-        <button
-          onClick={handleLeaveAttempt}
-          className="mt-6 px-6 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-500 transition"
-        >
-          Back to Lobby
-        </button>
-
-        {/* Opponent Left Modal */}
-      
-
-        {/* Leave Confirmation Modal */}
-        {showLeaveConfirm && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-            <div className="bg-slate-800 border border-red-700 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-              <h3 className="text-white text-xl font-bold mb-2">Leave Match?</h3>
-              <p className="text-slate-300 mb-6">
-                If you leave now, you will <span className="text-red-400 font-semibold">Lose the match</span> and your opponent wins.
-              </p>
-              <div className="flex gap-3">
+          {/* Board */}
+          <div className="grid grid-cols-3 gap-3 mt-6">
+            {board.map((cell, index) => {
+              const isSelectedForRemoval = pieceToRemove === index;
+              const isMyPiece = cell === mySymbol;
+              const needsToSelectPiece = isMyTurn && mySymbol && getMoveCount(mySymbol) >= 3 && pieceToRemove === null;
+              
+              return (
                 <button
-                  onClick={handleConfirmLeave}
-                  className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition font-semibold"
+                  key={index}
+                  onClick={() => handleClick(index)}
+                  disabled={!isMyTurn || !!winner}
+                  className={`w-20 h-20 text-3xl font-bold rounded-lg
+                            ${isSelectedForRemoval 
+                              ? "bg-red-600 ring-4 ring-red-400" 
+                              : needsToSelectPiece && isMyPiece
+                                ? "bg-yellow-700 hover:bg-yellow-600"
+                                : "bg-slate-800"}
+                            text-white
+                            ${isMyTurn && !winner ? "hover:bg-slate-700 cursor-pointer" : "cursor-not-allowed opacity-80"}
+                            transition`}
                 >
-                  Leave
+                  {cell}
                 </button>
-                <button
-                  onClick={() => setShowLeaveConfirm(false)}
-                  className="flex-1 px-4 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-500 transition font-semibold"
-                >
-                  Stay
-                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={handleLeaveAttempt}
+            className="mt-6 px-6 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-500 transition"
+          >
+            Back to Lobby
+          </button>
+
+          {/* Opponent Left Modal */}
+        
+
+          {/* Leave Confirmation Modal */}
+          {showLeaveConfirm && (
+            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+              <div className="bg-slate-800 border border-red-700 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+                <h3 className="text-white text-xl font-bold mb-2">Leave Match?</h3>
+                <p className="text-slate-300 mb-6">
+                  If you leave now, you will <span className="text-red-400 font-semibold">Lose the match</span> and your opponent wins.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleConfirmLeave}
+                    className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition font-semibold"
+                  >
+                    Leave
+                  </button>
+                  <button
+                    onClick={() => setShowLeaveConfirm(false)}
+                    className="flex-1 px-4 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-500 transition font-semibold"
+                  >
+                    Stay
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-        {/* Opponent forfeited → current player always wins */}
-        <WinModal
-          show={openmentLeaver}
-          isWinner={true}
-          winnerName={user?.fullName ?? user?.username ?? "You"}
-          message="Your opponent left the match."
-          redirectTo={backToRef.current}
-        />
-
-        {/* Regular game end */}
-        {!openmentLeaver && (
+          )}
+          {/* Opponent forfeited → current player always wins */}
           <WinModal
-            show={showWinModal}
-            isWinner={!!winner && players.find(p => p.id === user?.id)?.username === winner}
-            winnerName={winner ?? ""}
-            redirectTo={backToRef.current}
+            show={openmentLeaver}
+            isWinner={true}
+            winnerName={authUser?.fullName ?? authUser?.username ?? "You"}
+            message="Your opponent left the match."
+            redirectTo={backTo}
           />
-        )}
-      </SignedIn>
-      <BottomNav />
+
+          {/* Regular game end */}
+          {!openmentLeaver && (
+            <WinModal
+              show={showWinModal}
+              isWinner={!!winner && players.find(p => p.id === authUser?.id)?.username === winner}
+              winnerName={winner ?? ""}
+              redirectTo={backTo}
+            />
+          )}
+        </>
+      )}
+      {/* <BottomNav /> */}
     </header>
     </div>
   );
