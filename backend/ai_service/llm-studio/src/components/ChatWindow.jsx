@@ -105,7 +105,10 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
 
         setMessages(prev => [
           ...prev,
-          { role: 'ai', text: data.content }
+          { 
+            role: 'ai', 
+            text: `<img src="http://localhost:5000${data.image_url}" style="max-width:300px;" />`
+          }
         ])
 
       } catch {
