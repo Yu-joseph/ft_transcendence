@@ -25,6 +25,7 @@ stop:
 clean:
 	$(DC) down -v
 	rm -rf  /Users/bouhammo/data/*
+	rm -rf /Users/bouhammo/ft_transcendence/backend/ai_service/static/generated/*
 	docker system prune -f
 
 logs:
