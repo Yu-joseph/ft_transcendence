@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [opnePop, setOpenPop] = useState<boolean>(false);
 
   useEffect(() => {
+        //create a callback function and stores it in variable
     const onTournamentCreated = (data: { tournamentId: string; tournament: { name: string; creatorId: string } }) => {
       if (user) {
         sessionStorage.setItem('activeTournament', JSON.stringify({
@@ -33,8 +34,10 @@ export default function Dashboard() {
       }
       navigate("/Tournament");
     };
+    //listen for coming event or {register listner for socket}
     socket.on("tournament-created", onTournamentCreated);
     return () => {
+      //removes that listener during cleanup.
       socket.off("tournament-created", onTournamentCreated);
     };
   }, [navigate, user]);
