@@ -75,7 +75,7 @@ export default function Dashboard() {
 
             {/* Left column */}
             <div className="flex flex-col gap-6 flex-1">
-              <h2 className="text-2xl font-bold text-white">Welcome, {user?.fullName ?? user?.username ?? "Player"}!</h2>
+              <h2 className="text-2xl font-bold text-white">Welcome, {user?.username ?? "Player"}!</h2>
               <p className="text-gray-300">Choose an option below to get started.</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-lg mt-4">

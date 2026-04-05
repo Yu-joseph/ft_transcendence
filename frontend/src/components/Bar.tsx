@@ -8,8 +8,10 @@ function Bar() {
 
   // Normalize avatar URL to hit the auth service media endpoint via nginx (/authent/ -> auth:8000)
   const normalizeAvatarUrl = (url?: string) => {
-    if (!url) return undefined;
-    if (/^https?:\/\//i.test(url)) return url; // already absolute
+    if (!url) 
+      return undefined;
+    if (/^https?:\/\//i.test(url)) 
+      return url; // already absolute
 
     const base = "http://localhost:8080/authent";
     // Ensure we always request /media/<file>
@@ -33,7 +35,7 @@ function Bar() {
     }
   };
 
-  const displayName = user?.fullName ?? user?.username ?? "Player";
+  const displayName = user?.username ?? "Player";
   const displayInitial = displayName.trim().charAt(0).toUpperCase() || "P";
   const avatarUrl = user?.avatar ? normalizeAvatarUrl(user.avatar) : undefined;
 
