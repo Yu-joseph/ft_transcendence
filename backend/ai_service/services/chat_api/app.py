@@ -8,7 +8,10 @@ from dotenv import load_dotenv
 from database import db, get_sessions
 from routes import ChatManager
 from llm.chains import generate_title
+<<<<<<< HEAD
 from database import get_images
+=======
+>>>>>>> cbabebc (merging chat-system with main project)
 
 load_dotenv()
 
@@ -59,9 +62,12 @@ GAME_API_URL = os.getenv("GAME_API_URL", "http://game-api:5001")
 chat = ChatManager()
 
 
+<<<<<<< HEAD
 def get_user_id():
     return request.headers.get('X-User-Id')
 
+=======
+>>>>>>> cbabebc (merging chat-system with main project)
 @app.route('/')
 def home():
     return redirect(url_for('game'))
@@ -103,7 +109,10 @@ def proxy_ai():
 
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
+<<<<<<< HEAD
     chat.set_user(get_user_id())
+=======
+>>>>>>> cbabebc (merging chat-system with main project)
     data   = request.get_json()
     result = chat.chat(data.get('message', '').strip())
     if isinstance(result, tuple):
@@ -113,7 +122,10 @@ def api_chat():
 
 @app.route('/api/chat/stream', methods=['POST'])
 def api_chat_stream():
+<<<<<<< HEAD
     chat.set_user(get_user_id())
+=======
+>>>>>>> cbabebc (merging chat-system with main project)
     data    = request.get_json()
     message = data.get('message', '').strip()
     if not message:
@@ -133,6 +145,7 @@ def api_image():
     message = data.get('message', '').strip()
     if not message:
         return jsonify({'error': 'Empty prompt'}), 400
+<<<<<<< HEAD
 
     result = chat.generate_image(message, user_id=get_user_id())
 
@@ -140,11 +153,21 @@ def api_image():
         return jsonify({'image_url': result})
     
     return jsonify({'error': result or 'Image generation failed'}), 500  # ← add this
+=======
+    result = chat.generate_image(message)
+
+    if isinstance(result, str) and result.startswith('/static/'):
+        return jsonify({'image_url': result})
+
+>>>>>>> cbabebc (merging chat-system with main project)
 
 
 @app.route('/api/new-session', methods=['POST'])
 def api_new_session():
+<<<<<<< HEAD
     chat.set_user(get_user_id())
+=======
+>>>>>>> cbabebc (merging chat-system with main project)
     return jsonify({'session_id': chat.new_session()})
 
 
@@ -156,7 +179,11 @@ def api_set_session():
 
 @app.route('/api/sessions', methods=[ 'GET'])
 def api_sessions():
+<<<<<<< HEAD
     return jsonify(get_sessions(user_id=get_user_id()))
+=======
+    return jsonify(get_sessions())
+>>>>>>> cbabebc (merging chat-system with main project)
 
 
 @app.route('/api/clear', methods=['POST'])
@@ -199,9 +226,12 @@ def studio_files(path):
     return send_from_directory("/app/static/llm-studio", path)
 
 
+<<<<<<< HEAD
 @app.route('/api/images', methods=['GET'])
 def api_images():
     return jsonify(get_images(user_id=get_user_id()))
+=======
+>>>>>>> cbabebc (merging chat-system with main project)
 
 
 @app.route('/health')

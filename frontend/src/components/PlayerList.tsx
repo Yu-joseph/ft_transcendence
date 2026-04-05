@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import { socket } from "../Game/socket/sock";
+=======
+import { gameSocket } from "../socket/sock";
+>>>>>>> cbabebc (merging chat-system with main project)
 import { useAuth } from "../auth/useAuth";
 import { MdOnlinePrediction } from "react-icons/md";
 
@@ -27,10 +31,17 @@ export default function PlayerList() {
   useEffect(() => {
     if (!user) return; // Wait until user is fully loaded
 
+<<<<<<< HEAD
     socket.connect();
 
     const handleConnect = () => {
       socket.emit("join-lobby", {
+=======
+    gameSocket.connect();
+
+    const handleConnect = () => {
+      gameSocket.emit("join-lobby", {
+>>>>>>> cbabebc (merging chat-system with main project)
         id: user.id,
         username: user.fullName ?? user.username ?? "Guest",
       });
@@ -46,6 +57,7 @@ export default function PlayerList() {
       });
     };
 
+<<<<<<< HEAD
     socket.on("connect", handleConnect);
     socket.on("players-update", handlePlayersUpdate);
     socket.on("receive-invite", handleReceiveInvite);
@@ -60,18 +72,42 @@ export default function PlayerList() {
       socket.off("receive-invite", handleReceiveInvite);
       socket.off("match-found", handleMatchFound);
       socket.off("invite-declined", handleInviteDeclined);
+=======
+    gameSocket.on("connect", handleConnect);
+    gameSocket.on("players-update", handlePlayersUpdate);
+    gameSocket.on("receive-invite", handleReceiveInvite);
+    gameSocket.on("match-found", handleMatchFound);
+    gameSocket.on("invite-declined", handleInviteDeclined);
+
+    if (gameSocket.connected) handleConnect();
+
+    return () => {
+      gameSocket.off("connect", handleConnect);
+      gameSocket.off("players-update", handlePlayersUpdate);
+      gameSocket.off("receive-invite", handleReceiveInvite);
+      gameSocket.off("match-found", handleMatchFound);
+      gameSocket.off("invite-declined", handleInviteDeclined);
+>>>>>>> cbabebc (merging chat-system with main project)
     };
   }, [user, navigate]);
 
   const handleSendInvite = (targetSocketId: string, username: string) => {
+<<<<<<< HEAD
     socket.emit("send-invite", targetSocketId);
+=======
+    gameSocket.emit("send-invite", targetSocketId);
+>>>>>>> cbabebc (merging chat-system with main project)
     setSentToast(`Invite sent to ${username}!`);
     setTimeout(() => setSentToast(null), 3000);
   };
 
   const handleAcceptInvite = () => {
     if (!pendingInvite) return;
+<<<<<<< HEAD
     socket.emit("accept-invite", {
+=======
+    gameSocket.emit("accept-invite", {
+>>>>>>> cbabebc (merging chat-system with main project)
       inviteId: pendingInvite.inviteId,
       fromSocketId: pendingInvite.from.socketId,
     });
@@ -80,14 +116,22 @@ export default function PlayerList() {
 
   const handleDeclineInvite = () => {
     if (!pendingInvite) return;
+<<<<<<< HEAD
     socket.emit("decline-invite", {
+=======
+    gameSocket.emit("decline-invite", {
+>>>>>>> cbabebc (merging chat-system with main project)
       inviteId: pendingInvite.inviteId,
       fromSocketId: pendingInvite.from.socketId,
     });
     setPendingInvite(null);
   };
 
+<<<<<<< HEAD
   const otherPlayers = players.filter((p) => p.socketId !== socket.id);
+=======
+  const otherPlayers = players.filter((p) => p.socketId !== gameSocket.id);
+>>>>>>> cbabebc (merging chat-system with main project)
 
   return (
     <>

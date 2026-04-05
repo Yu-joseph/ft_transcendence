@@ -44,6 +44,10 @@ services:
     environment:
       - VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
       - VITE_API_URL=http://localhost:5173
+<<<<<<< HEAD
+=======
+      - VITE_CHAT_API=http://localhost:8080/api
+>>>>>>> cbabebc (merging chat-system with main project)
     build: ../frontend
     volumes:
       - ../frontend:/app/
@@ -110,6 +114,27 @@ services:
     networks:
       - app-network
 
+<<<<<<< HEAD
+=======
+  chat:
+    build:
+        context: ../backend/chat/backend
+        dockerfile: Dockerfile
+    container_name: chat-system
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    environment:
+      SECRET_KEY: 'django-insecure-4vkpyy2bkd3(%hi=nhqdr(yx5j71%*zf!o!ej2kfnivhbno!%n'
+      DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+    volumes:
+      - ../backend/chat/backend:/app
+    networks:
+      - app-network
+
+>>>>>>> cbabebc (merging chat-system with main project)
   postgres:
     image: postgres:15
     container_name: game-postgres
@@ -145,6 +170,7 @@ networks:
   app-network:
 
 
+<<<<<<< HEAD
   # chat:
   #   build: ../backend/chat/chat-system/backend
   #   container_name: chat
@@ -153,3 +179,6 @@ networks:
   #     - db
   #   environment:
   #     DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+=======
+ 
+>>>>>>> cbabebc (merging chat-system with main project)

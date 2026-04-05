@@ -105,10 +105,14 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
 
         setMessages(prev => [
           ...prev,
+<<<<<<< HEAD
           { 
             role: 'ai', 
             text: `<img src="http://localhost:5000${data.image_url}" style="max-width:300px;" />`
           }
+=======
+          { role: 'ai', text: data.content }
+>>>>>>> cbabebc (merging chat-system with main project)
         ])
 
       } catch {

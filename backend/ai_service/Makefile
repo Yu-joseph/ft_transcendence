@@ -25,7 +25,10 @@ stop:
 clean:
 	$(DC) down -v
 	rm -rf  /Users/bouhammo/data/*
+<<<<<<< HEAD
 	rm -rf /Users/bouhammo/ft_transcendence/backend/ai_service/static/generated/*
+=======
+>>>>>>> cbabebc (merging chat-system with main project)
 	docker system prune -f
 
 logs:

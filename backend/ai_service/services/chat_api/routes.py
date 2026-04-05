@@ -8,10 +8,13 @@ class ChatManager:
     def __init__(self):
         self.chat_history = []
         self.session_id = str(uuid.uuid4())
+<<<<<<< HEAD
         self.user_id = None
 
     def set_user(self , user_id):
         self.user_id  = user_id
+=======
+>>>>>>> cbabebc (merging chat-system with main project)
 
     def _format(self, text):
         return re.sub(r'\*+', '', text).replace('\n', '<br>')
@@ -21,7 +24,11 @@ class ChatManager:
             "role": role,
             "content": content
         })
+<<<<<<< HEAD
         save_message(self.session_id, role, content , user_id=self.user_id)
+=======
+        save_message(self.session_id, role, content)
+>>>>>>> cbabebc (merging chat-system with main project)
 
     def chat(self, message):
         if not message:
@@ -57,7 +64,10 @@ class ChatManager:
     def new_session(self):
         self.chat_history.clear()
         self.session_id = str(uuid.uuid4())
+<<<<<<< HEAD
 
+=======
+>>>>>>> cbabebc (merging chat-system with main project)
         return self.session_id
 
     def set_session(self, session_id):
@@ -70,5 +80,11 @@ class ChatManager:
         self.chat_history.clear()
         reset_chat()
 
+<<<<<<< HEAD
     def generate_image(self, prompt, user_id=None):
         return generate_image(prompt, session_id=self.session_id, user_id=self.user_id)
+=======
+    def generate_image(self, prompt):
+        return generate_image(prompt)
+    
+>>>>>>> cbabebc (merging chat-system with main project)
