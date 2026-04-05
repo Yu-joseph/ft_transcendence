@@ -160,12 +160,12 @@ function Tournament()
   const navigate = useNavigate()
   const location = useLocation()
   const joinInfo = useMemo(() => {
-    const navState = location.state as { tournamentId?: string; userId?: string; username?: string } | null
+    const navState = location.state as { tournamentId?: string; username?: string } | null
     const stored = sessionStorage.getItem('activeTournament')
-    const storedState = stored ? JSON.parse(stored) as { tournamentId?: string; userId?: string; username?: string } : null
+    const storedState = stored ? JSON.parse(stored) as { tournamentId?: string; username?: string } : null
     return navState?.tournamentId ? navState : storedState
   }, [location.state])
-  const shouldJoinTournament = Boolean(joinInfo?.tournamentId && joinInfo?.userId)
+  const shouldJoinTournament = Boolean(joinInfo?.tournamentId)
   //location hold the cuurent react location
   const [activeTournament, setActiveTournament] = useState<TournamentState | null>(null)
   const [loading, setLoading] = useState(shouldJoinTournament)
@@ -219,10 +219,9 @@ function Tournament()
 
     // Re-emit join so the server resends tournament-update after page reload
     // location.state is used on normal navigation; sessionStorage survives refresh
-    if (joinInfo?.tournamentId && joinInfo?.userId) {
+    if (joinInfo?.tournamentId) {
       socket.emit('join-tournament', {
         tournamentId: joinInfo.tournamentId,
-        userId: joinInfo.userId,
         username: joinInfo.username ?? 'Player',
       })
     }

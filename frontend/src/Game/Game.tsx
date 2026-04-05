@@ -70,7 +70,7 @@ function Game() {
 
     // If we dont have match state (after refresh), ask server to rejoin
     const handleConnect = () => {
-      socket.emit('reconnect-match', { userId: authUserId, matchId });
+      socket.emit('reconnect-match', { matchId });
     };
 
     if (socket.connected) {
@@ -182,7 +182,7 @@ function Game() {
   };
 
   const handleConfirmLeave = () => {
-    socket.emit("leave-match", { matchId, userId: authUser?.id });
+    socket.emit("leave-match", { matchId});
     setShowLeaveConfirm(false);
     navigate(backTo);
   };
@@ -229,7 +229,6 @@ function Game() {
         matchId,
         oldindex: -1,          // no removal
         newindex: index,
-        userId: authUser.id
       });
 
       return;

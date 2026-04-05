@@ -5,7 +5,6 @@ type LeaderboardPlayer = {
   username: string
   wins: number
   losses: number
-  draws: number
 }
 
 export default function Leaderboard() {
@@ -57,7 +56,7 @@ export default function Leaderboard() {
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-slate-900">
+            <thead className="bg-slate-950">
               <tr>
                 <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Rank</th>
                 <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Player</th>
@@ -72,7 +71,6 @@ export default function Leaderboard() {
                   <td className="px-6 py-3 text-white">{player.username}</td>
                   <td className="px-10 py-3 text-emerald-300 font-semibold">{player.wins}</td>
                   <td className="px-10 py-3 text-rose-300">{player.losses}</td>
-                  <td className="px-6 py-3 text-sky-300">{player.draws}</td>
                 </tr>
               ))}
             </tbody>

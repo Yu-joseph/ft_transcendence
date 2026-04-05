@@ -5,6 +5,7 @@ import PlayerList from "../components/PlayerList";
 import PlayerState from "../components/PlayerState";
 import TournamentList from "../components/TournamentList";
 import Leaderboard from "../components/Leaderboard";
+import MyTournamentsTable from "../components/MyTournamentsTable";
 // import { SiEpicgames } from "react-icons/si";
 import { PiGameControllerFill } from "react-icons/pi";
 import { TbTournament } from "react-icons/tb";
@@ -28,7 +29,7 @@ export default function Dashboard() {
       if (user) {
         sessionStorage.setItem('activeTournament', JSON.stringify({
           tournamentId: data.tournamentId,
-          userId: user.id,
+          // userId: user.id,
           username: user.username ?? user.fullName ?? 'Player',
         }));
       }
@@ -98,7 +99,8 @@ export default function Dashboard() {
 
             {/* Right column */}
             <div className="flex flex-col gap-6 w-full max-w-xl">
-              <PlayerState userId={user?.id ?? ""} />
+              <PlayerState />
+              <MyTournamentsTable />
               <Leaderboard />
             </div>
 
@@ -112,7 +114,7 @@ export default function Dashboard() {
         onCreate={(name, maxPlayers) => {
           socket.emit("create-tournament", {
             name,
-            userId: user?.id,
+            // userId: user?.id,
             username: user?.username ?? user?.fullName ?? "Player",
             maxPlayers,
           });

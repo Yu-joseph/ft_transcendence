@@ -7,28 +7,20 @@ type PlayerStats = {
   losses: number;
 };
 
-type PlayerStateProps = {
-  userId: string;
-};
-
-export default function PlayerState({ userId }: PlayerStateProps) {
+export default function PlayerState() {
   const [stats, setStats] = useState<PlayerStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!userId) {
-      setLoading(false);
-      setStats(null);
-      setError(null);
-      return;
-    }
-/// using async to get promise (object) and waiting using await
+    /// using async to get promise (object) and waiting using await
     const fetchPlayerState = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response  = await fetch(`http://${window.location.hostname}:1339/api/users/${userId}/stats`);
+        const response  = await fetch(`http://${window.location.hostname}:1339/api/me/stats`, {
+          credentials: 'include',
+        });
         if (!response.ok) 
           throw new Error("User not found");
         const data = (await response.json()) as PlayerStats;
@@ -41,7 +33,7 @@ export default function PlayerState({ userId }: PlayerStateProps) {
     };
 
     fetchPlayerState();
-  }, [userId]);
+  }, []);
 
   let total = 0;
   if (stats) {
@@ -62,8 +54,6 @@ export default function PlayerState({ userId }: PlayerStateProps) {
 
       {loading ? (
         <div className="px-6 py-8 text-gray-300">Loading stats...</div>
-      ) : !userId ? (
-        <div className="px-6 py-8 text-gray-300">Loading your profile...</div>
       ) : error ? (
         <div className="px-6 py-8 text-red-300">{error}</div>
       ) : !stats || total === 0 ? (
