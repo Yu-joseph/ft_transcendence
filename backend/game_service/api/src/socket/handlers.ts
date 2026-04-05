@@ -2,6 +2,8 @@ import { Server, Socket } from 'socket.io';
 import { Player, Match } from '../types/game';
 import prisma from '../lib/prisma';
 import { advanceTournamentBracket } from './tournament';
+import { getUserIdFromToken } from '../auth/identity';
+
 
 // In-memory storage
 const searchQueue: string[] = [];
@@ -137,24 +139,46 @@ async function forfeitMatch(io: Server, matchId: string, leaverId: string) {
 }
 
 export function setupSocketHandlers(io: Server) {
+  io.use(async (socket, next) => {
+    try {
+      const token = readCookie(socket.handshake.headers.cookie, "access_token");
+      if (!token) return next(new Error("unauthorized"));
+
+      const userId = await getUserIdFromToken(token);
+      if (!userId) return next(new Error("unauthorized"));
+
+      socket.data.userId = userId;
+      next();
+    } catch {
+      next(new Error("auth service unavailable"));
+    }
+  });
+
   io.on('connection', (socket: Socket) => {
     console.log('User connected:', socket.id);
 
-    socket.on('join-lobby', async (data: { id: string; username: string }) => {
+    socket.on('join-lobby', (data: { username?: string }) => {
+      const userId = socket.data.userId as string;
+      if (!userId) return;
+
+      const username =
+        (data?.username && data.username.trim()) || 'Guest';
+
       for (const [existingSocketId, existing] of players) {
-        if (existing.id === data.id) {
+        if (existing.id === userId) {
           players.delete(existingSocketId);
           existing.socketId = socket.id;
+          existing.username = username; // optional update
           players.set(socket.id, existing);
           io.emit('players-update', Array.from(players.values()));
           io.emit('enlineusers', players.size);
           return;
         }
       }
-      
+
       const player: Player = {
-        id: data.id,
-        username: data.username,
+        id: userId,
+        username,
         socketId: socket.id,
         isReady: false,
       };
@@ -221,11 +245,14 @@ export function setupSocketHandlers(io: Server) {
       console.log(`${decliner?.username} declined invite`);
     });
 
-    socket.on('make-move', async (data: { matchId: string; oldindex: number; newindex: number; userId: string }) => {
+    socket.on('make-move', async (data: { matchId: string; oldindex: number; newindex: number }) => {
+      const userId = socket.data.userId as string | undefined;
+      if (!userId) return;
+
       const match = matches.get(data.matchId);
       if (!match) return;
 
-      const player = match.players.find(p => p.id === data.userId);
+      const player = match.players.find((p) => p.id === userId);
       if (!player) return;
 
       player.socketId = socket.id;
@@ -244,15 +271,13 @@ export function setupSocketHandlers(io: Server) {
       } else if (!match.board.includes(null)) {
         match.status = 'finished';
       } else {
-        match.currentTurn = match.players.find(p => p.id !== player.id)?.id || null;
+        match.currentTurn = match.players.find((p) => p.id !== player.id)?.id || null;
       }
 
-      // Send update to clients FIRST (instant feedback)
-      match.players.forEach(p => {
+      match.players.forEach((p) => {
         io.to(p.socketId).emit('match-update', match);
       });
 
-      // Then persist to DB (non-blocking for the player)
       try {
         if (match.status === 'finished') {
           await finalizeGame(match);
@@ -268,11 +293,17 @@ export function setupSocketHandlers(io: Server) {
       }
     });
 
-    socket.on('reconnect-match', (data: { userId: string; matchId: string }) => {
-      const timeout = disconnectTimeouts.get(data.userId);
+    socket.on('reconnect-match', (data: { matchId: string }) => {
+      const userId = socket.data.userId as string | undefined;
+      if (!userId) {
+        socket.emit('reconnect-match-failed', { reason: 'Unauthorized' });
+        return;
+      }
+
+      const timeout = disconnectTimeouts.get(userId);
       if (timeout) {
         clearTimeout(timeout);
-        disconnectTimeouts.delete(data.userId);
+        disconnectTimeouts.delete(userId);
       }
 
       const match = matches.get(data.matchId);
@@ -281,23 +312,26 @@ export function setupSocketHandlers(io: Server) {
         return;
       }
 
-      const player = match.players.find(p => p.id === data.userId);
+      const player = match.players.find((p) => p.id === userId);
       if (!player) {
         socket.emit('reconnect-match-failed', { reason: 'Not a player in this match' });
         return;
       }
 
       bindPlayerToSocket(player, socket.id);
-      const symbol = match.players[0].id === data.userId ? 'X' : 'O';
+      const symbol = match.players[0].id === userId ? 'X' : 'O';
       socket.emit('match-found', { matchId: data.matchId, match, symbol });
     });
-    socket.on('leave-match', async (data: { matchId: string; userId: string }) => {
-      const pending = disconnectTimeouts.get(data.userId);
+    socket.on('leave-match', async (data: { matchId: string }) => {
+      const userId = socket.data.userId as string | undefined;
+      if (!userId) return;
+
+      const pending = disconnectTimeouts.get(userId);
       if (pending) {
         clearTimeout(pending);
-        disconnectTimeouts.delete(data.userId);
+        disconnectTimeouts.delete(userId);
       }
-      await forfeitMatch(io, data.matchId, data.userId);
+      await forfeitMatch(io, data.matchId, userId);
     });
     socket.on('disconnect', () => {
       const player = players.get(socket.id);
@@ -361,3 +395,11 @@ function bindPlayerToSocket(player: Player, socketId: string) {
   player.socketId = socketId;
   players.set(socketId, player);
 }
+
+function readCookie(cookieHeader: string | undefined, name: string): string | null {
+  if (!cookieHeader) return null;
+  const parts = cookieHeader.split(";").map((p) => p.trim());
+  const hit = parts.find((p) => p.startsWith(name + "="));
+  return hit ? decodeURIComponent(hit.slice(name.length + 1)) : null;
+}
+
