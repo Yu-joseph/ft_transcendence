@@ -16,3 +16,4 @@ RUN chmod +x /app/migrations.sh
 ENTRYPOINT ["/app/migrations.sh"]
 
 CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+
