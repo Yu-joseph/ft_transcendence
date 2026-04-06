@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { socket } from "../Game/socket/sock";
+import { gameSocket } from "../socket/sock";
 import { useAuth } from "../auth/useAuth";
 import { MdOnlinePrediction } from "react-icons/md";
 
@@ -27,10 +27,10 @@ export default function PlayerList() {
   useEffect(() => {
     if (!user) return; // Wait until user is fully loaded
 
-    socket.connect();
+    gameSocket.connect();
 
     const handleConnect = () => {
-      socket.emit("join-lobby", {
+      gameSocket.emit("join-lobby", {
         id: user.id,
         username: user.fullName ?? user.username ?? "Guest",
       });
@@ -46,32 +46,32 @@ export default function PlayerList() {
       });
     };
 
-    socket.on("connect", handleConnect);
-    socket.on("players-update", handlePlayersUpdate);
-    socket.on("receive-invite", handleReceiveInvite);
-    socket.on("match-found", handleMatchFound);
-    socket.on("invite-declined", handleInviteDeclined);
+    gameSocket.on("connect", handleConnect);
+    gameSocket.on("players-update", handlePlayersUpdate);
+    gameSocket.on("receive-invite", handleReceiveInvite);
+    gameSocket.on("match-found", handleMatchFound);
+    gameSocket.on("invite-declined", handleInviteDeclined);
 
-    if (socket.connected) handleConnect();
+    if (gameSocket.connected) handleConnect();
 
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("players-update", handlePlayersUpdate);
-      socket.off("receive-invite", handleReceiveInvite);
-      socket.off("match-found", handleMatchFound);
-      socket.off("invite-declined", handleInviteDeclined);
+      gameSocket.off("connect", handleConnect);
+      gameSocket.off("players-update", handlePlayersUpdate);
+      gameSocket.off("receive-invite", handleReceiveInvite);
+      gameSocket.off("match-found", handleMatchFound);
+      gameSocket.off("invite-declined", handleInviteDeclined);
     };
   }, [user, navigate]);
 
   const handleSendInvite = (targetSocketId: string, username: string) => {
-    socket.emit("send-invite", targetSocketId);
+    gameSocket.emit("send-invite", targetSocketId);
     setSentToast(`Invite sent to ${username}!`);
     setTimeout(() => setSentToast(null), 3000);
   };
 
   const handleAcceptInvite = () => {
     if (!pendingInvite) return;
-    socket.emit("accept-invite", {
+    gameSocket.emit("accept-invite", {
       inviteId: pendingInvite.inviteId,
       fromSocketId: pendingInvite.from.socketId,
     });
@@ -80,14 +80,14 @@ export default function PlayerList() {
 
   const handleDeclineInvite = () => {
     if (!pendingInvite) return;
-    socket.emit("decline-invite", {
+    gameSocket.emit("decline-invite", {
       inviteId: pendingInvite.inviteId,
       fromSocketId: pendingInvite.from.socketId,
     });
     setPendingInvite(null);
   };
 
-  const otherPlayers = players.filter((p) => p.socketId !== socket.id);
+  const otherPlayers = players.filter((p) => p.socketId !== gameSocket.id);
 
   return (
     <>
