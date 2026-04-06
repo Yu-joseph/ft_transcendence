@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Bar from '../components/Bar'
 import BottomNav from '../components/BottomNav'
@@ -161,11 +161,31 @@ function Tournament()
   const location = useLocation()
   const joinInfo = useMemo(() => {
     const navState = location.state as { tournamentId?: string; username?: string } | null
+    if (navState?.tournamentId) {
+      return navState
+    }
+
     const stored = sessionStorage.getItem('activeTournament')
-    const storedState = stored ? JSON.parse(stored) as { tournamentId?: string; username?: string } : null
-    return navState?.tournamentId ? navState : storedState
+    if (!stored) {
+      return null
+    }
+
+    try {
+      return JSON.parse(stored) as { tournamentId?: string; username?: string }
+    } catch {
+      sessionStorage.removeItem('activeTournament')
+      return null
+    }
   }, [location.state])
   const shouldJoinTournament = Boolean(joinInfo?.tournamentId)
+  const persistedUsername = authUser?.username ?? joinInfo?.username ?? 'Player'
+
+  const persistActiveTournament = useCallback((tournamentId: string) => {
+    sessionStorage.setItem('activeTournament', JSON.stringify({
+      tournamentId,
+      username: persistedUsername,
+    }))
+  }, [persistedUsername])
   //location hold the cuurent react location
   const [activeTournament, setActiveTournament] = useState<TournamentState | null>(null)
   const [loading, setLoading] = useState(shouldJoinTournament)
@@ -181,6 +201,11 @@ function Tournament()
     const onUpdate = (data: TournamentState) => {
       setActiveTournament(data)
       setLoading(false)
+
+      if (data.status !== 'finished') {
+        persistActiveTournament(data.id)
+      }
+
       if (data.status === 'finished') {
         sessionStorage.removeItem('activeTournament')
         if (data.winner === currentUserId) {
@@ -194,6 +219,7 @@ function Tournament()
 
     const onCreated = (data: { tournamentId: string; tournament: TournamentState }) => {
       setActiveTournament(data.tournament)
+      persistActiveTournament(data.tournament.id)
       setLoading(false)
     }
 
@@ -222,7 +248,7 @@ function Tournament()
     if (joinInfo?.tournamentId) {
       socket.emit('join-tournament', {
         tournamentId: joinInfo.tournamentId,
-        username: joinInfo.username ?? 'Player',
+        username: persistedUsername,
       })
     }
 
@@ -241,7 +267,7 @@ function Tournament()
       if (timeout) clearTimeout(timeout)
       if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current)
     }
-  }, [navigate, currentUserId, joinInfo, shouldJoinTournament])
+  }, [navigate, currentUserId, joinInfo, shouldJoinTournament, persistedUsername, persistActiveTournament])
 
   const handleStart = () => {
     if (!activeTournament) 

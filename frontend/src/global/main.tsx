@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '../Game/index.css'
 import Game from '../Game/Game.tsx'
-import Login from '../Game/Login.tsx'
+import Login from './Login.tsx'
 import Dashboard from "./Dashboard.tsx";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Tournament from '../Game/Tournament.tsx'
