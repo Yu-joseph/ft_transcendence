@@ -1,7 +1,8 @@
-import React, { useState} from 'react';
+import React, { useRef, useState} from 'react';
 import  { IoSend }  from 'react-icons/io5';
 import { fetchClient } from '../../utils/fetchClient';
 import type { MessageItem}   from    '../../pages/Chat';
+import { chatSocket } from '../../../socket/sock';
 
 interface ChatInputPorps {
     convId: number | null
@@ -9,19 +10,10 @@ interface ChatInputPorps {
 }
 
 export  function    ChatInput({setMessages, convId}: ChatInputPorps) {
+    const   ROOM_ID = `ROOM_${convId}`;
     const   [input, setInput] = useState<string>('');
-    const   sendMessage = async (message: string) => {
-        try {
-            const   result = await fetchClient<MessageItem>(`/chat/conversations/${convId}/message`, {
-                method: 'POST',
-                body: JSON.stringify({content: message})
-            });
-            console.log('sended message:',result);
-        } catch (err:any) {
-            console.log(err);
-            setMessages([]);
-        }
-    }
+    const   [isTyping,  setIsTyping] = useState<boolean>(false);
+    const   typingTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     const   handleSendMessage = async (event: React.SyntheticEvent) => {
         event.preventDefault();
@@ -31,8 +23,30 @@ export  function    ChatInput({setMessages, convId}: ChatInputPorps) {
             setInput('');
             return ;
         }
-        sendMessage(message);
+        try {
+            const   result = await fetchClient<MessageItem>(`/chat/conversations/${convId}/message`, {
+                method: 'POST',
+                body: JSON.stringify({content: message})
+            });
+        } catch (err:any) {
+            console.log(err);
+            setMessages([]);
+        }
         setInput('');
+    }
+
+    const   handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const   messageValue: string = e.target.value;
+        setInput(messageValue);
+        if(!isTyping && messageValue.length > 0) {
+            chatSocket.emit('typing:start', ROOM_ID)
+            setIsTyping(true);
+        }
+        clearTimeout(typingTimerRef.current);
+        typingTimerRef.current = setTimeout(() => {
+            chatSocket.emit('typing:stop', ROOM_ID);
+            setIsTyping(false);
+        }, 1000);
     }
     if(!convId)
         return <div className='h-0 w-0'></div>
@@ -46,7 +60,7 @@ export  function    ChatInput({setMessages, convId}: ChatInputPorps) {
                  focus-within:border-indigo-500/50 transition-all duration-200 shadow-inner'>
                 <input
                     type="text"
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={handleChange}
                     value={input}
                     className='flex-1 bg-transparent py-3 text-sm text-white placeholder:text-slate-500 outline-none'
                     placeholder='Type a message...'

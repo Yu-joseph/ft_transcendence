@@ -27,7 +27,7 @@ export function Chat() {
   const location = useLocation() as Location & { state?: { selectedFriendId?: string } };
   const friendId = location.state?.selectedFriendId as string ?? null;
 
-  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [isTyping, setIsTyping] = useState<boolean>(false);
 
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [selectedConvId, setSelectedConvId] = useState<number | null>(null);
@@ -71,12 +71,12 @@ export function Chat() {
   }, [selectedFriendId])
 
   /** ____________ SOCKET HANDLER ____________ */
-  useChatSocket({convId: selectedConvId, setMessages: setMessages, setIsConnected});
+  useChatSocket({convId: selectedConvId, setMessages: setMessages, setIsTyping:setIsTyping });
   return (
     <main className="h-full flex p-4 gap-4 overflow-hidden container mx-auto maximum-w-7xl">
       <ConversationList setConvId={setSelectedConvId} convId={selectedConvId} selectFriendId={setSelectedFriendId} deletedConvId={deletedConversation} />
       <section className="flex-1 flex flex-col bg-slate-800 border border-blue-700 rounded-2xl shadow-xl overflow-hidden hover:border-amber-500 hover:scale-101 transition-all duration-300">
-        <ChatMessage messages={messages} friendId={selectedFriendId} convId={selectedConvId} setConvId={setSelectedConvId} setFriendId={setSelectedFriendId} setDeletedConv={setDeletedConversation} />
+        <ChatMessage messages={messages} friendId={selectedFriendId} convId={selectedConvId} setConvId={setSelectedConvId} setFriendId={setSelectedFriendId} setDeletedConv={setDeletedConversation} isTyping={isTyping} />
         <ChatInput setMessages={setMessages} convId={selectedConvId} />
       </section>
     </main>

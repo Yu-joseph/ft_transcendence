@@ -5,7 +5,6 @@ import  chatRoutes      from    './modules/conversation/conversation.routes.js';
 import  profileRoutes   from    './modules/profile/profile.routes.js';
 import  { Request, Response, NextFunction }   from    'express';
 import cookieParser from "cookie-parser";
-// import { prisma } from './lib/prisma.js';
 
 
 const   app = express();

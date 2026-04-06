@@ -20,10 +20,10 @@ interface ChatMessageProp {
     setConvId: React.Dispatch<React.SetStateAction<number | null>>
     setFriendId: React.Dispatch<React.SetStateAction<string | null>>
     setDeletedConv: React.Dispatch<React.SetStateAction<number | null>>
-
+    isTyping: boolean
 }  
 
-export function ChatMessage({messages, friendId, convId, setConvId, setFriendId, setDeletedConv} : ChatMessageProp) {
+export function ChatMessage({messages, friendId, convId, setConvId, setFriendId, setDeletedConv, isTyping} : ChatMessageProp) {
     const   [isDropDown, setIsDropDown] = useState<boolean>(false);
     const   [friendInfo, setFriendInfo] = useState<UserInfo | null>(null);
     const { user } = useAuth();
@@ -43,8 +43,7 @@ export function ChatMessage({messages, friendId, convId, setConvId, setFriendId,
             }
         }
         loadUserInfo();
-
-    }, [ friendId])
+    }, [friendId])
 
     /*********** Botton click************** */
     const handleRemoveConversation = async () => {
@@ -83,7 +82,9 @@ export function ChatMessage({messages, friendId, convId, setConvId, setFriendId,
     return (
         <>
             <header className="px-6 py-4 border-b border-slate-700/50 bg-slate-900/60 flex justify-between items-center sticky top-0 z-10">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 cursor-pointer"
+                    onClick={() => console.log('to Profile now')}
+                >
                     <div className="relative">
                         <div className="w-10 h-10 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex justify-center items-center text-white font-bold shadow-md">
                             {friendInfo && friendInfo.username.charAt(0).toLocaleUpperCase()}
@@ -139,9 +140,24 @@ export function ChatMessage({messages, friendId, convId, setConvId, setFriendId,
                                         {new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
                                     </div>
                                 </div>
+                                
+                                
                             </div>
                         );
                     })
+                }
+                {
+                    isTyping && (
+                        <div className="flex justify-start">
+                            <div className='bg-slate-700 text-slate-300 px-3 py-2 rounded-xl text-sm italic animate-pulse'>
+                            <div className="flex gap-1">
+                                <span className="w-2 h-2 bg-slate-400 rounded-full animate-pulse"></span>
+                                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-150"></span>
+                                <span className="w-2 h-2 bg-slate-400 rounded-full animate-spin delay-300"></span>
+                            </div>
+                            </div>
+                        </div>
+                    )
                 }
             </div>
         </>

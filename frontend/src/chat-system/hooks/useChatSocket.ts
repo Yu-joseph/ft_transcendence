@@ -5,17 +5,16 @@ import type { MessageItem } from '../pages/Chat';
 interface   UseChatSocketProps {
     convId: number | null
     setMessages: React.Dispatch<React.SetStateAction<MessageItem[]>>
-    setIsConnected: React.Dispatch<React.SetStateAction<boolean>>
+    setIsTyping: React.Dispatch<React.SetStateAction<boolean> >
+    
 }
 
-export  const   useChatSocket = ({convId, setMessages, setIsConnected}: UseChatSocketProps) => {
+export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSocketProps) => {
     useEffect(() => {
         console.log('ConversationId in socket effect:', convId);
-
         const   initSocket = async () => {
             if (!chatSocket.connected){
                 chatSocket.connect();
-                setIsConnected(true);
             }
         }
         initSocket();
@@ -42,12 +41,21 @@ export  const   useChatSocket = ({convId, setMessages, setIsConnected}: UseChatS
         
         const onDisconnect = () => {
             console.log(`I'm not connected to server`);
-            setIsConnected(false);
+        }
+        const   onTypingStart = (data: string) => {
+            setIsTyping(true);
+            console.log('its typinggg:', data);
+        }
+        const   onTypingStop = (data: string) => {
+            setIsTyping(false);
+            console.log('its typinggg:', data);
         }
         /************************************************* */
         chatSocket.on('connect', onConnect);
         chatSocket.on('message:new', onReceiveMessage)
         chatSocket.on('disconnect', onDisconnect);
+        chatSocket.on('typing:start', onTypingStart);
+        chatSocket.on('typing:stop', onTypingStop)
         /************************************************* */
         chatSocket.on('connect_error', (err: any) => console.error('SOCKET connect_error', err));
         chatSocket.on('connect_timeout', (t) => console.error('SOCKET connect_timeout', t));
@@ -56,6 +64,9 @@ export  const   useChatSocket = ({convId, setMessages, setIsConnected}: UseChatS
         chatSocket.on('reconnect_failed', () => console.error('SOCKET reconnect_failed'));
         return (() => {
             chatSocket.off('connect', onConnect);
+            chatSocket.off('typing:start'), onTypingStart;
+            chatSocket.off('typing:stop'), onTypingStop;
+
             chatSocket.off('message:new', onReceiveMessage);
             chatSocket.off('error');
             chatSocket.off('connect_timeout');
