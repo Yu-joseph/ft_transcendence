@@ -113,9 +113,12 @@ services:
       - ../backend/ai_service/uploads:/app/uploads
     networks:
       - app-network
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> 9744ec0 (updateing dockerfile&  docker-compose for chat-service)
   chat:
     build:
         context: ../backend/chat/backend
@@ -129,8 +132,8 @@ services:
     environment:
       SECRET_KEY: 'django-insecure-4vkpyy2bkd3(%hi=nhqdr(yx5j71%*zf!o!ej2kfnivhbno!%n'
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
-    volumes:
-      - ../backend/chat/backend:/app
+    # volumes:
+    #   - ../backend/chat/backend:/app
     networks:
       - app-network
 
