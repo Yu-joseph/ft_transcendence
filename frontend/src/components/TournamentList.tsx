@@ -14,8 +14,23 @@ type TournamentEntry = {
 export default function TournamentList() {
   const [tournaments, setTournaments] = useState<TournamentEntry[]>([]);
   const [joinedTournamentIds, setJoinedTournamentIds] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  const getStoredActiveTournament = () => {
+    const stored = sessionStorage.getItem("activeTournament");
+    if (!stored) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(stored) as { tournamentId?: string; username?: string };
+    } catch {
+      sessionStorage.removeItem("activeTournament");
+      return null;
+    }
+  };
 
   useEffect(() => {
     const fetchMyTournaments = async () => {
@@ -65,10 +80,16 @@ export default function TournamentList() {
       });
     };
 
+    const onTournamentError = (data: { message?: string }) => {
+      setError(data.message ?? "Could not join tournament.");
+      setTimeout(() => setError(null), 3500);
+    };
+
     socket.on("tournaments-list", onList);
     socket.on("tournament-available", onAvailable);
     socket.on("tournament-removed", onRemoved);
     socket.on("tournament-created", onCreated);
+    socket.on("tournament-error", onTournamentError);
 
     fetchMyTournaments();
 
@@ -83,6 +104,7 @@ export default function TournamentList() {
       socket.off("tournament-available", onAvailable);
       socket.off("tournament-removed", onRemoved);
       socket.off("tournament-created", onCreated);
+      socket.off("tournament-error", onTournamentError);
       socket.off("connect", fetchList);
     };
   }, []);
@@ -92,6 +114,13 @@ export default function TournamentList() {
       return;
     if (isFull)
       return;
+
+    const active = getStoredActiveTournament();
+    if (active?.tournamentId && active.tournamentId !== tournamentId) {
+      setError("You are already inside another active tournament. Leave it or finish it first.");
+      return;
+    }
+
     const joinInfo = {
       tournamentId,
       username: user.username ?? user.fullName ?? "Player",
@@ -113,6 +142,11 @@ export default function TournamentList() {
         <h3 className="text-xl font-semibold text-amber-500">Available Tournaments</h3>
         <p className="text-sm text-gray-400">Join an open tournament</p>
       </div>
+      {error && (
+        <div className="mx-6 mt-4 px-3 py-2 rounded-lg border border-red-500/70 bg-red-900/30 text-red-200 text-sm">
+          {error}
+        </div>
+      )}
       {tournaments.length === 0 ? (
         <div className="px-6 py-8 text-gray-400">No tournaments available yet.</div>
       ) : (
