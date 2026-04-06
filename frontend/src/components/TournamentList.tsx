@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { socket } from "../Game/socket/sock";
+import { gameSocket } from "../socket/sock";
 import { useNavigate } from "react-router-dom";
-import { getAuthUser } from "../hooks/useCustomAuth";
+import { useAuth } from "../auth/useAuth";
 
 type TournamentEntry = {
   tournamentId: string;
@@ -13,12 +13,12 @@ type TournamentEntry = {
 
 export default function TournamentList() {
   const [tournaments, setTournaments] = useState<TournamentEntry[]>([]);
-  const user = getAuthUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchList = () => {
-      socket.emit("get-tournaments");
+      gameSocket.emit("get-tournaments");
     };
 
     const onList = (list: TournamentEntry[]) => {
@@ -41,21 +41,21 @@ export default function TournamentList() {
       setTournaments((prev) => prev.filter((t) => t.tournamentId !== tournamentId));
     };
 
-    socket.on("tournaments-list", onList);
-    socket.on("tournament-available", onAvailable);
-    socket.on("tournament-removed", onRemoved);
+    gameSocket.on("tournaments-list", onList);
+    gameSocket.on("tournament-available", onAvailable);
+    gameSocket.on("tournament-removed", onRemoved);
 
-    if (socket.connected) {
+    if (gameSocket.connected) {
       fetchList();
     } else {
-      socket.once("connect", fetchList);
+      gameSocket.once("connect", fetchList);
     }
 
     return () => {
-      socket.off("tournaments-list", onList);
-      socket.off("tournament-available", onAvailable);
-      socket.off("tournament-removed", onRemoved);
-      socket.off("connect", fetchList);
+      gameSocket.off("tournaments-list", onList);
+      gameSocket.off("tournament-available", onAvailable);
+      gameSocket.off("tournament-removed", onRemoved);
+      gameSocket.off("connect", fetchList);
     };
   }, []);
 
@@ -70,7 +70,7 @@ export default function TournamentList() {
       username: user.username ?? user.fullName ?? "Player",
     };
     sessionStorage.setItem("activeTournament", JSON.stringify(joinInfo));
-    socket.emit("join-tournament", joinInfo);
+    gameSocket.emit("join-tournament", joinInfo);
     navigate("/Tournament", { state: joinInfo });
   };
 

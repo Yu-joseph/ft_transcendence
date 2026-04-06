@@ -10,12 +10,25 @@ function Dashboard() {
   const [chatKey, setChatKey] = useState(0)
 
   useEffect(() => {
-    fetch('/api/sessions')
-      .then(res => res.json())
-      .then(data => { if (Array.isArray(data)) setSessions(data) })
-      .catch(() => console.log('Could not load sessions'))
+    const init = async () => {
+      try {
+        const res = await fetch('/api/sessions')
+        const data = await res.json()
+  
+        if (Array.isArray(data) && data.length > 0) {
+          setSessions(data)
+          setActiveSession(data[0].session_id)
+        } else {
+          await handleNewChat() 
+        }
+      } catch {
+        console.log('Could not load sessions')
+      }
+    }
+  
+    init()
   }, [])
-
+  
   const handleNewChat = async () => {
     try {
       const res = await fetch('/api/new-session', { method: 'POST' })
@@ -72,6 +85,7 @@ function Dashboard() {
         <Topbar />
         <ChatWindow
           key={chatKey}
+          sessionId={activeSession}
           onFirstMessage={updateSessionTitle}
           initialMessages={loadedMessages}
         />

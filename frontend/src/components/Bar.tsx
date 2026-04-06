@@ -1,10 +1,26 @@
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import { GiTicTacToe } from "react-icons/gi";
-import { getAuthUser } from "../hooks/useCustomAuth";
+import { useAuth } from "../auth/useAuth";
 
 function Bar() {
   const navigate = useNavigate();
-  const user = getAuthUser();
+  const { user } = useAuth();
+
+  // Normalize avatar URL to hit the auth service media endpoint via nginx (/authent/ -> auth:8000)
+  const normalizeAvatarUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (/^https?:\/\//i.test(url)) return url; // already absolute
+
+    const base = "http://localhost:8080/authent";
+    // Ensure we always request /media/<file>
+    const withMediaPrefix = url.startsWith("/media/")
+      ? url
+      : url.startsWith("media/")
+        ? `/${url}`
+        : `/media/${url}`;
+
+    return `${base}${withMediaPrefix}`;
+  };
 
   const handleLogout = async () => {
     try {
@@ -13,10 +29,13 @@ function Bar() {
         credentials: "include",
       });
     } finally {
-      localStorage.removeItem("authUser");
       navigate("/");
     }
   };
+
+  const displayName = user?.fullName ?? user?.username ?? "Player";
+  const displayInitial = displayName.trim().charAt(0).toUpperCase() || "P";
+  const avatarUrl = user?.avatar ? normalizeAvatarUrl(user.avatar) : undefined;
 
   return (
     <header className="bg-slate-900 border-b border-amber-400 shadow-lg">
@@ -33,8 +52,19 @@ function Bar() {
           <p className="text-gray-300">Play online multiplayer tic-tac-toe games and tournaments</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-white text-sm">
-            {user?.fullName ?? user?.username ?? "Player"}
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={displayName}
+              className="h-9 w-9 rounded-full object-cover border border-amber-400"
+            />
+          ) : (
+            <span className="h-9 w-9 rounded-full bg-amber-500 text-slate-900 flex items-center justify-center font-semibold border border-amber-400">
+              {displayInitial}
+            </span>
+          )}
+          <span className="text-amber-500 text-sm">
+            {displayName}
           </span>
           <button
             type="button"

@@ -53,8 +53,11 @@ class ChatBot:
     def reset(self):
         self.history = [self.config.system_message]
 
-    def generate_image(self, prompt):
-        return self.image_gen.generate(prompt)
+    def generate_image(self, prompt, session_id=None, user_id=None):
+        return self.image_gen.generate(prompt, session_id=session_id, user_id=user_id)
+
+
+
 
 
 bot = ChatBot()
@@ -77,5 +80,20 @@ def load_history(messages):
         elif m["role"] == "assistant":
             bot.history.append(AIMessage(content=m["content"]))
 
-def generate_image(prompt):
-    return bot.generate_image(prompt)
+def generate_image(prompt, session_id=None, user_id=None):
+    return bot.generate_image(prompt, session_id=session_id, user_id=user_id)
+
+def generate_title(message):
+    try:
+        prompt = f"Generate a short title (max 5 words) for this message:\n{message}"
+
+        response = bot.llm.invoke([
+            bot.config.system_message,
+            HumanMessage(content=prompt)
+        ])
+
+        title = response.content.strip()
+        return title
+
+    except Exception as e:
+        return "New Chat"

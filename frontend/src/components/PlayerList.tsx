@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { socket } from "../Game/socket/sock";
-import { getAuthUser } from "../hooks/useCustomAuth";
-
+import { gameSocket } from "../socket/sock";
+import { useAuth } from "../auth/useAuth";
 import { MdOnlinePrediction } from "react-icons/md";
-// import { error } from "console";
-
-
 
 type Player = {
   id: string;
@@ -20,78 +16,62 @@ type Invite = {
   inviteId: string;
 };
 
+// Use the global auth context
 export default function PlayerList() {
   const [players, setPlayers] = useState<Player[]>([]);
-  const [onlineCount, setOnlineCount] = useState<number>(0);
   const [pendingInvite, setPendingInvite] = useState<Invite | null>(null);
   const [sentToast, setSentToast] = useState<string | null>(null);
-  const user = getAuthUser();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (!user)
-      return;
+    if (!user) return; // Wait until user is fully loaded
 
-    socket.connect();
-//let server know there is new connetcioni
+    gameSocket.connect();
+
     const handleConnect = () => {
-      socket.emit("join-lobby", {
+      gameSocket.emit("join-lobby", {
         id: user.id,
         username: user.fullName ?? user.username ?? "Guest",
       });
     };
 
-    const handleOnlineUsers = (count : number) => {
-      setOnlineCount(count);
-    }
-    //yssf
-    const handlePlayersUpdate = (List : Player[]) =>{
-      setPlayers(List);
-    }
+    const handlePlayersUpdate = (List: Player[]) => setPlayers(List);
     const handleReceiveInvite = (invite: Invite) => setPendingInvite(invite);
+    const handleInviteDeclined = (data: { by: string }) => alert(`${data.by} declined your invite`);
+    
     const handleMatchFound = (data: { matchId: string; match: unknown; symbol: string }) => {
       navigate(`/game/${data.matchId}`, {
         state: { symbol: data.symbol, match: data.match },
       });
-      // state is for to pass data without showing in urld
-      //then gonna read in const { symbol, match } = useLocation().state;
-    };
-    //yssf broswer error for declane invite
-    const handleInviteDeclined = (data: { by: string }) => {
-      alert(`${data.by} declined your invite`);
     };
 
-//liste for any eveints
-    socket.on("connect", handleConnect);
-    socket.on("enlineusers", handleOnlineUsers);
-    socket.on("players-update", handlePlayersUpdate);
-    socket.on("receive-invite", handleReceiveInvite);
-    socket.on("match-found", handleMatchFound);
-    socket.on("invite-declined", handleInviteDeclined);
+    gameSocket.on("connect", handleConnect);
+    gameSocket.on("players-update", handlePlayersUpdate);
+    gameSocket.on("receive-invite", handleReceiveInvite);
+    gameSocket.on("match-found", handleMatchFound);
+    gameSocket.on("invite-declined", handleInviteDeclined);
 
-    if (socket.connected) 
-      handleConnect();
-// sermove all socket events 
+    if (gameSocket.connected) handleConnect();
+
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("enlineusers", handleOnlineUsers);
-      socket.off("players-update", handlePlayersUpdate);
-      socket.off("receive-invite", handleReceiveInvite);
-      socket.off("match-found", handleMatchFound);
-      socket.off("invite-declined", handleInviteDeclined);
+      gameSocket.off("connect", handleConnect);
+      gameSocket.off("players-update", handlePlayersUpdate);
+      gameSocket.off("receive-invite", handleReceiveInvite);
+      gameSocket.off("match-found", handleMatchFound);
+      gameSocket.off("invite-declined", handleInviteDeclined);
     };
   }, [user, navigate]);
 
-  //change  if use or navigate changes ( depndecy array)
   const handleSendInvite = (targetSocketId: string, username: string) => {
-    socket.emit("send-invite", targetSocketId);
+    gameSocket.emit("send-invite", targetSocketId);
     setSentToast(`Invite sent to ${username}!`);
     setTimeout(() => setSentToast(null), 3000);
   };
 
   const handleAcceptInvite = () => {
     if (!pendingInvite) return;
-    socket.emit("accept-invite", {
+    gameSocket.emit("accept-invite", {
       inviteId: pendingInvite.inviteId,
       fromSocketId: pendingInvite.from.socketId,
     });
@@ -100,23 +80,21 @@ export default function PlayerList() {
 
   const handleDeclineInvite = () => {
     if (!pendingInvite) return;
-    socket.emit("decline-invite", {
+    gameSocket.emit("decline-invite", {
       inviteId: pendingInvite.inviteId,
       fromSocketId: pendingInvite.from.socketId,
     });
     setPendingInvite(null);
   };
 
-  
-
-  const otherPlayers = players.filter((p) => p.socketId !== socket.id);
+  const otherPlayers = players.filter((p) => p.socketId !== gameSocket.id);
 
   return (
     <>
       <div className="bg-slate-800 border border-blue-700 rounded-xl p-5 w-full max-w-lg">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-amber-500 text-xl font-semibold">Online Players</h2>
-          <span className="text-green-400 text-sm">{onlineCount} online</span>
+          <span className="text-green-400 text-sm">{players.length} online</span>
         </div>
 
         {otherPlayers.length === 0 ? (
@@ -143,14 +121,12 @@ export default function PlayerList() {
         )}
       </div>
 
-      {/* Sent Toast */}
       {sentToast && (
-        <div className="fixed bottom-24 left-1/2 bg-amber-500 text-white px-4 py-3 rounded-xl  font-semibold animate-pulse">
+        <div className="fixed bottom-24 left-1/2 bg-amber-500 text-white px-4 py-3 rounded-xl font-semibold animate-pulse">
           {sentToast}
         </div>
       )}
 
-      {/* Pending Invite Modal */}
       {pendingInvite && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-slate-800 rounded-xl p-6 max-w-sm w-full mx-4">
@@ -162,16 +138,10 @@ export default function PlayerList() {
               wants to play with you!
             </p>
             <div className="flex gap-3">
-              <button
-                onClick={handleAcceptInvite}
-                className="flex-1 px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition"
-              >
+              <button onClick={handleAcceptInvite} className="flex-1 px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition">
                 Accept
               </button>
-              <button
-                onClick={handleDeclineInvite}
-                className="flex-1 px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
-              >
+              <button onClick={handleDeclineInvite} className="flex-1 px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition">
                 Decline
               </button>
             </div>

@@ -7,23 +7,8 @@ import { advanceTournamentBracket } from './tournament';
 const searchQueue: string[] = [];
 export const players = new Map<string, Player>();
 export const matches = new Map<string, Match>();
-const disconnectTimeouts = new Map<string, NodeJS.Timeout>();
+const disconnectTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 export { createGameInDB, finalizeGame, updateGameInDB };
-
-async function ensureUser(id: string, username: string) {
-  await prisma.user.upsert({
-    where: { id },
-    update: { username },
-    create: {
-      id,
-      username,
-      wins: 0,
-      losses: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  });
-}
 
 /**
  * Save a new match to DB when it starts.
@@ -31,17 +16,17 @@ async function ensureUser(id: string, username: string) {
 async function createGameInDB(match: Match) {
   const boardStrings = match.board.map(cell => cell ?? '');
   await prisma.game.create({
-  data: {
-    id: match.id,
-    board: boardStrings,
-    status: 'playing',
-    result: 'PENDING',
-    playerXId: match.players[0].id,
-    playerOId: match.players[1].id,
-    tournamentId: match.tournamentId ?? null,
-    createdAt: new Date(),
-  },
-});
+    data: {
+      id: match.id,
+      board: boardStrings,
+      status: 'playing',
+      result: 'PENDING',
+      playerXId: match.players[0].id,
+      playerOId: match.players[1].id,
+      tournamentId: match.tournamentId ?? null,
+      created_at: new Date(), // fixed field name
+    },
+  });
   console.log(`Game created in DB: ${match.id}`);
 }
 
@@ -50,11 +35,21 @@ async function createGameInDB(match: Match) {
  */
 async function updateGameInDB(match: Match) {
   const boardStrings = match.board.map(cell => cell ?? '');
-  await prisma.game.update({
+  await prisma.game.upsert({
     where: { id: match.id },
-    data: {
+    update: {
       board: boardStrings,
       status: match.status,
+    },
+    create: {
+      id: match.id,
+      board: boardStrings,
+      status: match.status,
+      result: 'PENDING',
+      playerXId: match.players[0].id,
+      playerOId: match.players[1].id,
+      tournamentId: match.tournamentId ?? null,
+      created_at: new Date(),
     },
   });
 }
@@ -66,30 +61,43 @@ async function finalizeGame(match: Match) {
   const playerXId = match.players[0].id;
   const playerOId = match.players[1].id;
 
-  let result: string = '';
-  let winnerId: string | null = null;
-
-  if (match.winner) {
-    winnerId = match.winner;
-    result = match.winner === playerXId ? 'X_WIN' : 'O_WIN';
-  }
+  const winnerId = match.winner ?? null;
+  const result =
+    winnerId === null ? 'DRAW' : winnerId === playerXId ? 'X_WIN' : 'O_WIN';
 
   const boardStrings = match.board.map(cell => cell ?? '');
 
-  await prisma.game.update({
+  await prisma.game.upsert({
     where: { id: match.id },
-    data: {
+    update: {
       board: boardStrings,
       status: 'finished',
       result,
       winnerId,
     },
+    create: {
+      id: match.id,
+      board: boardStrings,
+      status: 'finished',
+      result,
+      winnerId,
+      playerXId,
+      playerOId,
+      tournamentId: match.tournamentId ?? null,
+      created_at: new Date(),
+    },
   });
 
-  
+  if (!winnerId) {
+    console.log(`Game finished as draw: ${match.id}`);
+    return;
+  }
+
   const loserId = winnerId === playerXId ? playerOId : playerXId;
-  await prisma.user.update({ where: { id: winnerId! }, data: { wins: { increment: 1 } } });
-  await prisma.user.update({ where: { id: loserId }, data: { losses: { increment: 1 } } });
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: winnerId }, data: { wins: { increment: 1 } } }),
+    prisma.user.update({ where: { id: loserId }, data: { losses: { increment: 1 } } }),
+  ]);
 
   console.log(`Game finished: ${result} | ${match.players[0].username} vs ${match.players[1].username}`);
 }
@@ -134,17 +142,16 @@ export function setupSocketHandlers(io: Server) {
 
     socket.on('join-lobby', async (data: { id: string; username: string }) => {
       for (const [existingSocketId, existing] of players) {
-        if (existing.id === data.id)
-        {
+        if (existing.id === data.id) {
           players.delete(existingSocketId);
           existing.socketId = socket.id;
           players.set(socket.id, existing);
-          socket.emit('players-update', Array.from(players.values()));
+          io.emit('players-update', Array.from(players.values()));
+          io.emit('enlineusers', players.size);
           return;
         }
       }
-      await ensureUser(data.id, data.username);
-
+      
       const player: Player = {
         id: data.id,
         username: data.username,
@@ -154,6 +161,7 @@ export function setupSocketHandlers(io: Server) {
 
       players.set(socket.id, player);
       io.emit('players-update', Array.from(players.values()));
+      io.emit('enlineusers', players.size);
       console.log(`${data.username} joined the lobby`);
     });
 
@@ -266,6 +274,7 @@ export function setupSocketHandlers(io: Server) {
         clearTimeout(timeout);
         disconnectTimeouts.delete(data.userId);
       }
+
       const match = matches.get(data.matchId);
       if (!match) {
         socket.emit('reconnect-match-failed', { reason: 'Match not found' });
@@ -278,13 +287,16 @@ export function setupSocketHandlers(io: Server) {
         return;
       }
 
-      player.socketId = socket.id;
-      players.set(socket.id, player);
+      bindPlayerToSocket(player, socket.id);
       const symbol = match.players[0].id === data.userId ? 'X' : 'O';
       socket.emit('match-found', { matchId: data.matchId, match, symbol });
-      console.log(`${player.username} reconnected to match ${data.matchId}`);
     });
     socket.on('leave-match', async (data: { matchId: string; userId: string }) => {
+      const pending = disconnectTimeouts.get(data.userId);
+      if (pending) {
+        clearTimeout(pending);
+        disconnectTimeouts.delete(data.userId);
+      }
       await forfeitMatch(io, data.matchId, data.userId);
     });
     socket.on('disconnect', () => {
@@ -292,27 +304,33 @@ export function setupSocketHandlers(io: Server) {
 
       const queueIndex = searchQueue.indexOf(socket.id);
       if (queueIndex > -1) searchQueue.splice(queueIndex, 1);
+
       if (player) {
+        const existingTimeout = disconnectTimeouts.get(player.id);
+        if (existingTimeout) clearTimeout(existingTimeout);
+
         for (const [matchId, match] of matches) {
           if (match.status === 'playing' && match.players.some(p => p.id === player.id)) {
-            if (match.tournamentId) {
-              // Tournament match: give 15s grace period for reconnect (page refresh)
-              const timeout = setTimeout(() => {
-                disconnectTimeouts.delete(player.id);
-                forfeitMatch(io, matchId, player.id);
-              }, 15000);
-              disconnectTimeouts.set(player.id, timeout);
-            } else {
-              // Regular 1v1: forfeit immediately
-              forfeitMatch(io, matchId, player.id);
-            }
+            const timeout = setTimeout(() => {
+              disconnectTimeouts.delete(player.id);
+
+              const reconnectedElsewhere = Array.from(players.entries()).some(
+                ([sid, p]) => sid !== socket.id && p.id === player.id
+              );
+              if (!reconnectedElsewhere) {
+                void forfeitMatch(io, matchId, player.id);
+              }
+            }, RECONNECT_GRACE_MS);
+
+            disconnectTimeouts.set(player.id, timeout);
             break;
           }
         }
       }
+
       players.delete(socket.id);
       io.emit('players-update', Array.from(players.values()));
-
+      io.emit('enlineusers', players.size);
       console.log('User disconnected:', player?.username || socket.id);
     });
   });
@@ -330,4 +348,16 @@ function checkWinner(board: (string | null)[]): string | null {
     }
   }
   return null;
+}
+
+const RECONNECT_GRACE_MS = 15000;
+
+function bindPlayerToSocket(player: Player, socketId: string) {
+  for (const [existingSocketId, existing] of players) {
+    if (existing.id === player.id && existingSocketId !== socketId) {
+      players.delete(existingSocketId);
+    }
+  }
+  player.socketId = socketId;
+  players.set(socketId, player);
 }

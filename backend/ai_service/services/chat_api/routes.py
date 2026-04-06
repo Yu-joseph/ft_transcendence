@@ -1,14 +1,17 @@
 import uuid
 import re
 from datetime import datetime
-
 from database import save_message, get_messages
-from llm.chains import ask_llm, ask_llm_stream, reset_chat, generate_image , load_history
+from llm.chains import ask_llm, ask_llm_stream, reset_chat, generate_image , load_history , generate_title
 
 class ChatManager:
     def __init__(self):
         self.chat_history = []
         self.session_id = str(uuid.uuid4())
+        self.user_id = None
+
+    def set_user(self , user_id):
+        self.user_id  = user_id
 
     def _format(self, text):
         return re.sub(r'\*+', '', text).replace('\n', '<br>')
@@ -18,7 +21,7 @@ class ChatManager:
             "role": role,
             "content": content
         })
-        save_message(self.session_id, role, content)
+        save_message(self.session_id, role, content , user_id=self.user_id)
 
     def chat(self, message):
         if not message:
@@ -66,5 +69,5 @@ class ChatManager:
         self.chat_history.clear()
         reset_chat()
 
-    def generate_image(self, prompt):
-        return generate_image(prompt)
+    def generate_image(self, prompt, user_id=None):
+        return generate_image(prompt, session_id=self.session_id, user_id=self.user_id)

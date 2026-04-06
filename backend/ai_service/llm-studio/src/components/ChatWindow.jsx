@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react'
 import './ChatWindow.css'
 
-function ChatWindow({ onFirstMessage, initialMessages = [] }) {
+function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
   const [messages, setMessages] = useState(initialMessages)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [uploadedFile, setUploadedFile] = useState(null)
+
   const hasSentFirst = useRef(initialMessages.length > 0)
   const messagesEndRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -14,11 +15,33 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
+  // NEW: generate title using LLM
+  const generateTitle = async (message) => {
+    try {
+      const res = await fetch('/api/generate-title', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      })
+
+      const data = await res.json()
+
+      if (onFirstMessage) {
+        onFirstMessage(data.title)
+      }
+
+    } catch {
+      console.log("Title generation failed")
+    }
+  }
+
   const handleFileUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
+
     const formData = new FormData()
     formData.append('file', file)
+
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       const data = await res.json()
@@ -37,6 +60,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
     if ((!input.trim() && !uploadedFile) || loading) return
 
     let messageText = input
+
     if (uploadedFile) {
       messageText = input
         ? `[File: ${uploadedFile.filename}] ${input}`
@@ -46,8 +70,9 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
     const userMsg = { role: 'user', text: messageText }
     setMessages(prev => [...prev, userMsg])
 
-    if (!hasSentFirst.current && onFirstMessage) {
-      onFirstMessage(messageText)
+    // HERE: generate title using LLM
+    if (!hasSentFirst.current) {
+      generateTitle(messageText)
       hasSentFirst.current = true
     }
 
@@ -62,29 +87,51 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
       'generate for me image', 'show me image', 'show image',
       'generate me', 'create me', 'make me'
     ]
-    const isImageRequest = imageKeywords.some(kw => messageText.toLowerCase().includes(kw))
 
+    const isImageRequest = imageKeywords.some(kw =>
+      messageText.toLowerCase().includes(kw)
+    )
+
+    // IMAGE REQUEST
     if (isImageRequest) {
       try {
         const response = await fetch('/api/image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: messageText })
+          body: JSON.stringify({ message: messageText, session_id: sessionId })
         })
+
         const data = await response.json()
-        setMessages(prev => [...prev, { role: 'ai', text: data.content }])
+
+        setMessages(prev => [
+          ...prev,
+<<<<<<< HEAD
+          { 
+            role: 'ai', 
+            text: `<img src="http://localhost:5000${data.image_url}" style="max-width:300px;" />`
+          }
+=======
+          { role: 'ai', text: data.content }
+>>>>>>> cbabebc (merging chat-system with main project)
+        ])
+
       } catch {
-        setMessages(prev => [...prev, { role: 'ai', text: 'Error generating image.' }])
+        setMessages(prev => [
+          ...prev,
+          { role: 'ai', text: 'Error generating image.' }
+        ])
       }
+
       setLoading(false)
       return
     }
 
+    // CHAT STREAM
     try {
       const response = await fetch('/api/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: messageText })
+        body: JSON.stringify({ message: messageText, session_id: sessionId })
       })
 
       const reader = response.body.getReader()
@@ -96,12 +143,16 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
+
         const chunk = decoder.decode(value, { stream: true })
         const lines = chunk.split('\n')
+
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const token = line.slice(6)
+
             if (token === '[DONE]') break
+
             setMessages(prev => {
               const updated = [...prev]
               updated[updated.length - 1] = {
@@ -113,8 +164,12 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
           }
         }
       }
+
     } catch {
-      setMessages(prev => [...prev, { role: 'ai', text: 'Error connecting to server.' }])
+      setMessages(prev => [
+        ...prev,
+        { role: 'ai', text: 'Error connecting to server.' }
+      ])
       setLoading(false)
     }
   }
@@ -130,7 +185,6 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
     <div className="chat-window">
       <div className="chat-messages">
 
-        {/* Hero — shown when no messages */}
         {messages.length === 0 && !loading && (
           <div className="hero">
             <div className="hero-icon">Hey, Ready to dive in?</div>
@@ -183,7 +237,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* INPUT */}
       <div className="chat-input-area">
         {uploadedFile && (
           <div className="file-preview">
@@ -200,23 +254,26 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
             onChange={handleFileUpload}
             style={{ display: 'none' }}
           />
+
           <button
             className="attach-btn"
             onClick={() => fileInputRef.current.click()}
-            title="Attach file"
           >
             📎
           </button>
+
           <textarea
-            placeholder="Describe the board state or ask for a tactic…"
+            placeholder="Ask anything..."
             rows="1"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
           />
-          <button className="send-btn" onClick={handleSend} disabled={loading}>↑</button>
+
+          <button className="send-btn" onClick={handleSend} disabled={loading}>
+            ↑
+          </button>
         </div>
-        <p className="disclaimer">STRATEGY ENGINE V3.0.1 · PRECISION TRAINING MODE</p>
       </div>
     </div>
   )
