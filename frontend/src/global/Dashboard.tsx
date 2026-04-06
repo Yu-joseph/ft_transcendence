@@ -71,12 +71,14 @@ export default function Dashboard() {
     <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
       <Bar />
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8 sm:px-6 lg:px-8 pb-32">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 pt-32 pb-32 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row gap-8 w-full">
 
             {/* Left column */}
             <div className="flex flex-col gap-6 flex-1">
-              <h2 className="text-2xl font-bold text-white">Welcome, {user?.username ?? "Player"}!</h2>
+              <h2 className="text-2xl font-bold text-white">
+                Welcome, <span className="text-amber-500">{user?.username ?? "Player"}</span>!
+              </h2>
               <p className="text-gray-300">Choose an option below to get started.</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-lg mt-4">
