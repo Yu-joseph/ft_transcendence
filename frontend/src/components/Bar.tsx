@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { useNavigate } from "react-router-dom";
 import { GiTicTacToe } from "react-icons/gi";
 import { useAuth } from "../auth/useAuth";
@@ -24,13 +25,36 @@ function Bar() {
   };
 =======
 import { useNavigate } from "react-router-dom"
+=======
+import { useNavigate } from "react-router-dom";
+>>>>>>> dd5f97c (merging current changes with all team members)
 import { GiTicTacToe } from "react-icons/gi";
-import { getAuthUser } from "../hooks/useCustomAuth";
+import { useAuth } from "../auth/useAuth";
 
 function Bar() {
   const navigate = useNavigate();
+<<<<<<< HEAD
   const user = getAuthUser();
 >>>>>>> fa260b3 (merging AI service with docker and nginx)
+=======
+  const { user } = useAuth();
+
+  // Normalize avatar URL to hit the auth service media endpoint via nginx (/authent/ -> auth:8000)
+  const normalizeAvatarUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (/^https?:\/\//i.test(url)) return url; // already absolute
+
+    const base = "http://localhost:8080/authent";
+    // Ensure we always request /media/<file>
+    const withMediaPrefix = url.startsWith("/media/")
+      ? url
+      : url.startsWith("media/")
+        ? `/${url}`
+        : `/media/${url}`;
+
+    return `${base}${withMediaPrefix}`;
+  };
+>>>>>>> dd5f97c (merging current changes with all team members)
 
   const handleLogout = async () => {
     try {
@@ -40,20 +64,29 @@ function Bar() {
       });
     } finally {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       localStorage.removeItem("authUser");
 >>>>>>> fa260b3 (merging AI service with docker and nginx)
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
       navigate("/");
     }
   };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
   const displayName = user?.fullName ?? user?.username ?? "Player";
   const displayInitial = displayName.trim().charAt(0).toUpperCase() || "P";
   const avatarUrl = user?.avatar ? normalizeAvatarUrl(user.avatar) : undefined;
 
+<<<<<<< HEAD
 =======
 >>>>>>> fa260b3 (merging AI service with docker and nginx)
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
   return (
     <header className="bg-slate-900 border-b border-amber-400 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -70,6 +103,9 @@ function Bar() {
         </div>
         <div className="flex items-center gap-3">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
           {avatarUrl ? (
             <img
               src={avatarUrl}
@@ -83,10 +119,13 @@ function Bar() {
           )}
           <span className="text-amber-500 text-sm">
             {displayName}
+<<<<<<< HEAD
 =======
           <span className="text-white text-sm">
             {user?.fullName ?? user?.username ?? "Player"}
 >>>>>>> fa260b3 (merging AI service with docker and nginx)
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
           </span>
           <button
             type="button"

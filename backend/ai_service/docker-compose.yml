@@ -1,6 +1,9 @@
 services:
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
   game-api:
     build: ./services/game_api
     container_name: game-api
@@ -62,12 +65,15 @@ volumes:
 
 networks:
   app-network:
+<<<<<<< HEAD
 =======
 
   
 
   
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
 
 
 

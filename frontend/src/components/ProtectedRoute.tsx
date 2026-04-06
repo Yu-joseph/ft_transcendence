@@ -21,12 +21,12 @@ import { useAuth } from '@clerk/clerk-react'
 =======
 >>>>>>> fa260b3 (merging AI service with docker and nginx)
 import { Navigate } from 'react-router-dom'
-import { useCustomAuth } from '../hooks/useCustomAuth'
+import { useAuth } from '../auth/useAuth'
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isSignedIn, isLoaded } = useCustomAuth()
+  const { user, loading } = useAuth()
 
-  if (!isLoaded)
+  if (loading)
     return (
       <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center">
         Checking session...
@@ -35,8 +35,12 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   // Using `replace` prevents navigating back to protected pages after redirect.
 
+<<<<<<< HEAD
   if (!isSignedIn) 
 >>>>>>> 2d98fb0 (SA)
+=======
+  if (!user) 
+>>>>>>> dd5f97c (merging current changes with all team members)
     return <Navigate to="/" replace />
 
   return <>{children}</>

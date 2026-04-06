@@ -11,6 +11,7 @@ const disconnectTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 export { createGameInDB, finalizeGame, updateGameInDB };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 async function ensureUser(id: string, username: string) {
   await prisma.user.upsert({
@@ -28,6 +29,8 @@ async function ensureUser(id: string, username: string) {
 }
 
 >>>>>>> 2d98fb0 (SA)
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
 /**
  * Save a new match to DB when it starts.
  */
@@ -35,6 +38,9 @@ async function createGameInDB(match: Match) {
   const boardStrings = match.board.map(cell => cell ?? '');
   await prisma.game.create({
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
     data: {
       id: match.id,
       board: boardStrings,
@@ -46,6 +52,7 @@ async function createGameInDB(match: Match) {
       created_at: new Date(), // fixed field name
     },
   });
+<<<<<<< HEAD
 =======
   data: {
     id: match.id,
@@ -59,6 +66,8 @@ async function createGameInDB(match: Match) {
   },
 });
 >>>>>>> 2d98fb0 (SA)
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
   console.log(`Game created in DB: ${match.id}`);
 }
 

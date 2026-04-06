@@ -112,10 +112,14 @@ def login(request):
 
     response = JsonResponse({"message": "Login successful"})
 <<<<<<< HEAD
+<<<<<<< HEAD
     response.set_cookie(key="access_token",  value=str(access),  max_age=600,    httponly=True, secure=False, samesite="Lax", path="/")
 =======
     response.set_cookie(key="access_token",  value=str(access),  max_age=300,    httponly=True, secure=False, samesite="Lax", path="/")
 >>>>>>> 358aa23 (SA)
+=======
+    response.set_cookie(key="access_token",  value=str(access),  max_age=600,    httponly=True, secure=False, samesite="Lax", path="/")
+>>>>>>> dd5f97c (merging current changes with all team members)
     response.set_cookie(key="refresh_token", value=str(refresh), max_age=604800, httponly=True, secure=False, samesite="Lax", path="/")
     return response
 

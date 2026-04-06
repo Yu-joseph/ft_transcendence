@@ -78,10 +78,14 @@ app.get('/api/users/:id/tournaments', async (req: Request, res: Response) => {
         }
       },
 <<<<<<< HEAD
+<<<<<<< HEAD
       orderBy: { Tournament: {created_at: 'desc'} },
 =======
       orderBy: { Tournament: {createdAt: 'desc'} },
 >>>>>>> 2d98fb0 (SA)
+=======
+      orderBy: { Tournament: {created_at: 'desc'} },
+>>>>>>> dd5f97c (merging current changes with all team members)
     });
     const result = entries.map(entry => ({
       tournamentId: entry.tournamentId,
@@ -100,10 +104,14 @@ app.get('/api/users/:id/tournaments', async (req: Request, res: Response) => {
       seed: entry.seed,
       tournamentWinner: entry.Tournament.User_Tournament_winnerIdToUser,
 <<<<<<< HEAD
+<<<<<<< HEAD
       createdAt: entry.Tournament.created_at,
 =======
       createdAt: entry.Tournament.createdAt,
 >>>>>>> 2d98fb0 (SA)
+=======
+      createdAt: entry.Tournament.created_at,
+>>>>>>> dd5f97c (merging current changes with all team members)
     }));
     res.json(result);
   } catch (err) {

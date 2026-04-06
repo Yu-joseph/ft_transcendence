@@ -21,10 +21,14 @@ export default function Leaderboard() {
         setLoading(true)
         setError(null)
 <<<<<<< HEAD
+<<<<<<< HEAD
         const response = await fetch(`http://${window.location.hostname}:1339/api/leaderboard`)
 =======
         const response = await fetch(`http://${window.location.hostname}:3000/api/leaderboard`)
 >>>>>>> 2d98fb0 (SA)
+=======
+        const response = await fetch(`http://${window.location.hostname}:1339/api/leaderboard`)
+>>>>>>> dd5f97c (merging current changes with all team members)
         if (!response.ok) 
             throw new Error(`Failed to load leaderboard (${response.status})`)
         const data = (await response.json()) as LeaderboardPlayer[]
@@ -62,10 +66,14 @@ export default function Leaderboard() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
 <<<<<<< HEAD
+<<<<<<< HEAD
             <thead className="bg-slate-900">
 =======
             {/* <thead className="bg-slate-900"> */}
 >>>>>>> 2d98fb0 (SA)
+=======
+            <thead className="bg-slate-900">
+>>>>>>> dd5f97c (merging current changes with all team members)
               <tr>
                 <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Rank</th>
                 <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Player</th>
@@ -73,10 +81,14 @@ export default function Leaderboard() {
                 <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Losses</th>
               </tr>
 <<<<<<< HEAD
+<<<<<<< HEAD
             </thead>
 =======
             {/* </thead> */}
 >>>>>>> 2d98fb0 (SA)
+=======
+            </thead>
+>>>>>>> dd5f97c (merging current changes with all team members)
             <tbody>
               {leaderboard.map((player, index) => (
                 <tr key={player.id} className="border-t border-slate-700/70 hover:bg-slate-700/40">

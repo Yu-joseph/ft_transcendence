@@ -2,18 +2,26 @@ import React, { useState, useRef, useEffect } from 'react'
 import './ChatWindow.css'
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
 =======
 function ChatWindow({ onFirstMessage, initialMessages = [] }) {
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }) {
+>>>>>>> dd5f97c (merging current changes with all team members)
   const [messages, setMessages] = useState(initialMessages)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [uploadedFile, setUploadedFile] = useState(null)
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+
+>>>>>>> dd5f97c (merging current changes with all team members)
   const hasSentFirst = useRef(initialMessages.length > 0)
   const messagesEndRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -23,6 +31,9 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
   }, [messages, loading])
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
   // NEW: generate title using LLM
   const generateTitle = async (message) => {
     try {
@@ -43,6 +54,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
     }
   }
 
+<<<<<<< HEAD
   const handleFileUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
@@ -51,12 +63,19 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
     formData.append('file', file)
 
 =======
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
   const handleFileUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
+
     const formData = new FormData()
     formData.append('file', file)
+<<<<<<< HEAD
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+
+>>>>>>> dd5f97c (merging current changes with all team members)
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       const data = await res.json()
@@ -76,9 +95,13 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
 
     let messageText = input
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+
+>>>>>>> dd5f97c (merging current changes with all team members)
     if (uploadedFile) {
       messageText = input
         ? `[File: ${uploadedFile.filename}] ${input}`
@@ -89,6 +112,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
     setMessages(prev => [...prev, userMsg])
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     // HERE: generate title using LLM
     if (!hasSentFirst.current) {
       generateTitle(messageText)
@@ -96,6 +120,11 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
     if (!hasSentFirst.current && onFirstMessage) {
       onFirstMessage(messageText)
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+    // HERE: generate title using LLM
+    if (!hasSentFirst.current) {
+      generateTitle(messageText)
+>>>>>>> dd5f97c (merging current changes with all team members)
       hasSentFirst.current = true
     }
 
@@ -111,6 +140,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
       'generate me', 'create me', 'make me'
     ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     const isImageRequest = imageKeywords.some(kw =>
       messageText.toLowerCase().includes(kw)
@@ -121,11 +151,20 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
     const isImageRequest = imageKeywords.some(kw => messageText.toLowerCase().includes(kw))
 
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+
+    const isImageRequest = imageKeywords.some(kw =>
+      messageText.toLowerCase().includes(kw)
+    )
+
+    // IMAGE REQUEST
+>>>>>>> dd5f97c (merging current changes with all team members)
     if (isImageRequest) {
       try {
         const response = await fetch('/api/image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+<<<<<<< HEAD
 <<<<<<< HEAD
           body: JSON.stringify({ message: messageText, session_id: sessionId })
         })
@@ -153,30 +192,61 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
 
 =======
           body: JSON.stringify({ message: messageText })
+=======
+          body: JSON.stringify({ message: messageText, session_id: sessionId })
+>>>>>>> dd5f97c (merging current changes with all team members)
         })
+
         const data = await response.json()
-        setMessages(prev => [...prev, { role: 'ai', text: data.content }])
+
+        setMessages(prev => [
+          ...prev,
+<<<<<<< HEAD
+          { 
+            role: 'ai', 
+            text: `<img src="http://localhost:5000${data.image_url}" style="max-width:300px;" />`
+          }
+=======
+          { role: 'ai', text: data.content }
+>>>>>>> cbabebc (merging chat-system with main project)
+        ])
+
       } catch {
-        setMessages(prev => [...prev, { role: 'ai', text: 'Error generating image.' }])
+        setMessages(prev => [
+          ...prev,
+          { role: 'ai', text: 'Error generating image.' }
+        ])
       }
+<<<<<<< HEAD
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+
+>>>>>>> dd5f97c (merging current changes with all team members)
       setLoading(false)
       return
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     // CHAT STREAM
 =======
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+    // CHAT STREAM
+>>>>>>> dd5f97c (merging current changes with all team members)
     try {
       const response = await fetch('/api/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
 <<<<<<< HEAD
+<<<<<<< HEAD
         body: JSON.stringify({ message: messageText, session_id: sessionId })
 =======
         body: JSON.stringify({ message: messageText })
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+        body: JSON.stringify({ message: messageText, session_id: sessionId })
+>>>>>>> dd5f97c (merging current changes with all team members)
       })
 
       const reader = response.body.getReader()
@@ -189,6 +259,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
         const { done, value } = await reader.read()
         if (done) break
 <<<<<<< HEAD
+<<<<<<< HEAD
 
         const chunk = decoder.decode(value, { stream: true })
         const lines = chunk.split('\n')
@@ -200,13 +271,22 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
             if (token === '[DONE]') break
 
 =======
+=======
+
+>>>>>>> dd5f97c (merging current changes with all team members)
         const chunk = decoder.decode(value, { stream: true })
         const lines = chunk.split('\n')
+
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const token = line.slice(6)
+
             if (token === '[DONE]') break
+<<<<<<< HEAD
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+
+>>>>>>> dd5f97c (merging current changes with all team members)
             setMessages(prev => {
               const updated = [...prev]
               updated[updated.length - 1] = {
@@ -219,6 +299,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
         }
       }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     } catch {
       setMessages(prev => [
@@ -229,6 +310,14 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
     } catch {
       setMessages(prev => [...prev, { role: 'ai', text: 'Error connecting to server.' }])
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+
+    } catch {
+      setMessages(prev => [
+        ...prev,
+        { role: 'ai', text: 'Error connecting to server.' }
+      ])
+>>>>>>> dd5f97c (merging current changes with all team members)
       setLoading(false)
     }
   }
@@ -245,9 +334,12 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
       <div className="chat-messages">
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         {/* Hero — shown when no messages */}
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
         {messages.length === 0 && !loading && (
           <div className="hero">
             <div className="hero-icon">Hey, Ready to dive in?</div>
@@ -301,10 +393,14 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
       </div>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
       {/* INPUT */}
 =======
       {/* Input */}
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+      {/* INPUT */}
+>>>>>>> dd5f97c (merging current changes with all team members)
       <div className="chat-input-area">
         {uploadedFile && (
           <div className="file-preview">
@@ -322,6 +418,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
             style={{ display: 'none' }}
           />
 <<<<<<< HEAD
+<<<<<<< HEAD
 
           <button
             className="attach-btn"
@@ -333,32 +430,46 @@ function ChatWindow({ onFirstMessage, initialMessages = [] }) {
           <textarea
             placeholder="Ask anything..."
 =======
+=======
+
+>>>>>>> dd5f97c (merging current changes with all team members)
           <button
             className="attach-btn"
             onClick={() => fileInputRef.current.click()}
-            title="Attach file"
           >
             📎
           </button>
+
           <textarea
+<<<<<<< HEAD
             placeholder="Describe the board state or ask for a tactic…"
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+            placeholder="Ask anything..."
+>>>>>>> dd5f97c (merging current changes with all team members)
             rows="1"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
           />
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
 
           <button className="send-btn" onClick={handleSend} disabled={loading}>
             ↑
           </button>
+<<<<<<< HEAD
         </div>
 =======
           <button className="send-btn" onClick={handleSend} disabled={loading}>↑</button>
         </div>
         <p className="disclaimer">STRATEGY ENGINE V3.0.1 · PRECISION TRAINING MODE</p>
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+        </div>
+>>>>>>> dd5f97c (merging current changes with all team members)
       </div>
     </div>
   )

@@ -11,6 +11,9 @@ function Dashboard() {
 
   useEffect(() => {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
     const init = async () => {
       try {
         const res = await fetch('/api/sessions')
@@ -28,6 +31,7 @@ function Dashboard() {
     }
   
     init()
+<<<<<<< HEAD
   }, [])
   
 =======
@@ -38,6 +42,10 @@ function Dashboard() {
   }, [])
 
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+  }, [])
+  
+>>>>>>> dd5f97c (merging current changes with all team members)
   const handleNewChat = async () => {
     try {
       const res = await fetch('/api/new-session', { method: 'POST' })
@@ -95,9 +103,13 @@ function Dashboard() {
         <ChatWindow
           key={chatKey}
 <<<<<<< HEAD
+<<<<<<< HEAD
           sessionId={activeSession}
 =======
 >>>>>>> 22d4bda (adding getuser endpoint in nginx)
+=======
+          sessionId={activeSession}
+>>>>>>> dd5f97c (merging current changes with all team members)
           onFirstMessage={updateSessionTitle}
           initialMessages={loadedMessages}
         />

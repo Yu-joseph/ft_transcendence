@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { gameSocket } from "../socket/sock";
@@ -8,11 +9,18 @@ import { useAuth } from "../auth/useAuth";
 =======
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
 import { useEffect, useState, useRef } from "react";
+=======
+import { useEffect, useState } from "react";
+>>>>>>> dd5f97c (merging current changes with all team members)
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { socket } from "./socket/sock";
-import BottomNav from "../components/BottomNav";
+import { gameSocket } from "../socket/sock";
+// import BottomNav from "../components/BottomNav";
 import WinModal from "../components/WinModal";
+<<<<<<< HEAD
 >>>>>>> 2d98fb0 (SA)
+=======
+import { useAuth } from "../auth/useAuth";
+>>>>>>> dd5f97c (merging current changes with all team members)
 
 
 type CellValue = "X" | "O" | null;
@@ -34,6 +42,7 @@ interface Match {
 }
 
 function Game() {
+<<<<<<< HEAD
 <<<<<<< HEAD
   const { user: authUser } = useAuth();
   const authUserId = authUser?.id;
@@ -75,19 +84,51 @@ function Game() {
   const [matchStatus, setMatchStatus] = useState<string>("waiting");
   const [players, setPlayers] = useState<Player[]>([]);
 >>>>>>> 2d98fb0 (SA)
+=======
+  const { user: authUser } = useAuth();
+  const authUserId = authUser?.id;
+  const navigate = useNavigate();
+  const { matchId } = useParams<{ matchId: string }>();
+  const location = useLocation();
+  // useLocation to access navigation state (symbol/match/tournament)
+  const locationState = location.state as { symbol?: string; match?: Match; tournamentId?: string } | null;
+  const tournamentId = locationState?.tournamentId ?? null;
+  const initialMatch = locationState?.match;
+
+  const [backTo, setBackTo] = useState(tournamentId ? "/Tournament" : "/Dashboard");
+  const [board, setBoard] = useState<CellValue[]>(() =>
+    (initialMatch?.board as CellValue[]) ?? Array(9).fill(null)
+  );
+  const [mySymbol, setMySymbol] = useState<"X" | "O" | null>(
+    () => (locationState?.symbol as "X" | "O" | undefined) ?? null
+  );
+  const [currentTurn, setCurrentTurn] = useState<string | null>(() => initialMatch?.currentTurn ?? null);
+  const [winner, setWinner] = useState<string | null>(() => {
+    if (!initialMatch?.winner) return null;
+    const winnerPlayer = initialMatch.players.find(p => p.id === initialMatch.winner);
+    return winnerPlayer?.username ?? initialMatch.winner;
+  });
+  const [matchStatus, setMatchStatus] = useState<string>(() => initialMatch?.status ?? "waiting");
+  const [players, setPlayers] = useState<Player[]>(() => initialMatch?.players ?? []);
+>>>>>>> dd5f97c (merging current changes with all team members)
   const [pieceToRemove, setPieceToRemove] = useState<number | null>(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [openmentLeaver, setopLeave] = useState(false);
   const [showWinModal, setShowWinModal] = useState(false);
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> 2d98fb0 (SA)
+=======
+
+>>>>>>> dd5f97c (merging current changes with all team members)
   // Derive move count from the current board state
   const getMoveCount = (symbol: "X" | "O"): number => {
     return board.filter(cell => cell === symbol).length;
   };
 
+<<<<<<< HEAD
 <<<<<<< HEAD
   // Ensure socket is connected and rejoin match if needed
   useEffect(() => {
@@ -97,21 +138,13 @@ function Game() {
       gameSocket.connect();
 =======
   // Get symbol and initial match from location state (passed from Lobby)
+=======
+  // Ensure socket is connected and rejoin match if needed
+>>>>>>> dd5f97c (merging current changes with all team members)
   useEffect(() => {
-    const state = location.state as { symbol?: string; match?: Match; tournamentId?: string } | null;
-    if (state?.symbol) {
-      setMySymbol(state.symbol as "X" | "O");
-    }
-    if (state?.match) {
-      console.log("Initializing match from state:", state.match);
-      setBoard(state.match.board as CellValue[]);
-      // casted CellValue cuz the ts should know this protcted before ( and convert it to cellValue)
-      setCurrentTurn(state.match.currentTurn);
-      setMatchStatus(state.match.status);
-      setPlayers(state.match.players);
-    }
-  },[]);
+    if (!authUserId || !matchId) return;
 
+<<<<<<< HEAD
   // Ensure socket is connected
   useEffect(() => {
      if (!user || !matchId) 
@@ -120,10 +153,15 @@ function Game() {
     if (!socket.connected) {
       socket.connect();
 >>>>>>> 2d98fb0 (SA)
+=======
+    if (!gameSocket.connected) {
+      gameSocket.connect();
+>>>>>>> dd5f97c (merging current changes with all team members)
     }
 
     // If we dont have match state (after refresh), ask server to rejoin
     const handleConnect = () => {
+<<<<<<< HEAD
 <<<<<<< HEAD
       gameSocket.emit('reconnect-match', { userId: authUserId, matchId });
     };
@@ -134,17 +172,25 @@ function Game() {
       gameSocket.on('connect', handleConnect);
 =======
       socket.emit('reconnect-match', { userId: user.id, matchId });
+=======
+      gameSocket.emit('reconnect-match', { userId: authUserId, matchId });
+>>>>>>> dd5f97c (merging current changes with all team members)
     };
 
-    if (socket.connected) {
+    if (gameSocket.connected) {
       handleConnect();
     } else {
+<<<<<<< HEAD
       socket.on('connect', handleConnect);
 >>>>>>> 2d98fb0 (SA)
+=======
+      gameSocket.on('connect', handleConnect);
+>>>>>>> dd5f97c (merging current changes with all team members)
     }
 
     const handleReconnectFailed = (data: { reason: string }) => {
       console.log('Reconnect failed:', data.reason);
+<<<<<<< HEAD
 <<<<<<< HEAD
       navigate(backTo);
     };
@@ -158,16 +204,23 @@ function Game() {
   }, [authUserId, backTo, matchId, navigate]);
 =======
       navigate(backToRef.current);
+=======
+      navigate(backTo);
+>>>>>>> dd5f97c (merging current changes with all team members)
     };
 
-    socket.on('reconnect-match-failed', handleReconnectFailed);
+    gameSocket.on('reconnect-match-failed', handleReconnectFailed);
 
     return () => {
-      socket.off('connect', handleConnect);
-      socket.off('reconnect-match-failed', handleReconnectFailed);
+      gameSocket.off('connect', handleConnect);
+      gameSocket.off('reconnect-match-failed', handleReconnectFailed);
     };
+<<<<<<< HEAD
   }, [user, matchId, navigate]);
 >>>>>>> 2d98fb0 (SA)
+=======
+  }, [authUserId, backTo, matchId, navigate]);
+>>>>>>> dd5f97c (merging current changes with all team members)
 
   // Listen for match updates from server
   useEffect(() => {
@@ -195,14 +248,19 @@ function Game() {
     const handleOpponentForfeited = () => {
       setopLeave(true);
 <<<<<<< HEAD
+<<<<<<< HEAD
       setTimeout(() => navigate(backTo), 4000);
 =======
       setTimeout(() => navigate(backToRef.current), 4000);
 >>>>>>> 2d98fb0 (SA)
+=======
+      setTimeout(() => navigate(backTo), 4000);
+>>>>>>> dd5f97c (merging current changes with all team members)
     };
 
     const handleTournamentFinished = () => {
       // whole tournament is over — always go back to Dashboard, not Tournament page
+<<<<<<< HEAD
 <<<<<<< HEAD
       setBackTo('/Dashboard')
     };
@@ -219,19 +277,26 @@ function Game() {
   }, [backTo, matchId, navigate]);
 =======
       backToRef.current = '/Dashboard'
+=======
+      setBackTo('/Dashboard')
+>>>>>>> dd5f97c (merging current changes with all team members)
     };
 
-    socket.on("match-update", handleMatchUpdate);
-    socket.on("opponent-forfeited", handleOpponentForfeited);
-    socket.on("tournament-finished", handleTournamentFinished);
+    gameSocket.on("match-update", handleMatchUpdate);
+    gameSocket.on("opponent-forfeited", handleOpponentForfeited);
+    gameSocket.on("tournament-finished", handleTournamentFinished);
 
     return () => {
-      socket.off("match-update", handleMatchUpdate);
-      socket.off("opponent-forfeited", handleOpponentForfeited);
-      socket.off("tournament-finished", handleTournamentFinished);
+      gameSocket.off("match-update", handleMatchUpdate);
+      gameSocket.off("opponent-forfeited", handleOpponentForfeited);
+      gameSocket.off("tournament-finished", handleTournamentFinished);
     };
+<<<<<<< HEAD
   }, [matchId]);
 >>>>>>> 2d98fb0 (SA)
+=======
+  }, [backTo, matchId, navigate]);
+>>>>>>> dd5f97c (merging current changes with all team members)
 
     useEffect(() => {
     if (!matchId) return;
@@ -251,6 +316,7 @@ function Game() {
     };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     gameSocket.on('match-found', handleMatchFound);
 
     return () => {
@@ -261,6 +327,12 @@ function Game() {
     return () => {
       socket.off('match-found', handleMatchFound);
 >>>>>>> 2d98fb0 (SA)
+=======
+    gameSocket.on('match-found', handleMatchFound);
+
+    return () => {
+      gameSocket.off('match-found', handleMatchFound);
+>>>>>>> dd5f97c (merging current changes with all team members)
     };
   }, [matchId]);
 
@@ -282,14 +354,19 @@ function Game() {
       setShowLeaveConfirm(true);
     } else {
 <<<<<<< HEAD
+<<<<<<< HEAD
       navigate(backTo);
 =======
       navigate(backToRef.current);
 >>>>>>> 2d98fb0 (SA)
+=======
+      navigate(backTo);
+>>>>>>> dd5f97c (merging current changes with all team members)
     }
   };
 
   const handleConfirmLeave = () => {
+<<<<<<< HEAD
 <<<<<<< HEAD
     gameSocket.emit("leave-match", { matchId, userId: authUser?.id });
     setShowLeaveConfirm(false);
@@ -304,26 +381,37 @@ function Game() {
     console.log("Debug - user.id:", authUser?.id);
 =======
     socket.emit("leave-match", { matchId, userId: user?.id });
+=======
+    gameSocket.emit("leave-match", { matchId, userId: authUser?.id });
+>>>>>>> dd5f97c (merging current changes with all team members)
     setShowLeaveConfirm(false);
-    navigate(backToRef.current);
+    navigate(backTo);
   };
 
   // Determine if it's my turn
-  const isMyTurn = user && currentTurn === user.id;
+  const isMyTurn = authUser && currentTurn === authUser.id;
 
   // Debug states
   useEffect(() => {
+<<<<<<< HEAD
     console.log("Debug - user.id:", user?.id);
 >>>>>>> 2d98fb0 (SA)
+=======
+    console.log("Debug - user.id:", authUser?.id);
+>>>>>>> dd5f97c (merging current changes with all team members)
     console.log("Debug - currentTurn:", currentTurn);
     console.log("Debug - isMyTurn:", isMyTurn);
     console.log("Debug - matchStatus:", matchStatus);
     console.log("Debug - mySymbol:", mySymbol);
 <<<<<<< HEAD
+<<<<<<< HEAD
   }, [authUser, currentTurn, isMyTurn, matchStatus, mySymbol]);
 =======
   }, [user, currentTurn, isMyTurn, matchStatus, mySymbol]);
 >>>>>>> 2d98fb0 (SA)
+=======
+  }, [authUser, currentTurn, isMyTurn, matchStatus, mySymbol]);
+>>>>>>> dd5f97c (merging current changes with all team members)
 
   // Determine status text
   let statusText: string;
@@ -342,9 +430,13 @@ function Game() {
 
   const handleClick = (index: number) => {
 <<<<<<< HEAD
+<<<<<<< HEAD
     if (!authUser) return;
 =======
 >>>>>>> 2d98fb0 (SA)
+=======
+    if (!authUser) return;
+>>>>>>> dd5f97c (merging current changes with all team members)
     if (!isMyTurn || winner || matchStatus !== "playing") return;
 
     const symbol = mySymbol as "X" | "O";
@@ -354,6 +446,7 @@ function Game() {
     if (myMoveCount < 3) {
       if (board[index]) return; // Cell is occupied
 
+<<<<<<< HEAD
 <<<<<<< HEAD
       gameSocket.emit("make-move", {
         matchId,
@@ -367,6 +460,13 @@ function Game() {
         newindex: index,
         userId: user!.id
 >>>>>>> 2d98fb0 (SA)
+=======
+      gameSocket.emit("make-move", {
+        matchId,
+        oldindex: -1,          // no removal
+        newindex: index,
+        userId: authUser.id
+>>>>>>> dd5f97c (merging current changes with all team members)
       });
 
       return;
@@ -391,6 +491,7 @@ function Game() {
     // Step B: place new piece on empty cell
     if (!board[index]) {
 <<<<<<< HEAD
+<<<<<<< HEAD
       gameSocket.emit("make-move", {
         matchId,
         oldindex: pieceToRemove,
@@ -403,6 +504,13 @@ function Game() {
         newindex: index,
         userId: user!.id
 >>>>>>> 2d98fb0 (SA)
+=======
+      gameSocket.emit("make-move", {
+        matchId,
+        oldindex: pieceToRemove,
+        newindex: index,
+        userId: authUser.id
+>>>>>>> dd5f97c (merging current changes with all team members)
       });
 
       setPieceToRemove(null);
@@ -426,12 +534,17 @@ function Game() {
         </span>
       </h1>
 <<<<<<< HEAD
+<<<<<<< HEAD
 
       {!authUser ? (
 =======
       {/* <Lobby /> */}
       <SignedOut>
 >>>>>>> 2d98fb0 (SA)
+=======
+
+      {!authUser ? (
+>>>>>>> dd5f97c (merging current changes with all team members)
         <div className="flex flex-col items-center gap-4 mt-6">
           <p className="text-white text-xl">Please sign in to play.</p>
           <button
@@ -444,6 +557,9 @@ function Game() {
           </button>
         </div>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
       ) : (
         <>
           <div className="flex items-center justify-center gap-3 mt-2">
@@ -451,6 +567,7 @@ function Game() {
               {authUser?.fullName ?? authUser?.username ?? authUser?.email ?? "Player"}
               {mySymbol && <span className="ml-2 text-emerald-400">({mySymbol})</span>}
             </span>
+<<<<<<< HEAD
           </div>
 
           {/* Show players in match */}
@@ -571,103 +688,118 @@ function Game() {
         {players.length === 2 && (
           <div className="text-slate-400 text-sm">
             {players[0].username} (X) vs {players[1].username} (O)
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
           </div>
-        )}
 
-        <p className="text-white text-xl">{statusText}</p>
+          {/* Show players in match */}
+          {players.length === 2 && (
+            <div className="text-slate-400 text-sm">
+              {players[0].username} (X) vs {players[1].username} (O)
+            </div>
+          )}
 
-        {/* Instructions when need to remove a piece */}
-        {isMyTurn && mySymbol && getMoveCount(mySymbol) >= 3 && pieceToRemove === null && !winner && (
-          <p className="text-yellow-400 text-sm">Click one of your pieces to remove it first</p>
-        )}
-        {pieceToRemove !== null && (
-          <p className="text-green-400 text-sm">Now click an empty cell to place your piece</p>
-        )}
+          <p className="text-white text-xl">{statusText}</p>
 
-        {/* Board */}
-        <div className="grid grid-cols-3 gap-3 mt-6">
-          {board.map((cell, index) => {
-            const isSelectedForRemoval = pieceToRemove === index;
-            const isMyPiece = cell === mySymbol;
-            const needsToSelectPiece = isMyTurn && mySymbol && getMoveCount(mySymbol) >= 3 && pieceToRemove === null;
-            
-            return (
-              <button
-                key={index}
-                onClick={() => handleClick(index)}
-                disabled={!isMyTurn || !!winner}
-                className={`w-20 h-20 text-3xl font-bold rounded-lg
-                          ${isSelectedForRemoval 
-                            ? "bg-red-600 ring-4 ring-red-400" 
-                            : needsToSelectPiece && isMyPiece
-                              ? "bg-yellow-700 hover:bg-yellow-600"
-                              : "bg-slate-800"}
-                          text-white
-                          ${isMyTurn && !winner ? "hover:bg-slate-700 cursor-pointer" : "cursor-not-allowed opacity-80"}
-                          transition`}
-              >
-                {cell}
-              </button>
-            );
-          })}
-        </div>
+          {/* Instructions when need to remove a piece */}
+          {isMyTurn && mySymbol && getMoveCount(mySymbol) >= 3 && pieceToRemove === null && !winner && (
+            <p className="text-yellow-400 text-sm">Click one of your pieces to remove it first</p>
+          )}
+          {pieceToRemove !== null && (
+            <p className="text-green-400 text-sm">Now click an empty cell to place your piece</p>
+          )}
 
-        <button
-          onClick={handleLeaveAttempt}
-          className="mt-6 px-6 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-500 transition"
-        >
-          Back to Lobby
-        </button>
-
-        {/* Opponent Left Modal */}
-      
-
-        {/* Leave Confirmation Modal */}
-        {showLeaveConfirm && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-            <div className="bg-slate-800 border border-red-700 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-              <h3 className="text-white text-xl font-bold mb-2">Leave Match?</h3>
-              <p className="text-slate-300 mb-6">
-                If you leave now, you will <span className="text-red-400 font-semibold">Lose the match</span> and your opponent wins.
-              </p>
-              <div className="flex gap-3">
+          {/* Board */}
+          <div className="grid grid-cols-3 gap-3 mt-6">
+            {board.map((cell, index) => {
+              const isSelectedForRemoval = pieceToRemove === index;
+              const isMyPiece = cell === mySymbol;
+              const needsToSelectPiece = isMyTurn && mySymbol && getMoveCount(mySymbol) >= 3 && pieceToRemove === null;
+              
+              return (
                 <button
-                  onClick={handleConfirmLeave}
-                  className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition font-semibold"
+                  key={index}
+                  onClick={() => handleClick(index)}
+                  disabled={!isMyTurn || !!winner}
+                  className={`w-20 h-20 text-3xl font-bold rounded-lg
+                            ${isSelectedForRemoval 
+                              ? "bg-red-600 ring-4 ring-red-400" 
+                              : needsToSelectPiece && isMyPiece
+                                ? "bg-yellow-700 hover:bg-yellow-600"
+                                : "bg-slate-800"}
+                            text-white
+                            ${isMyTurn && !winner ? "hover:bg-slate-700 cursor-pointer" : "cursor-not-allowed opacity-80"}
+                            transition`}
                 >
-                  Leave
+                  {cell}
                 </button>
-                <button
-                  onClick={() => setShowLeaveConfirm(false)}
-                  className="flex-1 px-4 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-500 transition font-semibold"
-                >
-                  Stay
-                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={handleLeaveAttempt}
+            className="mt-6 px-6 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-500 transition"
+          >
+            Back to Lobby
+          </button>
+
+          {/* Opponent Left Modal */}
+        
+
+          {/* Leave Confirmation Modal */}
+          {showLeaveConfirm && (
+            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+              <div className="bg-slate-800 border border-red-700 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+                <h3 className="text-white text-xl font-bold mb-2">Leave Match?</h3>
+                <p className="text-slate-300 mb-6">
+                  If you leave now, you will <span className="text-red-400 font-semibold">Lose the match</span> and your opponent wins.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleConfirmLeave}
+                    className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition font-semibold"
+                  >
+                    Leave
+                  </button>
+                  <button
+                    onClick={() => setShowLeaveConfirm(false)}
+                    className="flex-1 px-4 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-500 transition font-semibold"
+                  >
+                    Stay
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-        {/* Opponent forfeited → current player always wins */}
-        <WinModal
-          show={openmentLeaver}
-          isWinner={true}
-          winnerName={user?.fullName ?? user?.username ?? "You"}
-          message="Your opponent left the match."
-          redirectTo={backToRef.current}
-        />
-
-        {/* Regular game end */}
-        {!openmentLeaver && (
+          )}
+          {/* Opponent forfeited → current player always wins */}
           <WinModal
-            show={showWinModal}
-            isWinner={!!winner && players.find(p => p.id === user?.id)?.username === winner}
-            winnerName={winner ?? ""}
-            redirectTo={backToRef.current}
+            show={openmentLeaver}
+            isWinner={true}
+            winnerName={authUser?.fullName ?? authUser?.username ?? "You"}
+            message="Your opponent left the match."
+            redirectTo={backTo}
           />
+<<<<<<< HEAD
         )}
       </SignedIn>
       <BottomNav />
 >>>>>>> 2d98fb0 (SA)
+=======
+
+          {/* Regular game end */}
+          {!openmentLeaver && (
+            <WinModal
+              show={showWinModal}
+              isWinner={!!winner && players.find(p => p.id === authUser?.id)?.username === winner}
+              winnerName={winner ?? ""}
+              redirectTo={backTo}
+            />
+          )}
+        </>
+      )}
+      {/* <BottomNav /> */}
+>>>>>>> dd5f97c (merging current changes with all team members)
     </header>
     </div>
   );

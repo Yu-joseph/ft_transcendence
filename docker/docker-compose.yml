@@ -57,6 +57,9 @@ services:
       - VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
       - VITE_API_URL=http://localhost:5173
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
       - VITE_CHAT_API=http://localhost:8080/api
     build: ../frontend
     volumes:
@@ -121,10 +124,15 @@ services:
       - auth
       - frontend
 <<<<<<< HEAD
+<<<<<<< HEAD
     ports:
       - "1339:3000"
 =======
 >>>>>>> dc8dfb9 (SA)
+=======
+    ports:
+      - "1339:3000"
+>>>>>>> dd5f97c (merging current changes with all team members)
   
   game-api:
     build: ../backend/ai_service/services/game_api
@@ -261,6 +269,24 @@ volumes:
     networks:
       - app-network
 
+  chat:
+    build:
+        context: ../backend/chat/backend
+        dockerfile: Dockerfile
+    container_name: chat-system
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    environment:
+      SECRET_KEY: 'django-insecure-4vkpyy2bkd3(%hi=nhqdr(yx5j71%*zf!o!ej2kfnivhbno!%n'
+      DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+    # volumes:
+    #   - ../backend/chat/backend:/app
+    networks:
+      - app-network
+
   postgres:
     image: postgres:15
     container_name: game-postgres
@@ -300,6 +326,7 @@ networks:
 <<<<<<< HEAD
 
  
+<<<<<<< HEAD
 =======
 =======
 volumes:
@@ -331,3 +358,5 @@ volumes:
 =======
   #     DATABASE_URL: postgres://sayf:1234@db:5432/mydb
 >>>>>>> fa260b3 (merging AI service with docker and nginx)
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)

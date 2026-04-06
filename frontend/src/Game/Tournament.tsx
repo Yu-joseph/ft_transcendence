@@ -1,18 +1,26 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { useEffect, useMemo, useRef, useState } from 'react'
 =======
 import { useEffect, useState, useRef } from 'react'
 import { useUser } from '@clerk/clerk-react'
 >>>>>>> 2d98fb0 (SA)
+=======
+import { useEffect, useMemo, useRef, useState } from 'react'
+>>>>>>> dd5f97c (merging current changes with all team members)
 import { useNavigate, useLocation } from 'react-router-dom'
 import Bar from '../components/Bar'
 import BottomNav from '../components/BottomNav'
 import TournamentLoadingPage from '../components/TournamentLoadingPage'
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { gameSocket } from '../socket/sock'
 =======
 import { socket } from './socket/sock'
 >>>>>>> 2d98fb0 (SA)
+=======
+import { gameSocket } from '../socket/sock'
+>>>>>>> dd5f97c (merging current changes with all team members)
 import { GiPodiumWinner } from "react-icons/gi";
 import { useAuth } from '../auth/useAuth'
 
@@ -165,6 +173,7 @@ function Bracket({ tournament, userId, }: {tournament: TournamentState ;userId: 
 function Tournament() 
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
   const { user: authUser } = useAuth()
   const currentUserId = authUser?.id ?? ''
   const navigate = useNavigate()
@@ -240,18 +249,29 @@ function Tournament()
 =======
 
   const { user } = useUser()
+=======
+  const { user: authUser } = useAuth()
+  const currentUserId = authUser?.id ?? ''
+>>>>>>> dd5f97c (merging current changes with all team members)
   const navigate = useNavigate()
   const location = useLocation()
+  const joinInfo = useMemo(() => {
+    const navState = location.state as { tournamentId?: string; userId?: string; username?: string } | null
+    const stored = sessionStorage.getItem('activeTournament')
+    const storedState = stored ? JSON.parse(stored) as { tournamentId?: string; userId?: string; username?: string } : null
+    return navState?.tournamentId ? navState : storedState
+  }, [location.state])
+  const shouldJoinTournament = Boolean(joinInfo?.tournamentId && joinInfo?.userId)
   //location hold the cuurent react location
   const [activeTournament, setActiveTournament] = useState<TournamentState | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(shouldJoinTournament)
   const [showWinnerScreen, setShowWinnerScreen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    if (!socket.connected) 
-      socket.connect()
+    if (!gameSocket.connected) 
+      gameSocket.connect()
 
     
     const onUpdate = (data: TournamentState) => {
@@ -259,7 +279,7 @@ function Tournament()
       setLoading(false)
       if (data.status === 'finished') {
         sessionStorage.removeItem('activeTournament')
-        if (data.winner === user?.id) {
+        if (data.winner === currentUserId) {
           setShowWinnerScreen(true)
           redirectTimeoutRef.current = setTimeout(() => navigate('/Dashboard'), 4000)
         } else {
@@ -288,26 +308,19 @@ function Tournament()
       setTimeout(() => setError(null), 3500)
     }
 
-    socket.on('tournament-update', onUpdate)
-    socket.on('tournament-created', onCreated)
-    socket.on('match-found', onMatchFound)
-    socket.on('tournament-error', onError)
+    gameSocket.on('tournament-update', onUpdate)
+    gameSocket.on('tournament-created', onCreated)
+    gameSocket.on('match-found', onMatchFound)
+    gameSocket.on('tournament-error', onError)
 
-    // Re-emit join so the server resends tournament-update to this freshly mounted page
+    // Re-emit join so the server resends tournament-update after page reload
     // location.state is used on normal navigation; sessionStorage survives refresh
-    const navState = location.state as { tournamentId?: string; userId?: string; username?: string } | null
-    const stored = sessionStorage.getItem('activeTournament')
-    const storedState = stored ? JSON.parse(stored) as { tournamentId?: string; userId?: string; username?: string } : null
-    const joinInfo = navState?.tournamentId ? navState : storedState
     if (joinInfo?.tournamentId && joinInfo?.userId) {
-      socket.emit('join-tournament', {
+      gameSocket.emit('join-tournament', {
         tournamentId: joinInfo.tournamentId,
         userId: joinInfo.userId,
         username: joinInfo.username ?? 'Player',
       })
-    } else {
-      // No active tournament to join from nav click; show empty state instead of spinner.
-      setLoading(false)
     }
 
 >>>>>>> 2d98fb0 (SA)
@@ -320,11 +333,15 @@ function Tournament()
 
     return () => {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> dd5f97c (merging current changes with all team members)
       gameSocket.off('tournament-update', onUpdate)
       gameSocket.off('tournament-created', onCreated)
       gameSocket.off('match-found', onMatchFound)
       gameSocket.off('tournament-error', onError)
       if (timeout) clearTimeout(timeout)
+<<<<<<< HEAD
       if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current)
     }
   }, [navigate, currentUserId, joinInfo, shouldJoinTournament])
@@ -338,15 +355,24 @@ function Tournament()
     }
   }, [navigate, location.state, user?.id])
 >>>>>>> 2d98fb0 (SA)
+=======
+      if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current)
+    }
+  }, [navigate, currentUserId, joinInfo, shouldJoinTournament])
+>>>>>>> dd5f97c (merging current changes with all team members)
 
   const handleStart = () => {
     if (!activeTournament) 
       return
 <<<<<<< HEAD
+<<<<<<< HEAD
     gameSocket.emit('start-tournament', { tournamentId: activeTournament.id })
 =======
     socket.emit('start-tournament', { tournamentId: activeTournament.id })
 >>>>>>> 2d98fb0 (SA)
+=======
+    gameSocket.emit('start-tournament', { tournamentId: activeTournament.id })
+>>>>>>> dd5f97c (merging current changes with all team members)
   }
 
   const isCreator = activeTournament?.creatorId === currentUserId
