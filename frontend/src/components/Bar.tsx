@@ -4,13 +4,14 @@ import { useAuth } from "../auth/useAuth";
 
 function Bar() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
 
   // Normalize avatar URL to hit the auth service media endpoint via nginx (/authent/ -> auth:8000)
   const normalizeAvatarUrl = (url?: string) => {
     if (!url) 
       return undefined;
-    if (/^https?:\/\//i.test(url)) 
+    const lowerUrl = url.toLowerCase();
+    if (lowerUrl.startsWith("http://") || lowerUrl.startsWith("https://")) 
       return url; // already absolute
 
     const base = "http://localhost:8080/authent";
@@ -31,7 +32,9 @@ function Bar() {
         credentials: "include",
       });
     } finally {
-      navigate("/");
+      setUser(null);
+      sessionStorage.removeItem("activeTournament");
+      navigate("/", { replace: true });
     }
   };
 
@@ -40,7 +43,7 @@ function Bar() {
   const avatarUrl = user?.avatar ? normalizeAvatarUrl(user.avatar) : undefined;
 
   return (
-    <header className="bg-slate-900 border-b border-amber-400 shadow-lg">
+    <header className="fixed top-0 left-0 z-50 w-full bg-slate-900 border-b border-amber-400 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex items-center justify-between">
         <div>
           <button
@@ -60,11 +63,13 @@ function Bar() {
               alt={displayName}
               className="h-9 w-9 rounded-full object-cover border border-amber-400"
             />
-          ) : (
+          ) : 
+          (
             <span className="h-9 w-9 rounded-full bg-amber-500 text-slate-900 flex items-center justify-center font-semibold border border-amber-400">
               {displayInitial}
             </span>
-          )}
+          )
+          }
           <span className="text-amber-500 text-sm">
             {displayName}
           </span>
