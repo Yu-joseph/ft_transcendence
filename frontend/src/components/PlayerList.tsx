@@ -1,22 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 import { gameSocket } from "../socket/sock";
 import { useAuth } from "../auth/useAuth";
-=======
-import { useUser } from "@clerk/clerk-react";
-=======
->>>>>>> fa260b3 (merging AI service with docker and nginx)
-import { socket } from "../Game/socket/sock";
-import { getAuthUser } from "../hooks/useCustomAuth";
-
->>>>>>> 2d98fb0 (SA)
-=======
-import { gameSocket } from "../socket/sock";
-import { useAuth } from "../auth/useAuth";
->>>>>>> dd5f97c (merging current changes with all team members)
 import { MdOnlinePrediction } from "react-icons/md";
 
 type Player = {
@@ -36,13 +21,6 @@ export default function PlayerList() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [pendingInvite, setPendingInvite] = useState<Invite | null>(null);
   const [sentToast, setSentToast] = useState<string | null>(null);
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-  const user = getAuthUser();
->>>>>>> fa260b3 (merging AI service with docker and nginx)
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
   const navigate = useNavigate();
   const { user } = useAuth();
 

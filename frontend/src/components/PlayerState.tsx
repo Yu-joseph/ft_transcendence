@@ -28,15 +28,7 @@ export default function PlayerState({ userId }: PlayerStateProps) {
       try {
         setLoading(true);
         setError(null);
-<<<<<<< HEAD
-<<<<<<< HEAD
         const response  = await fetch(`http://${window.location.hostname}:1339/api/users/${userId}/stats`);
-=======
-        const response  = await fetch(`http://${window.location.hostname}:3000/api/users/${userId}/stats`);
->>>>>>> 2d98fb0 (SA)
-=======
-        const response  = await fetch(`http://${window.location.hostname}:1339/api/users/${userId}/stats`);
->>>>>>> dd5f97c (merging current changes with all team members)
         if (!response.ok) 
           throw new Error("User not found");
         const data = (await response.json()) as PlayerStats;

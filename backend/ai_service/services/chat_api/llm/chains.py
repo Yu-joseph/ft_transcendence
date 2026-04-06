@@ -53,22 +53,11 @@ class ChatBot:
     def reset(self):
         self.history = [self.config.system_message]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
     def generate_image(self, prompt, session_id=None, user_id=None):
         return self.image_gen.generate(prompt, session_id=session_id, user_id=user_id)
 
 
 
-<<<<<<< HEAD
-=======
-    def generate_image(self, prompt):
-        return self.image_gen.generate(prompt)
->>>>>>> 22d4bda (adding getuser endpoint in nginx)
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
 
 
 bot = ChatBot()
@@ -91,10 +80,6 @@ def load_history(messages):
         elif m["role"] == "assistant":
             bot.history.append(AIMessage(content=m["content"]))
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
 def generate_image(prompt, session_id=None, user_id=None):
     return bot.generate_image(prompt, session_id=session_id, user_id=user_id)
 
@@ -111,12 +96,4 @@ def generate_title(message):
         return title
 
     except Exception as e:
-<<<<<<< HEAD
         return "New Chat"
-=======
-def generate_image(prompt):
-    return bot.generate_image(prompt)
->>>>>>> 22d4bda (adding getuser endpoint in nginx)
-=======
-        return "New Chat"
->>>>>>> dd5f97c (merging current changes with all team members)

@@ -302,16 +302,7 @@ export function setupTournamentHandlers(io: Server) {
             name: tournament.name,
             status: "waiting",
             creatorId: player.id,
-<<<<<<< HEAD
-<<<<<<< HEAD
             created_at: new Date(),
-=======
-            createdAt: new Date(),
-
->>>>>>> 2d98fb0 (SA)
-=======
-            created_at: new Date(),
->>>>>>> dd5f97c (merging current changes with all team members)
             TournamentParticipant: {
               create: {
                 id: randomUUID(),
@@ -324,10 +315,6 @@ export function setupTournamentHandlers(io: Server) {
         });
       } catch (err) {
         console.error("Failed to create tournament in DB:", err);
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
 
         // rollback in-memory state
         tournaments.delete(tournamentId);
@@ -338,11 +325,6 @@ export function setupTournamentHandlers(io: Server) {
         });
 
         return; // stop flow: do not emit success events
-<<<<<<< HEAD
-=======
->>>>>>> 2d98fb0 (SA)
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
       }
 
       socket.emit("tournament-created", { tournamentId, tournament });
@@ -393,10 +375,6 @@ export function setupTournamentHandlers(io: Server) {
 
       try {
         await prisma.tournamentParticipant.create({
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
           data: {
             id: crypto.randomUUID(),
             tournamentId: data.tournamentId,
@@ -405,19 +383,6 @@ export function setupTournamentHandlers(io: Server) {
             eliminated: false,
           },
         });
-<<<<<<< HEAD
-=======
-        data: {
-          id: crypto.randomUUID(),
-          tournamentId: data.tournamentId,
-          userId: data.userId,
-          seed: tournament.players.length,
-          eliminated: false,
-        },
-      });
->>>>>>> 2d98fb0 (SA)
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
       } catch (err) {
         console.error('Failed to add tournament participant:', err);
       }

@@ -1,25 +1,7 @@
 import { useEffect, useState } from "react";
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { gameSocket } from "../socket/sock";
-=======
-import { useUser } from "@clerk/clerk-react";
-=======
->>>>>>> fa260b3 (merging AI service with docker and nginx)
-import { socket } from "../Game/socket/sock";
->>>>>>> 2d98fb0 (SA)
-import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
-import { useAuth } from "../auth/useAuth";
-=======
-import { getAuthUser } from "../hooks/useCustomAuth";
->>>>>>> fa260b3 (merging AI service with docker and nginx)
-=======
 import { gameSocket } from "../socket/sock";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
->>>>>>> dd5f97c (merging current changes with all team members)
 
 type TournamentEntry = {
   tournamentId: string;
@@ -31,15 +13,7 @@ type TournamentEntry = {
 
 export default function TournamentList() {
   const [tournaments, setTournaments] = useState<TournamentEntry[]>([]);
-<<<<<<< HEAD
-<<<<<<< HEAD
   const { user } = useAuth();
-=======
-  const user = getAuthUser();
->>>>>>> fa260b3 (merging AI service with docker and nginx)
-=======
-  const { user } = useAuth();
->>>>>>> dd5f97c (merging current changes with all team members)
   const navigate = useNavigate();
 
   useEffect(() => {

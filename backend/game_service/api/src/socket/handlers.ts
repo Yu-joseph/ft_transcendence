@@ -10,37 +10,12 @@ export const matches = new Map<string, Match>();
 const disconnectTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 export { createGameInDB, finalizeGame, updateGameInDB };
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-async function ensureUser(id: string, username: string) {
-  await prisma.user.upsert({
-    where: { id },
-    update: { username },
-    create: {
-      id,
-      username,
-      wins: 0,
-      losses: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  });
-}
-
->>>>>>> 2d98fb0 (SA)
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
 /**
  * Save a new match to DB when it starts.
  */
 async function createGameInDB(match: Match) {
   const boardStrings = match.board.map(cell => cell ?? '');
   await prisma.game.create({
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
     data: {
       id: match.id,
       board: boardStrings,
@@ -52,22 +27,6 @@ async function createGameInDB(match: Match) {
       created_at: new Date(), // fixed field name
     },
   });
-<<<<<<< HEAD
-=======
-  data: {
-    id: match.id,
-    board: boardStrings,
-    status: 'playing',
-    result: 'PENDING',
-    playerXId: match.players[0].id,
-    playerOId: match.players[1].id,
-    tournamentId: match.tournamentId ?? null,
-    createdAt: new Date(),
-  },
-});
->>>>>>> 2d98fb0 (SA)
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
   console.log(`Game created in DB: ${match.id}`);
 }
 

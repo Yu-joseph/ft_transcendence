@@ -7,16 +7,8 @@ import requests
 from dotenv import load_dotenv
 from database import db, get_sessions
 from routes import ChatManager
-<<<<<<< HEAD
-<<<<<<< HEAD
 from llm.chains import generate_title
 from database import get_images
-=======
->>>>>>> 22d4bda (adding getuser endpoint in nginx)
-=======
-from llm.chains import generate_title
-from database import get_images
->>>>>>> dd5f97c (merging current changes with all team members)
 
 load_dotenv()
 
@@ -67,18 +59,9 @@ GAME_API_URL = os.getenv("GAME_API_URL", "http://game-api:5001")
 chat = ChatManager()
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 def get_user_id():
     return request.headers.get('X-User-Id')
 
-=======
->>>>>>> 22d4bda (adding getuser endpoint in nginx)
-=======
-def get_user_id():
-    return request.headers.get('X-User-Id')
-
->>>>>>> dd5f97c (merging current changes with all team members)
 @app.route('/')
 def home():
     return redirect(url_for('game'))
@@ -120,14 +103,7 @@ def proxy_ai():
 
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
-<<<<<<< HEAD
-<<<<<<< HEAD
     chat.set_user(get_user_id())
-=======
->>>>>>> 22d4bda (adding getuser endpoint in nginx)
-=======
-    chat.set_user(get_user_id())
->>>>>>> dd5f97c (merging current changes with all team members)
     data   = request.get_json()
     result = chat.chat(data.get('message', '').strip())
     if isinstance(result, tuple):
@@ -137,14 +113,7 @@ def api_chat():
 
 @app.route('/api/chat/stream', methods=['POST'])
 def api_chat_stream():
-<<<<<<< HEAD
-<<<<<<< HEAD
     chat.set_user(get_user_id())
-=======
->>>>>>> 22d4bda (adding getuser endpoint in nginx)
-=======
-    chat.set_user(get_user_id())
->>>>>>> dd5f97c (merging current changes with all team members)
     data    = request.get_json()
     message = data.get('message', '').strip()
     if not message:
@@ -165,39 +134,17 @@ def api_image():
     if not message:
         return jsonify({'error': 'Empty prompt'}), 400
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     result = chat.generate_image(message, user_id=get_user_id())
 
     if isinstance(result, str) and result.startswith('/static/'):
         return jsonify({'image_url': result})
     
     return jsonify({'error': result or 'Image generation failed'}), 500  # ← add this
-=======
-    image_url = chat.generate_image(message)
-    return jsonify({ "content": f'<img src="{image_url}"/>' })
-
->>>>>>> 22d4bda (adding getuser endpoint in nginx)
-=======
-    result = chat.generate_image(message, user_id=get_user_id())
-
-    if isinstance(result, str) and result.startswith('/static/'):
-        return jsonify({'image_url': result})
-    
-    return jsonify({'error': result or 'Image generation failed'}), 500  # ← add this
->>>>>>> dd5f97c (merging current changes with all team members)
 
 
 @app.route('/api/new-session', methods=['POST'])
 def api_new_session():
-<<<<<<< HEAD
-<<<<<<< HEAD
     chat.set_user(get_user_id())
-=======
->>>>>>> 22d4bda (adding getuser endpoint in nginx)
-=======
-    chat.set_user(get_user_id())
->>>>>>> dd5f97c (merging current changes with all team members)
     return jsonify({'session_id': chat.new_session()})
 
 
@@ -209,15 +156,7 @@ def api_set_session():
 
 @app.route('/api/sessions', methods=[ 'GET'])
 def api_sessions():
-<<<<<<< HEAD
-<<<<<<< HEAD
     return jsonify(get_sessions(user_id=get_user_id()))
-=======
-    return jsonify(get_sessions())
->>>>>>> 22d4bda (adding getuser endpoint in nginx)
-=======
-    return jsonify(get_sessions(user_id=get_user_id()))
->>>>>>> dd5f97c (merging current changes with all team members)
 
 
 @app.route('/api/clear', methods=['POST'])
@@ -260,18 +199,9 @@ def studio_files(path):
     return send_from_directory("/app/static/llm-studio", path)
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 @app.route('/api/images', methods=['GET'])
 def api_images():
     return jsonify(get_images(user_id=get_user_id()))
-=======
->>>>>>> 22d4bda (adding getuser endpoint in nginx)
-=======
-@app.route('/api/images', methods=['GET'])
-def api_images():
-    return jsonify(get_images(user_id=get_user_id()))
->>>>>>> dd5f97c (merging current changes with all team members)
 
 
 @app.route('/health')
@@ -284,10 +214,6 @@ def handle_exception(e):
     return jsonify({"error": str(e)}), 500
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
 @app.route("/api/generate-title", methods=['POST'])
 def generate_title_route():
     data = request.json
@@ -299,10 +225,5 @@ def generate_title_route():
     title = generate_title(message)
     return jsonify({"title": title})
 
-<<<<<<< HEAD
-=======
->>>>>>> 22d4bda (adding getuser endpoint in nginx)
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)

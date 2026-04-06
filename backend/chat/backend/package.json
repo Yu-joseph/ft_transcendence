@@ -15,10 +15,6 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.1",
-<<<<<<< HEAD
-<<<<<<< HEAD:backend/chat/backend/package.json
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
     "@types/pg": "^8.20.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.3.1",
@@ -26,12 +22,6 @@
     "pg": "^8.20.0",
     "prisma": "^7.4.1",
     "socket.io": "^4.8.3"
-<<<<<<< HEAD
-=======
-    "express": "^5.2.1"
->>>>>>> 2d98fb0 (SA):backend/chat/chat-system/backend/package.json
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",
@@ -40,13 +30,6 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.3.2",
     "jsonwebtoken": "^9.0.3",
-<<<<<<< HEAD
-<<<<<<< HEAD:backend/chat/backend/package.json
-=======
-    "prisma": "^7.5.0",
->>>>>>> 2d98fb0 (SA):backend/chat/chat-system/backend/package.json
-=======
->>>>>>> dd5f97c (merging current changes with all team members)
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
