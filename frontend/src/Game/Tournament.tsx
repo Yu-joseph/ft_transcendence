@@ -3,11 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import Bar from '../components/Bar'
 import BottomNav from '../components/BottomNav'
 import TournamentLoadingPage from '../components/TournamentLoadingPage'
-<<<<<<< HEAD
-import { socket } from './socket/sock'
-=======
 import { gameSocket } from '../socket/sock'
->>>>>>> cbabebc (merging chat-system with main project)
 import { GiPodiumWinner } from "react-icons/gi";
 import { useAuth } from '../auth/useAuth'
 
@@ -111,11 +107,7 @@ function Bracket({ tournament, userId, }: {tournament: TournamentState ;userId: 
   const totalRounds = rounds.length;
 
   const handlePlay = (match: TournamentMatch) => {
-<<<<<<< HEAD
-    socket.emit('request-tournament-match', {
-=======
     gameSocket.emit('request-tournament-match', {
->>>>>>> cbabebc (merging chat-system with main project)
       tournamentId: tournament.id,
       roundNumber: match.roundNumber,
       matchIndex: match.matchIndex,
@@ -182,13 +174,8 @@ function Tournament()
   const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-<<<<<<< HEAD
-    if (!socket.connected) 
-      socket.connect()
-=======
     if (!gameSocket.connected) 
       gameSocket.connect()
->>>>>>> cbabebc (merging chat-system with main project)
 
     
     const onUpdate = (data: TournamentState) => {
@@ -225,26 +212,15 @@ function Tournament()
       setTimeout(() => setError(null), 3500)
     }
 
-<<<<<<< HEAD
-    socket.on('tournament-update', onUpdate)
-    socket.on('tournament-created', onCreated)
-    socket.on('match-found', onMatchFound)
-    socket.on('tournament-error', onError)
-=======
     gameSocket.on('tournament-update', onUpdate)
     gameSocket.on('tournament-created', onCreated)
     gameSocket.on('match-found', onMatchFound)
     gameSocket.on('tournament-error', onError)
->>>>>>> cbabebc (merging chat-system with main project)
 
     // Re-emit join so the server resends tournament-update after page reload
     // location.state is used on normal navigation; sessionStorage survives refresh
     if (joinInfo?.tournamentId && joinInfo?.userId) {
-<<<<<<< HEAD
-      socket.emit('join-tournament', {
-=======
       gameSocket.emit('join-tournament', {
->>>>>>> cbabebc (merging chat-system with main project)
         tournamentId: joinInfo.tournamentId,
         userId: joinInfo.userId,
         username: joinInfo.username ?? 'Player',
@@ -259,17 +235,10 @@ function Tournament()
       : null
 
     return () => {
-<<<<<<< HEAD
-      socket.off('tournament-update', onUpdate)
-      socket.off('tournament-created', onCreated)
-      socket.off('match-found', onMatchFound)
-      socket.off('tournament-error', onError)
-=======
       gameSocket.off('tournament-update', onUpdate)
       gameSocket.off('tournament-created', onCreated)
       gameSocket.off('match-found', onMatchFound)
       gameSocket.off('tournament-error', onError)
->>>>>>> cbabebc (merging chat-system with main project)
       if (timeout) clearTimeout(timeout)
       if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current)
     }
@@ -278,11 +247,7 @@ function Tournament()
   const handleStart = () => {
     if (!activeTournament) 
       return
-<<<<<<< HEAD
-    socket.emit('start-tournament', { tournamentId: activeTournament.id })
-=======
     gameSocket.emit('start-tournament', { tournamentId: activeTournament.id })
->>>>>>> cbabebc (merging chat-system with main project)
   }
 
   const isCreator = activeTournament?.creatorId === currentUserId

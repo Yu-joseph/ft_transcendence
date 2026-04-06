@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
-<<<<<<< HEAD
-import { socket } from "../Game/socket/sock";
-=======
 import { gameSocket } from "../socket/sock";
->>>>>>> cbabebc (merging chat-system with main project)
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 
@@ -22,11 +18,7 @@ export default function TournamentList() {
 
   useEffect(() => {
     const fetchList = () => {
-<<<<<<< HEAD
-      socket.emit("get-tournaments");
-=======
       gameSocket.emit("get-tournaments");
->>>>>>> cbabebc (merging chat-system with main project)
     };
 
     const onList = (list: TournamentEntry[]) => {
@@ -49,23 +41,6 @@ export default function TournamentList() {
       setTournaments((prev) => prev.filter((t) => t.tournamentId !== tournamentId));
     };
 
-<<<<<<< HEAD
-    socket.on("tournaments-list", onList);
-    socket.on("tournament-available", onAvailable);
-    socket.on("tournament-removed", onRemoved);
-
-    if (socket.connected) {
-      fetchList();
-    } else {
-      socket.once("connect", fetchList);
-    }
-
-    return () => {
-      socket.off("tournaments-list", onList);
-      socket.off("tournament-available", onAvailable);
-      socket.off("tournament-removed", onRemoved);
-      socket.off("connect", fetchList);
-=======
     gameSocket.on("tournaments-list", onList);
     gameSocket.on("tournament-available", onAvailable);
     gameSocket.on("tournament-removed", onRemoved);
@@ -81,7 +56,6 @@ export default function TournamentList() {
       gameSocket.off("tournament-available", onAvailable);
       gameSocket.off("tournament-removed", onRemoved);
       gameSocket.off("connect", fetchList);
->>>>>>> cbabebc (merging chat-system with main project)
     };
   }, []);
 
@@ -96,11 +70,7 @@ export default function TournamentList() {
       username: user.username ?? user.fullName ?? "Player",
     };
     sessionStorage.setItem("activeTournament", JSON.stringify(joinInfo));
-<<<<<<< HEAD
-    socket.emit("join-tournament", joinInfo);
-=======
     gameSocket.emit("join-tournament", joinInfo);
->>>>>>> cbabebc (merging chat-system with main project)
     navigate("/Tournament", { state: joinInfo });
   };
 

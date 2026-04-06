@@ -11,11 +11,7 @@ import { TbTournament } from "react-icons/tb";
 // import { GiTicTacToe } from "react-icons/gi";
 import Bar from '../components/Bar'
 import CreateTourn from "../components/CreateTourn";
-<<<<<<< HEAD
-import { socket } from "../Game/socket/sock";
-=======
 import { gameSocket } from "../socket/sock";
->>>>>>> cbabebc (merging chat-system with main project)
 import { useAuth } from "../auth/useAuth";
 
 
@@ -37,15 +33,9 @@ export default function Dashboard() {
       }
       navigate("/Tournament");
     };
-<<<<<<< HEAD
-    socket.on("tournament-created", onTournamentCreated);
-    return () => {
-      socket.off("tournament-created", onTournamentCreated);
-=======
     gameSocket.on("tournament-created", onTournamentCreated);
     return () => {
       gameSocket.off("tournament-created", onTournamentCreated);
->>>>>>> cbabebc (merging chat-system with main project)
     };
   }, [navigate, user]);
 
@@ -117,11 +107,7 @@ export default function Dashboard() {
         isOpen={opnePop}
         onClose={() => setOpenPop(false)}
         onCreate={(name, maxPlayers) => {
-<<<<<<< HEAD
-          socket.emit("create-tournament", {
-=======
           gameSocket.emit("create-tournament", {
->>>>>>> cbabebc (merging chat-system with main project)
             name,
             userId: user?.id,
             username: user?.username ?? user?.fullName ?? "Player",

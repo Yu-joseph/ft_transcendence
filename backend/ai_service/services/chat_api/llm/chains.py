@@ -53,13 +53,8 @@ class ChatBot:
     def reset(self):
         self.history = [self.config.system_message]
 
-<<<<<<< HEAD
     def generate_image(self, prompt, session_id=None, user_id=None):
         return self.image_gen.generate(prompt, session_id=session_id, user_id=user_id)
-=======
-    def generate_image(self, prompt):
-        return self.image_gen.generate(prompt)
->>>>>>> cbabebc (merging chat-system with main project)
 
 
 
@@ -85,13 +80,8 @@ def load_history(messages):
         elif m["role"] == "assistant":
             bot.history.append(AIMessage(content=m["content"]))
 
-<<<<<<< HEAD
 def generate_image(prompt, session_id=None, user_id=None):
     return bot.generate_image(prompt, session_id=session_id, user_id=user_id)
-=======
-def generate_image(prompt):
-    return bot.generate_image(prompt)
->>>>>>> cbabebc (merging chat-system with main project)
 
 def generate_title(message):
     try:

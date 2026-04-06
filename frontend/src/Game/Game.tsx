@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-<<<<<<< HEAD
-import { socket } from "./socket/sock";
-=======
 import { gameSocket } from "../socket/sock";
->>>>>>> cbabebc (merging chat-system with main project)
 // import BottomNav from "../components/BottomNav";
 import WinModal from "../components/WinModal";
 import { useAuth } from "../auth/useAuth";
@@ -68,26 +64,12 @@ function Game() {
   useEffect(() => {
     if (!authUserId || !matchId) return;
 
-<<<<<<< HEAD
-    if (!socket.connected) {
-      socket.connect();
-=======
     if (!gameSocket.connected) {
       gameSocket.connect();
->>>>>>> cbabebc (merging chat-system with main project)
     }
 
     // If we dont have match state (after refresh), ask server to rejoin
     const handleConnect = () => {
-<<<<<<< HEAD
-      socket.emit('reconnect-match', { userId: authUserId, matchId });
-    };
-
-    if (socket.connected) {
-      handleConnect();
-    } else {
-      socket.on('connect', handleConnect);
-=======
       gameSocket.emit('reconnect-match', { userId: authUserId, matchId });
     };
 
@@ -95,7 +77,6 @@ function Game() {
       handleConnect();
     } else {
       gameSocket.on('connect', handleConnect);
->>>>>>> cbabebc (merging chat-system with main project)
     }
 
     const handleReconnectFailed = (data: { reason: string }) => {
@@ -103,19 +84,11 @@ function Game() {
       navigate(backTo);
     };
 
-<<<<<<< HEAD
-    socket.on('reconnect-match-failed', handleReconnectFailed);
-
-    return () => {
-      socket.off('connect', handleConnect);
-      socket.off('reconnect-match-failed', handleReconnectFailed);
-=======
     gameSocket.on('reconnect-match-failed', handleReconnectFailed);
 
     return () => {
       gameSocket.off('connect', handleConnect);
       gameSocket.off('reconnect-match-failed', handleReconnectFailed);
->>>>>>> cbabebc (merging chat-system with main project)
     };
   }, [authUserId, backTo, matchId, navigate]);
 
@@ -152,16 +125,6 @@ function Game() {
       setBackTo('/Dashboard')
     };
 
-<<<<<<< HEAD
-    socket.on("match-update", handleMatchUpdate);
-    socket.on("opponent-forfeited", handleOpponentForfeited);
-    socket.on("tournament-finished", handleTournamentFinished);
-
-    return () => {
-      socket.off("match-update", handleMatchUpdate);
-      socket.off("opponent-forfeited", handleOpponentForfeited);
-      socket.off("tournament-finished", handleTournamentFinished);
-=======
     gameSocket.on("match-update", handleMatchUpdate);
     gameSocket.on("opponent-forfeited", handleOpponentForfeited);
     gameSocket.on("tournament-finished", handleTournamentFinished);
@@ -170,7 +133,6 @@ function Game() {
       gameSocket.off("match-update", handleMatchUpdate);
       gameSocket.off("opponent-forfeited", handleOpponentForfeited);
       gameSocket.off("tournament-finished", handleTournamentFinished);
->>>>>>> cbabebc (merging chat-system with main project)
     };
   }, [backTo, matchId, navigate]);
 
@@ -191,17 +153,10 @@ function Game() {
       }
     };
 
-<<<<<<< HEAD
-    socket.on('match-found', handleMatchFound);
-
-    return () => {
-      socket.off('match-found', handleMatchFound);
-=======
     gameSocket.on('match-found', handleMatchFound);
 
     return () => {
       gameSocket.off('match-found', handleMatchFound);
->>>>>>> cbabebc (merging chat-system with main project)
     };
   }, [matchId]);
 
@@ -227,11 +182,7 @@ function Game() {
   };
 
   const handleConfirmLeave = () => {
-<<<<<<< HEAD
-    socket.emit("leave-match", { matchId, userId: authUser?.id });
-=======
     gameSocket.emit("leave-match", { matchId, userId: authUser?.id });
->>>>>>> cbabebc (merging chat-system with main project)
     setShowLeaveConfirm(false);
     navigate(backTo);
   };
@@ -274,11 +225,7 @@ function Game() {
     if (myMoveCount < 3) {
       if (board[index]) return; // Cell is occupied
 
-<<<<<<< HEAD
-      socket.emit("make-move", {
-=======
       gameSocket.emit("make-move", {
->>>>>>> cbabebc (merging chat-system with main project)
         matchId,
         oldindex: -1,          // no removal
         newindex: index,
@@ -306,11 +253,7 @@ function Game() {
 
     // Step B: place new piece on empty cell
     if (!board[index]) {
-<<<<<<< HEAD
-      socket.emit("make-move", {
-=======
       gameSocket.emit("make-move", {
->>>>>>> cbabebc (merging chat-system with main project)
         matchId,
         oldindex: pieceToRemove,
         newindex: index,
