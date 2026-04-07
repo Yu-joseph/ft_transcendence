@@ -12,7 +12,7 @@ import { TbTournament } from "react-icons/tb";
 // import { GiTicTacToe } from "react-icons/gi";
 import Bar from '../components/Bar'
 import CreateTourn from "../components/CreateTourn";
-import { socket } from "../Game/socket/sock";
+import { gameSocket } from "../socket/sock";
 import { useAuth } from "../auth/useAuth";
 
 
@@ -35,11 +35,9 @@ export default function Dashboard() {
       }
       navigate("/Tournament");
     };
-    //listen for coming event or {register listner for socket}
-    socket.on("tournament-created", onTournamentCreated);
+    gameSocket.on("tournament-created", onTournamentCreated);
     return () => {
-      //removes that listener during cleanup.
-      socket.off("tournament-created", onTournamentCreated);
+      gameSocket.off("tournament-created", onTournamentCreated);
     };
   }, [navigate, user]);
 
@@ -114,7 +112,7 @@ export default function Dashboard() {
         isOpen={opnePop}
         onClose={() => setOpenPop(false)}
         onCreate={(name, maxPlayers) => {
-          socket.emit("create-tournament", {
+          gameSocket.emit("create-tournament", {
             name,
             // userId: user?.id,
             username: user?.username ?? user?.fullName ?? "Player",

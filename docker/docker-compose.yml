@@ -44,6 +44,7 @@ services:
     environment:
       - VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
       - VITE_API_URL=http://localhost:5173
+      - VITE_CHAT_API=http://localhost:8080/api
     build: ../frontend
     volumes:
       - ../frontend:/app/
@@ -110,6 +111,24 @@ services:
     networks:
       - app-network
 
+  chat:
+    build:
+        context: ../backend/chat/backend
+        dockerfile: Dockerfile
+    container_name: chat-system
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    environment:
+      SECRET_KEY: 'django-insecure-4vkpyy2bkd3(%hi=nhqdr(yx5j71%*zf!o!ej2kfnivhbno!%n'
+      DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+    # volumes:
+    #   - ../backend/chat/backend:/app
+    networks:
+      - app-network
+
   postgres:
     image: postgres:15
     container_name: game-postgres
@@ -145,11 +164,4 @@ networks:
   app-network:
 
 
-  # chat:
-  #   build: ../backend/chat/chat-system/backend
-  #   container_name: chat
-  #   restart: always
-  #   depends_on:
-  #     - db
-  #   environment:
-  #     DATABASE_URL: postgres://sayf:1234@db:5432/mydb
+ 

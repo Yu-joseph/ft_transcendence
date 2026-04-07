@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import Bar from '../components/Bar'
 import BottomNav from '../components/BottomNav'
 import TournamentLoadingPage from '../components/TournamentLoadingPage'
-import { socket } from './socket/sock'
+import { gameSocket } from '../socket/sock'
 import { GiPodiumWinner } from "react-icons/gi";
 import { useAuth } from '../auth/useAuth'
 
@@ -107,7 +107,7 @@ function Bracket({ tournament, userId, }: {tournament: TournamentState ;userId: 
   const totalRounds = rounds.length;
 
   const handlePlay = (match: TournamentMatch) => {
-    socket.emit('request-tournament-match', {
+    gameSocket.emit('request-tournament-match', {
       tournamentId: tournament.id,
       roundNumber: match.roundNumber,
       matchIndex: match.matchIndex,
@@ -194,8 +194,8 @@ function Tournament()
   const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    if (!socket.connected) 
-      socket.connect()
+    if (!gameSocket.connected) 
+      gameSocket.connect()
 
     
     const onUpdate = (data: TournamentState) => {
@@ -238,15 +238,15 @@ function Tournament()
       setTimeout(() => setError(null), 3500)
     }
 
-    socket.on('tournament-update', onUpdate)
-    socket.on('tournament-created', onCreated)
-    socket.on('match-found', onMatchFound)
-    socket.on('tournament-error', onError)
+    gameSocket.on('tournament-update', onUpdate)
+    gameSocket.on('tournament-created', onCreated)
+    gameSocket.on('match-found', onMatchFound)
+    gameSocket.on('tournament-error', onError)
 
     // Re-emit join so the server resends tournament-update after page reload
     // location.state is used on normal navigation; sessionStorage survives refresh
     if (joinInfo?.tournamentId) {
-      socket.emit('join-tournament', {
+      gameSocket.emit('join-tournament', {
         tournamentId: joinInfo.tournamentId,
         username: persistedUsername,
       })
@@ -260,10 +260,10 @@ function Tournament()
       : null
 
     return () => {
-      socket.off('tournament-update', onUpdate)
-      socket.off('tournament-created', onCreated)
-      socket.off('match-found', onMatchFound)
-      socket.off('tournament-error', onError)
+      gameSocket.off('tournament-update', onUpdate)
+      gameSocket.off('tournament-created', onCreated)
+      gameSocket.off('match-found', onMatchFound)
+      gameSocket.off('tournament-error', onError)
       if (timeout) clearTimeout(timeout)
       if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current)
     }
@@ -272,7 +272,7 @@ function Tournament()
   const handleStart = () => {
     if (!activeTournament) 
       return
-    socket.emit('start-tournament', { tournamentId: activeTournament.id })
+    gameSocket.emit('start-tournament', { tournamentId: activeTournament.id })
   }
 
   const handleLeaveTournament = () => {
@@ -280,7 +280,7 @@ function Tournament()
       return
     }
 
-    socket.emit('leave-tournament', { tournamentId: activeTournament.id })
+    gameSocket.emit('leave-tournament', { tournamentId: activeTournament.id })
     sessionStorage.removeItem('activeTournament')
     setActiveTournament(null)
     navigate('/Dashboard')

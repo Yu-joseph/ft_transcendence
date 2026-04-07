@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { socket } from "../Game/socket/sock";
+import { gameSocket } from "../socket/sock";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 
@@ -48,7 +48,7 @@ export default function TournamentList() {
     };
 
     const fetchList = () => {
-      socket.emit("get-tournaments");
+      gameSocket.emit("get-tournaments");
     };
 
     const onList = (list: TournamentEntry[]) => {
@@ -86,27 +86,27 @@ export default function TournamentList() {
       setTimeout(() => setError(null), 3500);
     };
 
-    socket.on("tournaments-list", onList);
-    socket.on("tournament-available", onAvailable);
-    socket.on("tournament-removed", onRemoved);
-    socket.on("tournament-created", onCreated);
-    socket.on("tournament-error", onTournamentError);
+    gameSocket.on("tournaments-list", onList);
+    gameSocket.on("tournament-available", onAvailable);
+    gameSocket.on("tournament-removed", onRemoved);
+    gameSocket.on("tournament-created", onCreated);
+    gameSocket.on("tournament-error", onTournamentError);
 
     fetchMyTournaments();
 
-    if (socket.connected) {
+    if (gameSocket.connected) {
       fetchList();
     } else {
-      socket.once("connect", fetchList);
+      gameSocket.once("connect", fetchList);
     }
 
     return () => {
-      socket.off("tournaments-list", onList);
-      socket.off("tournament-available", onAvailable);
-      socket.off("tournament-removed", onRemoved);
-      socket.off("tournament-created", onCreated);
-      socket.off("tournament-error", onTournamentError);
-      socket.off("connect", fetchList);
+      gameSocket.off("tournaments-list", onList);
+      gameSocket.off("tournament-available", onAvailable);
+      gameSocket.off("tournament-removed", onRemoved);
+      gameSocket.off("tournament-created", onCreated);
+      gameSocket.off("tournament-error", onTournamentError);
+      gameSocket.off("connect", fetchList);
     };
   }, []);
 
@@ -133,7 +133,7 @@ export default function TournamentList() {
       return [...prev, tournamentId];
     });
     sessionStorage.setItem("activeTournament", JSON.stringify(joinInfo));
-    socket.emit("join-tournament", joinInfo);
+    gameSocket.emit("join-tournament", joinInfo);
     navigate("/Tournament", { state: joinInfo });
   };
 

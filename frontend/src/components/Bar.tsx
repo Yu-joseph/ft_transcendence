@@ -76,7 +76,7 @@ function Bar() {
   const avatarUrl = user?.avatar ? normalizeAvatarUrl(user.avatar) : undefined;
 
   return (
-    <header className="fixed top-0 left-0 z-50 w-full bg-slate-900 border-b border-amber-400 shadow-lg">
+    <header className="z-50 w-full bg-slate-900 border-b border-amber-400 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex items-center justify-between">
         <div>
           <button
