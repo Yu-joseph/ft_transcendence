@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '../Game/index.css'
 import Game from '../Game/Game.tsx'
-import Login from '../Game/Login.tsx'
+import Login from './Login.tsx'
 import Dashboard from "./Dashboard.tsx";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Tournament from '../Game/Tournament.tsx'
@@ -32,6 +32,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/game/:matchId" element={<ProtectedRoute><Game /></ProtectedRoute>} />
           <Route path="/AiChallange" element={<ProtectedRoute><AiChallange /></ProtectedRoute>} />
           <Route path="/Chatbot" element={<ProtectedRoute><Chatbot /></ProtectedRoute>} />
+          <Route path="/profile/:userId" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

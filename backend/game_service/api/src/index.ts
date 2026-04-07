@@ -1,124 +1,145 @@
-import express, { Request, Response } from 'express';
-import cors from 'cors';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
-import { setupSocketHandlers } from './socket/handlers';
-import prisma from './lib/prisma';
-import { setupTournamentHandlers } from './socket/tournament';
+import express, { NextFunction, Request, Response } from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import prisma from "./lib/prisma";
+import { setupSocketHandlers, getRankedUsers } from "./socket/handlers";
+import { setupTournamentHandlers } from "./socket/tournament";
+import { getUserIdFromToken } from "./auth/identity";
 
 const app = express();
+const PORT = 3000;
 
-const PORT = process.env.PORT || 3000;
+const corsOptions = {
+  origin: ["http://localhost:5173", "http://localhost:8080"],
+  methods: ["GET", "POST"],
+  credentials: true,
+};
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST'],
-  },
+  cors: corsOptions,
 });
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 
-app.get('/', (req: Request, res: Response) => {
-  res.json({ message: 'Welcome to the API' });
+type AuthedRequest = Request & { userId?: string };
+
+async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const authedReq = req as AuthedRequest;
+  const token = authedReq.cookies?.access_token as string | undefined;
+
+  if (!token) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  const userId = await getUserIdFromToken(token);
+  if (!userId) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+
+  authedReq.userId = userId;
+  return next();
+}
+
+app.get("/", (_req, res) => {
+  res.json({ message: "Welcome to the API" });
 });
 
-app.get('/api/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok' });
+app.get("/api/health", (_req, res) => {
+  res.json({ status: "ok" });
 });
 
-// Get user stats (wins, losses, draws)
-app.get('/api/users/:id/stats', async (req: Request, res: Response) => {
+// Public route
+app.get("/api/leaderboard", async (_req, res) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.params.id as string},
-      select: { id: true, username: true, wins: true, losses: true },
-    });
-    if (!user) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
+    const ranked = await getRankedUsers();
+    return res.json(ranked.slice(0, 20));
+  } catch {
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// Get user's game history
-app.get('/api/users/:id/games', async (req: Request, res: Response) => {
+// Private routes (no :id from client)
+app.get("/api/me/stats", requireAuth, async (req, res) => {
+    try {
+    const userId = (req as AuthedRequest).userId;
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const ranked = await getRankedUsers();
+    const me = ranked.find((u) => u.id === userId);
+
+    if (!me) return res.status(404).json({ error: "User not found" });
+    return res.json(me);
+  } catch {
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/api/me/games", requireAuth, async (req, res) => {
   try {
+    const userId = (req as AuthedRequest).userId as string;
     const games = await prisma.game.findMany({
       where: {
-        OR: [{ playerXId: req.params.id as string}, { playerOId: req.params.id as string}],
+        OR: [{ playerXId: userId }, { playerOId: userId }],
       },
       include: {
         User_Game_playerXIdToUser: { select: { id: true, username: true } },
         User_Game_playerOIdToUser: { select: { id: true, username: true } },
       },
-      orderBy: { created_at: 'desc' },
+      orderBy: { created_at: "desc" },
     });
-    res.json(games);
-  } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
+    return res.json(games);
+  } catch {
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
-// Get user's tournament history
-app.get('/api/users/:id/tournaments', async (req: Request, res: Response) => {
+
+app.get("/api/me/tournaments", requireAuth, async (req, res) => {
   try {
+    const userId = (req as AuthedRequest).userId as string;
     const entries = await prisma.tournamentParticipant.findMany({
-      where: { userId: req.params.id as string},
+      where: { userId },
       include: {
         Tournament: {
           include: {
-            User_Tournament_winnerIdToUser: {select: {id: true, username: true}},
-            User_Tournament_creatorIdToUser : {select: {id: true, username: true}},
-          }
-        }
+            User_Tournament_winnerIdToUser: { select: { id: true, username: true } },
+            User_Tournament_creatorIdToUser: { select: { id: true, username: true } },
+          },
+        },
       },
-      orderBy: { Tournament: {created_at: 'desc'} },
+      orderBy: { Tournament: { created_at: "desc" } },
     });
-    const result = entries.map(entry => ({
+
+    const result = entries.map((entry) => ({
       tournamentId: entry.tournamentId,
       name: entry.Tournament.name,
       status: entry.Tournament.status,
       creator: entry.Tournament.User_Tournament_creatorIdToUser,
-      userStatus: entry.Tournament.winnerId === req.params.id
-        ? 'winner'
-          : entry.eliminated
-            ? 'eliminated'
-            : entry.Tournament.status === 'finished'
-              ? 'eliminated'
-              : 'playing',
+      userStatus:
+        entry.Tournament.winnerId === userId
+          ? "winner"
+          : entry.eliminated || entry.Tournament.status === "finished"
+          ? "eliminated"
+          : "playing",
       eliminatedInRound: entry.eliminated_in_round,
-      eliminated : entry.eliminated,
+      eliminated: entry.eliminated,
       seed: entry.seed,
       tournamentWinner: entry.Tournament.User_Tournament_winnerIdToUser,
       createdAt: entry.Tournament.created_at,
     }));
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
+
+    return res.json(result);
+  } catch {
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// Get leaderboard
-app.get('/api/leaderboard', async (req: Request, res: Response) => {
-  try {
-    const users = await prisma.user.findMany({
-      select: { id: true, username: true, wins: true, losses: true },
-      orderBy: { wins: 'desc' },
-      take: 20,
-    });
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-
-// Setup socket handlers
 setupSocketHandlers(io);
 setupTournamentHandlers(io);
 

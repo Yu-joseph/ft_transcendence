@@ -32,7 +32,7 @@ export default function PlayerList() {
     const handleConnect = () => {
       gameSocket.emit("join-lobby", {
         id: user.id,
-        username: user.fullName ?? user.username ?? "Guest",
+        username: user.username ?? "Guest",
       });
     };
 

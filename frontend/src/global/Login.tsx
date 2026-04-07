@@ -190,7 +190,7 @@ function Login() {
           </p>
           <div className="flex items-center gap-2 justify-center md:justify-start text-amber-300 text-sm">
             <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden />
-            Secure sign-in with server-side session cookies.
+            you're one step from somewhere entirely different.
           </div>
         </div>
 
