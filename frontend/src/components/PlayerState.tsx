@@ -5,6 +5,8 @@ type PlayerStats = {
   username: string;
   wins: number;
   losses: number;
+  xp: number;
+  rank: number;
 };
 
 export default function PlayerState() {
@@ -35,15 +37,8 @@ export default function PlayerState() {
     fetchPlayerState();
   }, []);
 
-  let total = 0;
-  if (stats) {
-    total = stats.wins + stats.losses;
-  }
-
-  let winRate = 0;
-  if (total > 0 && stats) {
-    winRate = Math.round((stats.wins / total) * 100);
-  }
+  const total = stats ? stats.wins + stats.losses : 0;
+  const winRate = stats && total > 0 ? Math.round((stats.wins / total) * 100) : 0;
 
   return (
     <section className="w-full bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit">
@@ -56,7 +51,7 @@ export default function PlayerState() {
         <div className="px-6 py-8 text-gray-300">Loading stats...</div>
       ) : error ? (
         <div className="px-6 py-8 text-red-300">{error}</div>
-      ) : !stats || total === 0 ? (
+      ) : !stats ? (
         <div className="px-6 py-8 text-gray-300">No games played yet. Go play!</div>
       ) : (
         <div className="px-6 py-5 space-y-5">
@@ -70,6 +65,17 @@ export default function PlayerState() {
             <div className="flex flex-col items-center bg-slate-900/60 rounded-lg py-4">
               <span className="text-2xl font-bold text-rose-300">{stats.losses}</span>
               <span className="text-xs text-gray-400 mt-1 uppercase tracking-wide">Losses</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col items-center bg-slate-900/60 rounded-lg py-4">
+              <span className="text-2xl font-bold text-cyan-300">{stats.xp}</span>
+              <span className="text-xs text-gray-400 mt-1 uppercase tracking-wide">XP</span>
+            </div>
+            <div className="flex flex-col items-center bg-slate-900/60 rounded-lg py-4">
+              <span className="text-2xl font-bold text-amber-300">#{stats.rank}</span>
+              <span className="text-xs text-gray-400 mt-1 uppercase tracking-wide">Rank</span>
             </div>
           </div>
 

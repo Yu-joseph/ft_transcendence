@@ -10,6 +10,7 @@ import ProtectedRoute from '../components/ProtectedRoute.tsx'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { AiChallange } from '../AiPages/AiChallange.tsx'
 import Chatbot from '../AiPages/Chatbot.tsx'
+import Profile from './Profile.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -25,6 +26,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/game/:matchId" element={<ProtectedRoute><Game /></ProtectedRoute>} />
           <Route path="/AiChallange" element={<ProtectedRoute><AiChallange /></ProtectedRoute>} />
           <Route path="/Chatbot" element={<ProtectedRoute><Chatbot /></ProtectedRoute>} />
+          <Route path="/profile/:userId" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

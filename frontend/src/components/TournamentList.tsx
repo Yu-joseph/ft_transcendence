@@ -78,6 +78,7 @@ export default function TournamentList() {
         }
         return [...prev, data.tournamentId];
       });
+      setTournaments((prev) => prev.filter((t) => t.tournamentId !== data.tournamentId));
     };
 
     const onTournamentError = (data: { message?: string }) => {
@@ -136,6 +137,10 @@ export default function TournamentList() {
     navigate("/Tournament", { state: joinInfo });
   };
 
+  const availableTournaments = tournaments.filter(
+    (t) => !joinedTournamentIds.includes(t.tournamentId),
+  );
+
   return (
     <section className="w-full max-w-lg bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit">
       <div className="px-6 py-4 border-b border-blue-800">
@@ -147,36 +152,29 @@ export default function TournamentList() {
           {error}
         </div>
       )}
-      {tournaments.length === 0 ? (
+      {availableTournaments.length === 0 ? (
         <div className="px-6 py-8 text-gray-400">No tournaments available yet.</div>
       ) : (
         <ul className="divide-y divide-blue-800/50">
-          {tournaments.map((t) => {
+          {availableTournaments.map((t) => {
             const isFull = t.playerCount >= t.maxPlayers;
-            const isJoined = joinedTournamentIds.includes(t.tournamentId);
             return (
               <li key={t.tournamentId} className="flex items-center justify-between px-6 py-4 hover:bg-slate-700/40 transition">
                 <div>
                   <p className="text-white font-semibold">{t.name}</p>
                   <p className="text-sm text-gray-400">by {t.creatorName} · {t.playerCount}/{t.maxPlayers} players</p>
                 </div>
-                {isJoined ? (
-                  <span className="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-700 text-gray-300">
-                    Joined
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => handleJoin(t.tournamentId, isFull)}
-                    disabled={isFull}
-                    className={`px-4 py-2 rounded-xl text-white text-sm font-semibold transition ${
-                      isFull
-                        ? "bg-slate-600 cursor-not-allowed opacity-70"
-                        : "bg-amber-500 hover:bg-amber-600"
-                    }`}
-                  >
-                    {isFull ? "Full" : "Join"}
-                  </button>
-                )}
+                <button
+                  onClick={() => handleJoin(t.tournamentId, isFull)}
+                  disabled={isFull}
+                  className={`px-4 py-2 rounded-xl text-white text-sm font-semibold transition ${
+                    isFull
+                      ? "bg-slate-600 cursor-not-allowed opacity-70"
+                      : "bg-amber-500 hover:bg-amber-600"
+                  }`}
+                >
+                  {isFull ? "Full" : "Join"}
+                </button>
               </li>
             );
           })}

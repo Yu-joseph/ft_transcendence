@@ -275,6 +275,17 @@ function Tournament()
     socket.emit('start-tournament', { tournamentId: activeTournament.id })
   }
 
+  const handleLeaveTournament = () => {
+    if (!activeTournament || activeTournament.status !== 'waiting') {
+      return
+    }
+
+    socket.emit('leave-tournament', { tournamentId: activeTournament.id })
+    sessionStorage.removeItem('activeTournament')
+    setActiveTournament(null)
+    navigate('/Dashboard')
+  }
+
   const isCreator = activeTournament?.creatorId === currentUserId
   const winnerPlayer = activeTournament?.winner
     ? activeTournament.players.find(p => p.id === activeTournament.winner)
@@ -290,7 +301,7 @@ function Tournament()
       return (
         <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
           <Bar />
-          <main className="flex-1 px-6 py-8 pb-28 max-w-3xl mx-auto w-full flex items-center justify-center">
+          <main className="flex-1 px-6 pt-32 py-8 pb-28 max-w-3xl mx-auto w-full flex items-center justify-center">
             <div className="w-full max-w-md rounded-2xl border border-blue-700 bg-slate-800/80 p-6 text-center shadow-lg">
               <h2 className="text-xl font-semibold text-amber-400 mb-2">No tournament yet</h2>
               <p className="text-sm text-gray-300 mb-5">Invite friends or join one from Dashboard to start playing.</p>
@@ -312,7 +323,7 @@ function Tournament()
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
       <Bar />
-      <main className="flex-1 px-6 py-8 pb-28 max-w-4xl mx-auto w-full">
+      <main className="flex-1 px-6 pt-32 py-8 pb-28 max-w-4xl mx-auto w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
@@ -356,15 +367,31 @@ function Tournament()
               ))}
             </ul>
             {isCreator ? (
-              <button
-                onClick={handleStart}
-                disabled={activeTournament.players.length < 3}
-                className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-semibold disabled:opacity-40 transition"
-              >
-                Start Tournament
-              </button>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={handleStart}
+                  disabled={activeTournament.players.length < 3}
+                  className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-semibold disabled:opacity-40 transition"
+                >
+                  Start Tournament
+                </button>
+                <button
+                  onClick={handleLeaveTournament}
+                  className="px-6 py-2 rounded-xl border border-red-500 text-red-300 hover:bg-red-900/30 transition"
+                >
+                  Leave Tournament
+                </button>
+              </div>
             ) : (
-              <p className="text-gray-400 text-sm">Waiting for the host to start…</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="text-gray-400 text-sm">Waiting for the host to start…</p>
+                <button
+                  onClick={handleLeaveTournament}
+                  className="px-4 py-2 rounded-xl border border-red-500 text-red-300 text-sm font-medium hover:bg-red-900/30 transition"
+                >
+                  Leave Tournament
+                </button>
+              </div>
             )}
           </div>
         )}
