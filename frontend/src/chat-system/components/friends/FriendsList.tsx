@@ -73,8 +73,6 @@ export function FriendsList() {
 
     const fiteredFriend = friendList.filter((friend) => {
         if (activeTab === 'All') return true;
-        // console.log('user status:', friend.status);
-        // console.log('Friend status:', activeTab);
         return activeTab === friend.status;
     });
 
@@ -141,7 +139,6 @@ export function FriendsList() {
                             {/* <p className="text-white text-sm">{fr.id}</p> */}
                             <div className="flex items-center gap-3 w-full">
                                 <button
-                                    // disabled={loadingConv}
                                     onClick={() => {handleStartConversation(fr.id)}}
                                     className="flex-1 flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4
                                 rounded-xl transition-colors duration-300 font-medium text-sm shadow-md shadow-indigo-500/20">
@@ -154,7 +151,6 @@ export function FriendsList() {
                                 </button>
                                 {/* <MoreVertical/> */}
                             </div>
-
                         </div>
                     );
                 })}

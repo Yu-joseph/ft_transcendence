@@ -8,6 +8,8 @@ import { fetchClient } from "../utils/fetchClient";
 
 import { useChatSocket } from "../hooks/useChatSocket";
 
+export type MessageState = 'pending' | 'sent' | 'error';
+
 export interface MessageItem {
   id: number;
   content: string;
@@ -16,6 +18,8 @@ export interface MessageItem {
     username: string;
   };
   created_at: string;
+  status: MessageState
+  tempId: string
 }
 export interface MessagesWithConvId {
   convId: number;
@@ -72,6 +76,7 @@ export function Chat() {
 
   /** ____________ SOCKET HANDLER ____________ */
   useChatSocket({convId: selectedConvId, setMessages: setMessages, setIsTyping:setIsTyping });
+  /*************************  Composnent **************************************** */
   return (
     <main className="h-full flex p-4 gap-4 overflow-hidden container mx-auto maximum-w-7xl">
       <ConversationList setConvId={setSelectedConvId} convId={selectedConvId} selectFriendId={setSelectedFriendId} deletedConvId={deletedConversation} />

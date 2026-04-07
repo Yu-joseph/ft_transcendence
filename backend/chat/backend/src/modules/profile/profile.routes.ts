@@ -1,5 +1,5 @@
 import  { Router }  from    'express';
-import { ProfileController } from './profileController.js';
+import { ProfileController } from './profile.controller.js';
 import { authenticated } from '../../middlewares/auth.middleware.js';
 
 const   routes = Router();

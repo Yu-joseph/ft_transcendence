@@ -5,6 +5,7 @@ import { useAuth } from "../../../auth/useAuth";
 
 import { fetchClient } from '../../utils/fetchClient';
 import type { MessageItem } from '../../pages/Chat';
+import { useNavigate } from 'react-router-dom';
 
 interface UserInfo {
     id: string
@@ -28,6 +29,7 @@ export function ChatMessage({messages, friendId, convId, setConvId, setFriendId,
     const   [friendInfo, setFriendInfo] = useState<UserInfo | null>(null);
     const { user } = useAuth();
     const   currentUserId = user?.id as string;
+    const   navigate = useNavigate();
 
 
     useEffect(() => {
@@ -63,6 +65,13 @@ export function ChatMessage({messages, friendId, convId, setConvId, setFriendId,
         }
     }
 
+    const   handleViewProfile = (userId: string | undefined) => {
+        console.log("Profile UserId:", userId);
+        if(!userId)
+            navigate('/');
+        navigate(`/Profile/${userId}`);
+    }
+
     if (!friendId) {
         return (<div className="flex items-center justify-center w-full h-full px-4 py-6 sm:px-6 lg:px-8">
                     <div className="max-w-xl w-full text-center">
@@ -83,7 +92,7 @@ export function ChatMessage({messages, friendId, convId, setConvId, setFriendId,
         <>
             <header className="px-6 py-4 border-b border-slate-700/50 bg-slate-900/60 flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center gap-4 cursor-pointer"
-                    onClick={() => console.log('to Profile now')}
+                    onClick={() => handleViewProfile(friendInfo?.id)}
                 >
                     <div className="relative">
                         <div className="w-10 h-10 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex justify-center items-center text-white font-bold shadow-md">
@@ -136,8 +145,9 @@ export function ChatMessage({messages, friendId, convId, setConvId, setFriendId,
                                     <p className='text-sm leading-relaxed'>
                                     {m.content}
                                     </p>
-                                    <div className={`text-[10px] mt-1 flex ${isMe ? 'text-blue-200 justify-end' : 'text-slate-400 justify-start'}`}>
+                                    <div className={`gap-1.5 text-[10px] mt-1 flex ${isMe ? 'text-blue-200 justify-end' : 'text-slate-400 justify-start'}`}>
                                         {new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+                                        <p>{m.tempId}</p>
                                     </div>
                                 </div>
                                 

@@ -1,7 +1,7 @@
 import React, { useRef, useState} from 'react';
 import  { IoSend }  from 'react-icons/io5';
 import { fetchClient } from '../../utils/fetchClient';
-import type { MessageItem}   from    '../../pages/Chat';
+import type { MessageItem, MessageState}   from    '../../pages/Chat';
 import { chatSocket } from '../../../socket/sock';
 
 interface ChatInputPorps {
@@ -9,8 +9,14 @@ interface ChatInputPorps {
     setMessages: React.Dispatch<React.SetStateAction<MessageItem[]>>
 }
 
+interface MessageToSendType {
+    content: string
+    tempId: string
+    status: MessageState
+}
+
 export  function    ChatInput({setMessages, convId}: ChatInputPorps) {
-    const   ROOM_ID = `ROOM_${convId}`;
+    const   ROOM_ID: string = `ROOM_${convId}`;
     const   [input, setInput] = useState<string>('');
     const   [isTyping,  setIsTyping] = useState<boolean>(false);
     const   typingTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -23,11 +29,17 @@ export  function    ChatInput({setMessages, convId}: ChatInputPorps) {
             setInput('');
             return ;
         }
+        const   messageToSend: MessageToSendType = {
+            content: message,
+            tempId: String(Date.now()),
+            status: 'pending'
+        }
         try {
             const   result = await fetchClient<MessageItem>(`/chat/conversations/${convId}/message`, {
                 method: 'POST',
-                body: JSON.stringify({content: message})
+                body: JSON.stringify(messageToSend)
             });
+            console.log('message sended:', result);
         } catch (err:any) {
             console.log(err);
             setMessages([]);

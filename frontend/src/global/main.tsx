@@ -28,7 +28,7 @@ createRoot(document.getElementById('root')!).render(
           <Route element={<ProtectedRoute><ChatSystemLayout/></ProtectedRoute>}>
             <Route path ="/Chat" element={<Chat />} />
             <Route path ="/Friends" element={<Friends />} />
-            <Route path='/Profile' element={<Profile />} />
+            <Route path='/Profile/:id/' element={<Profile />} />
           </Route>
           <Route path="/Tournament" element={<ProtectedRoute><Tournament /></ProtectedRoute>} />
           <Route path="/game/:matchId" element={<ProtectedRoute><Game /></ProtectedRoute>} />

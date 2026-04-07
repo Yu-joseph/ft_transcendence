@@ -147,10 +147,7 @@ export class FriendService {
             case 'ACCEPTED':
                 const result = await prisma.friend.delete({
                     where: {
-                        id: exist.id,
-                        receiverId: data.friendId,
-                        requesterId: data.requesterId,
-                        status: 'ACCEPTED'
+                        id: exist.id
                     }
                 });
                 return result;
