@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import prisma from "./lib/prisma";
-import { setupSocketHandlers } from "./socket/handlers";
+import { setupSocketHandlers, getRankedUsers } from "./socket/handlers";
 import { setupTournamentHandlers } from "./socket/tournament";
 import { getUserIdFromToken } from "./auth/identity";
 
@@ -56,29 +56,29 @@ app.get("/api/health", (_req, res) => {
 // Public route
 app.get("/api/leaderboard", async (_req, res) => {
   try {
-    const users = await prisma.user.findMany({
-      select: { id: true, username: true, wins: true, losses: true },
-      orderBy: { wins: "desc" },
-      take: 20,
-    });
-    res.json(users);
+    const ranked = await getRankedUsers();
+    return res.json(ranked.slice(0, 20));
   } catch {
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
 // Private routes (no :id from client)
 app.get("/api/me/stats", requireAuth, async (req, res) => {
-  const userId = (req as AuthedRequest).userId;
-  if (!userId) return res.status(401).json({ error: "Authentication required" });
+    try {
+    const userId = (req as AuthedRequest).userId;
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { id: true, username: true, wins: true, losses: true },
-  });
+    const ranked = await getRankedUsers();
+    const me = ranked.find((u) => u.id === userId);
 
-  if (!user) return res.status(404).json({ error: "User not found" });
-  return res.json(user);
+    if (!me) return res.status(404).json({ error: "User not found" });
+    return res.json(me);
+  } catch {
+    return res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 app.get("/api/me/games", requireAuth, async (req, res) => {
