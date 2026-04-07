@@ -254,7 +254,7 @@ def get_user(request):
         return JsonResponse({"error": "Not authenticated"}, status=401)
 
     user = User.objects.filter(id=tmp_user.id).values( 
-         "username", "fullname", "avatar", "id"
+         "username", "fullname", "avatar", "id", "email"
     ).first()
 
     if not user:
