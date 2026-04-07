@@ -57,12 +57,14 @@ services:
       - "8080:80"
     networks:
       - app-network
+    restart: always
     depends_on:
       - frontend
       - auth
       - db
       - game-api
       - chat-api
+      - chat-system
       
 
   game:
@@ -111,7 +113,7 @@ services:
     networks:
       - app-network
 
-  chat:
+  chat-system:
     build:
         context: ../backend/chat/backend
         dockerfile: Dockerfile
