@@ -112,6 +112,9 @@ def register(request):
         except ValidationError as e:
             return JsonResponse({"error": e.messages}, status=400)
 
+        if not all(part.isalpha() for part in fullname.split()):
+            return JsonResponse({"error": "Invalid name"}, status=400)
+
         hashed_password = make_password(password)
 
         new_user = User.objects.create(
@@ -132,6 +135,85 @@ def register(request):
         }, status=201)
 
     return JsonResponse({"error": "POST required"}, status=405)
+
+@csrf_exempt
+def update_users(request):
+    if request.method != "PATCH":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    tmp_user = get_user_from_request(request)
+    if not tmp_user:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+    
+    try:
+        body     = json.loads(request.body)
+        email    = body.get("email")
+        bio      = body.get("bio")
+        fullname = body.get("fullname")
+        avatar   = request.FILES.get("avatar")             
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "invalid JSON"}, status=400)
+
+    if not (email and bio and fullname and avatar):
+        return JsonResponse({"Find a job hhh" : "Ta sir 9lab ela stage onta katbdl liya f profile awdy awdy"}, status = 400)
+
+    if email :
+        validator = EmailValidator()
+        try:
+            validator(email)
+        except ValidationError:
+            return JsonResponse({"error": "Invalid Email"}, status=400)
+        tmp_user.email = email
+
+    if avatar :
+        tmp_user.avatar = avatar
+
+    if fullname :
+        if not all(part.isalpha() for part in fullname.split()):
+            return JsonResponse({"error": "Invalid name"}, status=400)
+        tmp_user.fullname = fullname
+    
+    if bio :
+        tmp_user.bio = bio
+    
+    tmp_user.save()
+    return JsonResponse({"message" : "profile updated"} , status=200)
+
+@csrf_exempt
+def changing_password(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    
+    tmp_user = get_user_from_request(request)
+    if not tmp_user:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+    
+    try:
+        body            = json.loads(request.body)
+        curr_pass       = body.get("current_pass")
+        new_pass        = body.get("new_pass")
+        retype_new_pass = body.get("retype_new_pass")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    
+    if not curr_pass or not new_pass or not retype_new_pass:
+        return JsonResponse({"error": "All fields are required"}, status=400)
+    
+    if not check_password(curr_pass, tmp_user.password):
+        return JsonResponse({"error": "Incorrect current password"}, status=400)
+    
+    if new_pass != retype_new_pass:
+        return JsonResponse({"error": "New passwords do not match"}, status=400)
+    
+    try:
+        validate_password(new_pass, tmp_user)
+    except ValidationError as e:
+        return JsonResponse({"error": e.messages}, status=400)
+    
+    tmp_user.password = make_password(new_pass)
+    tmp_user.save()
+    
+    return JsonResponse({"message": "Password updated"}, status=200)
 
 @csrf_exempt
 def logout(request):
@@ -166,83 +248,63 @@ def protected_view(request):
 
     return JsonResponse({"message": "Authorized", "user_id": user_id})
 
-@require_GET
-@csrf_exempt
-@role_required(["admin"])
-def list_users(request):
-    users = list(User.objects.all().values("id", "username", "role"))
-    return JsonResponse({"success": True, "data": users})
+# @require_GET
+# @csrf_exempt
+# @role_required(["admin"])
+# def list_users(request):
+#     users = list(User.objects.all().values("id", "username", "role"))
+#     return JsonResponse({"success": True, "data": users})
 
-@role_required(["admin"])
-def delete_user(request, user_id):
+# @role_required(["admin"])
+# def delete_user(request, user_id):
 
-    if request.method != "DELETE":
-        return JsonResponse({"error": "DELETE required"}, status=405)
+#     if request.method != "DELETE":
+#         return JsonResponse({"error": "DELETE required"}, status=405)
 
-    user = User.objects.filter(id=user_id).first()
+#     user = User.objects.filter(id=user_id).first()
 
-    if not user:
-        return JsonResponse({"error": "User not found"}, status=404)
+#     if not user:
+#         return JsonResponse({"error": "User not found"}, status=404)
 
-    user.delete()
+#     user.delete()
 
-    return JsonResponse({"message": "User deleted"})
+#     return JsonResponse({"message": "User deleted"})
 
-@role_required(["admin"])
-def update_user(request, user_id):
+# @role_required(["admin", "moderator"])
+# def deactivate_user(request, user_id):
 
-    if request.method != "PATCH":
-        return JsonResponse({"error": "PATCH required"}, status=405)
+#     user = User.objects.filter(id=user_id).first()
 
-    body = json.loads(request.body)
+#     if not user:
+#         return JsonResponse({"error": "User not found"}, status=404)
 
-    user = User.objects.filter(id=user_id).first()
+#     user.is_active = False
+#     user.save()
 
-    if not user:
-        return JsonResponse({"error": "User not found"}, status=404)
+#     return JsonResponse({"message": "User banned"})                  
 
-    user.fullname = body.get("fullname", user.fullname)
-    user.role = body.get("role", user.role)
+# @role_required(["admin"])
+# def change_user_role(request, user_id):
 
-    user.save()
+#     if request.method != "PATCH":
+#         return JsonResponse({"error": "PATCH required"}, status=405)
 
-    return JsonResponse({"message": "User updated"})
+#     body = json.loads(request.body)
 
-@role_required(["admin", "moderator"])
-def deactivate_user(request, user_id):
+#     new_role = body.get("role")
 
-    user = User.objects.filter(id=user_id).first()
+#     if not new_role:
+#         return JsonResponse({"error": "Role required"}, status=400)
 
-    if not user:
-        return JsonResponse({"error": "User not found"}, status=404)
+#     user = User.objects.filter(id=user_id).first()
 
-    user.is_active = False
-    user.save()
+#     if not user:
+#         return JsonResponse({"error": "User not found"}, status=404)
 
-    return JsonResponse({"message": "User banned"})                  
+#     user.role = new_role
+#     user.save()
 
-@role_required(["admin"])
-def change_user_role(request, user_id):
-
-    if request.method != "PATCH":
-        return JsonResponse({"error": "PATCH required"}, status=405)
-
-    body = json.loads(request.body)
-
-    new_role = body.get("role")
-
-    if not new_role:
-        return JsonResponse({"error": "Role required"}, status=400)
-
-    user = User.objects.filter(id=user_id).first()
-
-    if not user:
-        return JsonResponse({"error": "User not found"}, status=404)
-
-    user.role = new_role
-    user.save()
-
-    return JsonResponse({"message": "Role updated"})
+#     return JsonResponse({"message": "Role updated"})
 
 @csrf_exempt
 def get_user(request):
