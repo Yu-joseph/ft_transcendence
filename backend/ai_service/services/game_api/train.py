@@ -11,8 +11,8 @@ import random
 
 LEARNING_RATE = 0.1
 DISCOUNT_FACTOR = 0.95
-# TRAINING_GAMES = 10000000
-TRAINING_GAMES = 1000
+TRAINING_GAMES = 10000000
+# TRAINING_GAMES = 1000
 EPSILON_START = 0.3
 EPSILON_END = 0.01
 EPSILON_DECAY = (EPSILON_START - EPSILON_END) / TRAINING_GAMES
@@ -163,7 +163,7 @@ def train():
     for game in range(1, TRAINING_GAMES + 1):
         play_training_game()
 
-        if game % 100000 == 0:
+        if game % 10000 == 0:
             pct = game * 100 // TRAINING_GAMES
             print(f"  {game:>9,} / {TRAINING_GAMES:,} ({pct:>3}%) | states: {len(q_table):,} | e: {epsilon:.4f}")
 
