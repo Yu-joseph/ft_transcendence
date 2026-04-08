@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Bar from '../components/Bar'
 import BottomNav from '../components/BottomNav'
 import TournamentLoadingPage from '../components/TournamentLoadingPage'
-import { socket } from './socket/sock'
+import { gameSocket } from '../socket/sock'
 import { GiPodiumWinner } from "react-icons/gi";
 import { useAuth } from '../auth/useAuth'
 
@@ -107,7 +107,7 @@ function Bracket({ tournament, userId, }: {tournament: TournamentState ;userId: 
   const totalRounds = rounds.length;
 
   const handlePlay = (match: TournamentMatch) => {
-    socket.emit('request-tournament-match', {
+    gameSocket.emit('request-tournament-match', {
       tournamentId: tournament.id,
       roundNumber: match.roundNumber,
       matchIndex: match.matchIndex,
@@ -160,12 +160,32 @@ function Tournament()
   const navigate = useNavigate()
   const location = useLocation()
   const joinInfo = useMemo(() => {
-    const navState = location.state as { tournamentId?: string; userId?: string; username?: string } | null
+    const navState = location.state as { tournamentId?: string; username?: string } | null
+    if (navState?.tournamentId) {
+      return navState
+    }
+
     const stored = sessionStorage.getItem('activeTournament')
-    const storedState = stored ? JSON.parse(stored) as { tournamentId?: string; userId?: string; username?: string } : null
-    return navState?.tournamentId ? navState : storedState
+    if (!stored) {
+      return null
+    }
+
+    try {
+      return JSON.parse(stored) as { tournamentId?: string; username?: string }
+    } catch {
+      sessionStorage.removeItem('activeTournament')
+      return null
+    }
   }, [location.state])
-  const shouldJoinTournament = Boolean(joinInfo?.tournamentId && joinInfo?.userId)
+  const shouldJoinTournament = Boolean(joinInfo?.tournamentId)
+  const persistedUsername = authUser?.username ?? joinInfo?.username ?? 'Player'
+
+  const persistActiveTournament = useCallback((tournamentId: string) => {
+    sessionStorage.setItem('activeTournament', JSON.stringify({
+      tournamentId,
+      username: persistedUsername,
+    }))
+  }, [persistedUsername])
   //location hold the cuurent react location
   const [activeTournament, setActiveTournament] = useState<TournamentState | null>(null)
   const [loading, setLoading] = useState(shouldJoinTournament)
@@ -174,13 +194,18 @@ function Tournament()
   const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    if (!socket.connected) 
-      socket.connect()
+    if (!gameSocket.connected) 
+      gameSocket.connect()
 
     
     const onUpdate = (data: TournamentState) => {
       setActiveTournament(data)
       setLoading(false)
+
+      if (data.status !== 'finished') {
+        persistActiveTournament(data.id)
+      }
+
       if (data.status === 'finished') {
         sessionStorage.removeItem('activeTournament')
         if (data.winner === currentUserId) {
@@ -194,6 +219,7 @@ function Tournament()
 
     const onCreated = (data: { tournamentId: string; tournament: TournamentState }) => {
       setActiveTournament(data.tournament)
+      persistActiveTournament(data.tournament.id)
       setLoading(false)
     }
 
@@ -212,18 +238,17 @@ function Tournament()
       setTimeout(() => setError(null), 3500)
     }
 
-    socket.on('tournament-update', onUpdate)
-    socket.on('tournament-created', onCreated)
-    socket.on('match-found', onMatchFound)
-    socket.on('tournament-error', onError)
+    gameSocket.on('tournament-update', onUpdate)
+    gameSocket.on('tournament-created', onCreated)
+    gameSocket.on('match-found', onMatchFound)
+    gameSocket.on('tournament-error', onError)
 
     // Re-emit join so the server resends tournament-update after page reload
     // location.state is used on normal navigation; sessionStorage survives refresh
-    if (joinInfo?.tournamentId && joinInfo?.userId) {
-      socket.emit('join-tournament', {
+    if (joinInfo?.tournamentId) {
+      gameSocket.emit('join-tournament', {
         tournamentId: joinInfo.tournamentId,
-        userId: joinInfo.userId,
-        username: joinInfo.username ?? 'Player',
+        username: persistedUsername,
       })
     }
 
@@ -235,19 +260,30 @@ function Tournament()
       : null
 
     return () => {
-      socket.off('tournament-update', onUpdate)
-      socket.off('tournament-created', onCreated)
-      socket.off('match-found', onMatchFound)
-      socket.off('tournament-error', onError)
+      gameSocket.off('tournament-update', onUpdate)
+      gameSocket.off('tournament-created', onCreated)
+      gameSocket.off('match-found', onMatchFound)
+      gameSocket.off('tournament-error', onError)
       if (timeout) clearTimeout(timeout)
       if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current)
     }
-  }, [navigate, currentUserId, joinInfo, shouldJoinTournament])
+  }, [navigate, currentUserId, joinInfo, shouldJoinTournament, persistedUsername, persistActiveTournament])
 
   const handleStart = () => {
     if (!activeTournament) 
       return
-    socket.emit('start-tournament', { tournamentId: activeTournament.id })
+    gameSocket.emit('start-tournament', { tournamentId: activeTournament.id })
+  }
+
+  const handleLeaveTournament = () => {
+    if (!activeTournament || activeTournament.status !== 'waiting') {
+      return
+    }
+
+    gameSocket.emit('leave-tournament', { tournamentId: activeTournament.id })
+    sessionStorage.removeItem('activeTournament')
+    setActiveTournament(null)
+    navigate('/Dashboard')
   }
 
   const isCreator = activeTournament?.creatorId === currentUserId
@@ -265,7 +301,7 @@ function Tournament()
       return (
         <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
           <Bar />
-          <main className="flex-1 px-6 py-8 pb-28 max-w-3xl mx-auto w-full flex items-center justify-center">
+          <main className="flex-1 px-6 pt-32 py-8 pb-28 max-w-3xl mx-auto w-full flex items-center justify-center">
             <div className="w-full max-w-md rounded-2xl border border-blue-700 bg-slate-800/80 p-6 text-center shadow-lg">
               <h2 className="text-xl font-semibold text-amber-400 mb-2">No tournament yet</h2>
               <p className="text-sm text-gray-300 mb-5">Invite friends or join one from Dashboard to start playing.</p>
@@ -287,7 +323,7 @@ function Tournament()
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
       <Bar />
-      <main className="flex-1 px-6 py-8 pb-28 max-w-4xl mx-auto w-full">
+      <main className="flex-1 px-6 pt-32 py-8 pb-28 max-w-4xl mx-auto w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
@@ -331,15 +367,31 @@ function Tournament()
               ))}
             </ul>
             {isCreator ? (
-              <button
-                onClick={handleStart}
-                disabled={activeTournament.players.length < 3}
-                className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-semibold disabled:opacity-40 transition"
-              >
-                Start Tournament
-              </button>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={handleStart}
+                  disabled={activeTournament.players.length < 3}
+                  className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-semibold disabled:opacity-40 transition"
+                >
+                  Start Tournament
+                </button>
+                <button
+                  onClick={handleLeaveTournament}
+                  className="px-6 py-2 rounded-xl border border-red-500 text-red-300 hover:bg-red-900/30 transition"
+                >
+                  Leave Tournament
+                </button>
+              </div>
             ) : (
-              <p className="text-gray-400 text-sm">Waiting for the host to start…</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="text-gray-400 text-sm">Waiting for the host to start…</p>
+                <button
+                  onClick={handleLeaveTournament}
+                  className="px-4 py-2 rounded-xl border border-red-500 text-red-300 text-sm font-medium hover:bg-red-900/30 transition"
+                >
+                  Leave Tournament
+                </button>
+              </div>
             )}
           </div>
         )}

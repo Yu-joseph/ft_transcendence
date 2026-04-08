@@ -1,97 +1,120 @@
-import { useState, useEffect } from 'react'
-import Sidebar from '../components/Sidebar'
-import Topbar from '../components/Topbar'
-import ChatWindow from '../components/ChatWindow'
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import BottomNav from "../components/BottomNav";
+import PlayerList from "../components/PlayerList";
+import PlayerState from "../components/PlayerState";
+import TournamentList from "../components/TournamentList";
+import Leaderboard from "../components/Leaderboard";
+// import { SiEpicgames } from "react-icons/si";
+import { PiGameControllerFill } from "react-icons/pi";
+import { TbTournament } from "react-icons/tb";
+// import { GiTicTacToe } from "react-icons/gi";
+import Bar from '../components/Bar'
+import CreateTourn from "../components/CreateTourn";
+import { gameSocket } from "../socket/sock";
+import { useAuth } from "../auth/useAuth";
 
-function Dashboard() {
-  const [sessions, setSessions] = useState([])
-  const [activeSession, setActiveSession] = useState(null)
-  const [loadedMessages, setLoadedMessages] = useState([])
-  const [chatKey, setChatKey] = useState(0)
+
+
+
+export default function Dashboard() {
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  const [opnePop, setOpenPop] = useState<boolean>(false);
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        const res = await fetch('/api/sessions')
-        const data = await res.json()
-  
-        if (Array.isArray(data) && data.length > 0) {
-          setSessions(data)
-          setActiveSession(data[0].session_id)
-        } else {
-          await handleNewChat() 
-        }
-      } catch {
-        console.log('Could not load sessions')
+    const onTournamentCreated = (data: { tournamentId: string; tournament: { name: string; creatorId: string } }) => {
+      if (user) {
+        sessionStorage.setItem('activeTournament', JSON.stringify({
+          tournamentId: data.tournamentId,
+          userId: user.id,
+          username: user.username ?? user.fullName ?? 'Player',
+        }));
       }
-    }
-  
-    init()
-  }, [])
-  
-  const handleNewChat = async () => {
-    try {
-      const res = await fetch('/api/new-session', { method: 'POST' })
-      const data = await res.json()
-      const newSession = { session_id: data.session_id, title: 'New Chat', message_count: 0 }
-      setSessions(prev => [newSession, ...prev])
-      setActiveSession(data.session_id)
-      setLoadedMessages([])
-      setChatKey(prev => prev + 1)
-    } catch {
-      console.log('Could not create new session')
-    }
+      navigate("/Tournament");
+    };
+    gameSocket.on("tournament-created", onTournamentCreated);
+    return () => {
+      gameSocket.off("tournament-created", onTournamentCreated);
+    };
+  }, [navigate, user]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex items-center justify-center px-4">
+        <p className="text-white text-lg">Loading session...</p>
+      </div>
+    );
   }
 
-  const handleSelectSession = async (sessionId) => {
-    setActiveSession(sessionId)
-    try {
-      const res = await fetch('/api/set-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: sessionId })
-      })
-      const data = await res.json()
-      const messages = (data.messages || []).map(m => ({
-        role: m.role === 'assistant' ? 'ai' : m.role,
-        text: m.content
-      }))
-      setLoadedMessages(messages)
-      setChatKey(prev => prev + 1)
-    } catch {
-      console.log('Could not load session')
-    }
-  }
-
-  const updateSessionTitle = (firstMessage) => {
-    setSessions(prev =>
-      prev.map(s =>
-        s.session_id === activeSession
-          ? { ...s, title: firstMessage.slice(0, 30) + (firstMessage.length > 30 ? '...' : '') }
-          : s
-      )
-    )
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-white text-xl mb-4">You need to sign in to continue.</p>
+          <button
+            onClick={() => navigate("/")}
+            className="px-6 py-3 text-lg font-semibold rounded-xl bg-linear-to-r from-indigo-500 to-purple-600 text-white hover:scale-105 transition"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="app-layout">
-      <Sidebar
-        onNewChat={handleNewChat}
-        sessions={sessions}
-        activeSession={activeSession}
-        onSelectSession={handleSelectSession}
-      />
-      <div className="main-area">
-        <Topbar />
-        <ChatWindow
-          key={chatKey}
-          sessionId={activeSession}
-          onFirstMessage={updateSessionTitle}
-          initialMessages={loadedMessages}
-        />
-      </div>
-    </div>
-  )
-}
+    <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
+      <Bar />
+      {/* Main Content */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8 sm:px-6 lg:px-8 pb-32">
+          <div className="flex flex-col lg:flex-row gap-8 w-full">
 
-export default Dashboard
+            {/* Left column */}
+            <div className="flex flex-col gap-6 flex-1">
+              <h2 className="text-2xl font-bold text-white">Welcome, {user?.fullName ?? user?.username ?? "Player"}!</h2>
+              <p className="text-gray-300">Choose an option below to get started.</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-lg mt-4">
+                <button onClick={() => navigate("/AiChallange")} className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-amber-500 hover:scale-105 transition-all duration-300 shadow-lg">
+                  <span className="text-4xl"><PiGameControllerFill /></span>
+                  <span className="text-amber-500 text-xl font-semibold">AiChallange</span>
+                  <span className="text-gray-400 text-sm">Find players and start a match</span>
+                </button>
+                <button onClick={() => setOpenPop(true)} className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-amber-500 hover:scale-105 transition-all duration-300 shadow-lg">
+                  <span className="text-4xl"><TbTournament /></span>
+                  <span className="text-amber-500 text-xl font-semibold">Create Tournament</span>
+                  <span className="text-gray-400 text-sm">Create Tournmanet</span>
+                </button>
+              </div>
+              
+              {/* PlayerList now uses global auth context */}
+              <PlayerList />
+              <TournamentList />
+            </div>
+
+            {/* Right column */}
+            <div className="flex flex-col gap-6 w-full max-w-xl">
+              <PlayerState userId={user?.id ?? ""} />
+              <Leaderboard />
+            </div>
+
+          </div>
+      </main>
+
+      <BottomNav />
+      <CreateTourn
+        isOpen={opnePop}
+        onClose={() => setOpenPop(false)}
+        onCreate={(name, maxPlayers) => {
+          gameSocket.emit("create-tournament", {
+            name,
+            userId: user?.id,
+            username: user?.username ?? user?.fullName ?? "Player",
+            maxPlayers,
+          });
+        }}
+      />
+    </div>
+  );
+}

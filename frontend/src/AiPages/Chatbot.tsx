@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef , useState } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
 import Bar from '../components/Bar';
@@ -22,7 +22,12 @@ function Chatbot() {
   const [chatKey, setChatKey] = useState(0);
   const ACTIVE_SESSION_STORAGE_KEY = 'chatbot_active_session_id';
 
+  const didInitRef = useRef(false);
+
   useEffect(() => {
+    if (didInitRef.current) return;
+    didInitRef.current = true;
+
     const init = async () => {
     try {
     const res = await fetch('/chatbot/sessions');

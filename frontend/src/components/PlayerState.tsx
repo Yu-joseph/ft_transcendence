@@ -5,30 +5,24 @@ type PlayerStats = {
   username: string;
   wins: number;
   losses: number;
+  xp: number;
+  rank: number;
 };
 
-type PlayerStateProps = {
-  userId: string;
-};
-
-export default function PlayerState({ userId }: PlayerStateProps) {
+export default function PlayerState() {
   const [stats, setStats] = useState<PlayerStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!userId) {
-      setLoading(false);
-      setStats(null);
-      setError(null);
-      return;
-    }
-/// using async to get promise (object) and waiting using await
+    /// using async to get promise (object) and waiting using await
     const fetchPlayerState = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response  = await fetch(`http://${window.location.hostname}:1339/api/users/${userId}/stats`);
+        const response  = await fetch(`http://${window.location.hostname}:1339/api/me/stats`, {
+          credentials: 'include',
+        });
         if (!response.ok) 
           throw new Error("User not found");
         const data = (await response.json()) as PlayerStats;
@@ -41,17 +35,10 @@ export default function PlayerState({ userId }: PlayerStateProps) {
     };
 
     fetchPlayerState();
-  }, [userId]);
+  }, []);
 
-  let total = 0;
-  if (stats) {
-    total = stats.wins + stats.losses;
-  }
-
-  let winRate = 0;
-  if (total > 0 && stats) {
-    winRate = Math.round((stats.wins / total) * 100);
-  }
+  const total = stats ? stats.wins + stats.losses : 0;
+  const winRate = stats && total > 0 ? Math.round((stats.wins / total) * 100) : 0;
 
   return (
     <section className="w-full bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit">
@@ -62,11 +49,9 @@ export default function PlayerState({ userId }: PlayerStateProps) {
 
       {loading ? (
         <div className="px-6 py-8 text-gray-300">Loading stats...</div>
-      ) : !userId ? (
-        <div className="px-6 py-8 text-gray-300">Loading your profile...</div>
       ) : error ? (
         <div className="px-6 py-8 text-red-300">{error}</div>
-      ) : !stats || total === 0 ? (
+      ) : !stats ? (
         <div className="px-6 py-8 text-gray-300">No games played yet. Go play!</div>
       ) : (
         <div className="px-6 py-5 space-y-5">
@@ -80,6 +65,17 @@ export default function PlayerState({ userId }: PlayerStateProps) {
             <div className="flex flex-col items-center bg-slate-900/60 rounded-lg py-4">
               <span className="text-2xl font-bold text-rose-300">{stats.losses}</span>
               <span className="text-xs text-gray-400 mt-1 uppercase tracking-wide">Losses</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col items-center bg-slate-900/60 rounded-lg py-4">
+              <span className="text-2xl font-bold text-cyan-300">{stats.xp}</span>
+              <span className="text-xs text-gray-400 mt-1 uppercase tracking-wide">XP</span>
+            </div>
+            <div className="flex flex-col items-center bg-slate-900/60 rounded-lg py-4">
+              <span className="text-2xl font-bold text-amber-300">#{stats.rank}</span>
+              <span className="text-xs text-gray-400 mt-1 uppercase tracking-wide">Rank</span>
             </div>
           </div>
 
