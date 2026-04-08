@@ -37,6 +37,13 @@ interface TournamentState {
   winner: string | null
 }
 
+interface TournamentMatchInvite {
+  tournamentId: string
+  roundNumber: number
+  matchIndex: number
+  opponentName: string
+}
+
 function MatchCard({ match, userId, onPlay,}: { match: TournamentMatch ; userId: string ;onPlay: () => void }) 
 {
   const isInMatch = match.player1?.id === userId || match.player2?.id === userId
@@ -191,7 +198,9 @@ function Tournament()
   const [loading, setLoading] = useState(shouldJoinTournament)
   const [showWinnerScreen, setShowWinnerScreen] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [pendingMatchInvite, setPendingMatchInvite] = useState<TournamentMatchInvite | null>(null)
   const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const activeTournamentIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!gameSocket.connected) 
@@ -199,6 +208,7 @@ function Tournament()
 
     
     const onUpdate = (data: TournamentState) => {
+      activeTournamentIdRef.current = data.id
       setActiveTournament(data)
       setLoading(false)
 
@@ -218,6 +228,7 @@ function Tournament()
     }
 
     const onCreated = (data: { tournamentId: string; tournament: TournamentState }) => {
+      activeTournamentIdRef.current = data.tournament.id
       setActiveTournament(data.tournament)
       persistActiveTournament(data.tournament.id)
       setLoading(false)
@@ -238,10 +249,18 @@ function Tournament()
       setTimeout(() => setError(null), 3500)
     }
 
+    const onMatchInvite = (data: TournamentMatchInvite) => {
+      if (activeTournamentIdRef.current && data.tournamentId !== activeTournamentIdRef.current) {
+        return
+      }
+      setPendingMatchInvite(data)
+    }
+
     gameSocket.on('tournament-update', onUpdate)
     gameSocket.on('tournament-created', onCreated)
     gameSocket.on('match-found', onMatchFound)
     gameSocket.on('tournament-error', onError)
+    gameSocket.on('tournament-match-confirm', onMatchInvite)
 
     // Re-emit join so the server resends tournament-update after page reload
     // location.state is used on normal navigation; sessionStorage survives refresh
@@ -250,6 +269,8 @@ function Tournament()
         tournamentId: joinInfo.tournamentId,
         username: persistedUsername,
       })
+    } else if (currentUserId) {
+      gameSocket.emit('reconnect-tournament', {})
     }
 
     
@@ -264,6 +285,7 @@ function Tournament()
       gameSocket.off('tournament-created', onCreated)
       gameSocket.off('match-found', onMatchFound)
       gameSocket.off('tournament-error', onError)
+      gameSocket.off('tournament-match-confirm', onMatchInvite)
       if (timeout) clearTimeout(timeout)
       if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current)
     }
@@ -286,6 +308,32 @@ function Tournament()
     navigate('/Dashboard')
   }
 
+  const handleAcceptMatchInvite = () => {
+    if (!pendingMatchInvite) {
+      return
+    }
+
+    gameSocket.emit('accept-tournament-match', {
+      tournamentId: pendingMatchInvite.tournamentId,
+      roundNumber: pendingMatchInvite.roundNumber,
+      matchIndex: pendingMatchInvite.matchIndex,
+    })
+    setPendingMatchInvite(null)
+  }
+
+  const handleDeclineMatchInvite = () => {
+    if (!pendingMatchInvite) {
+      return
+    }
+
+    gameSocket.emit('decline-tournament-match', {
+      tournamentId: pendingMatchInvite.tournamentId,
+      roundNumber: pendingMatchInvite.roundNumber,
+      matchIndex: pendingMatchInvite.matchIndex,
+    })
+    setPendingMatchInvite(null)
+  }
+
   const isCreator = activeTournament?.creatorId === currentUserId
   const winnerPlayer = activeTournament?.winner
     ? activeTournament.players.find(p => p.id === activeTournament.winner)
@@ -301,7 +349,7 @@ function Tournament()
       return (
         <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
           <Bar />
-          <main className="flex-1 px-6 pt-32 py-8 pb-28 max-w-3xl mx-auto w-full flex items-center justify-center">
+          <main className="flex-1 px-6 pt-8 py-8 pb-28 max-w-3xl mx-auto w-full flex items-center justify-center">
             <div className="w-full max-w-md rounded-2xl border border-blue-700 bg-slate-800/80 p-6 text-center shadow-lg">
               <h2 className="text-xl font-semibold text-amber-400 mb-2">No tournament yet</h2>
               <p className="text-sm text-gray-300 mb-5">Invite friends or join one from Dashboard to start playing.</p>
@@ -323,7 +371,7 @@ function Tournament()
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
       <Bar />
-      <main className="flex-1 px-6 pt-32 py-8 pb-28 max-w-4xl mx-auto w-full">
+      <main className="flex-1 px-6 pt-8 py-8 pb-28 max-w-4xl mx-auto w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
@@ -336,7 +384,7 @@ function Tournament()
             </p>
           </div>
           <button
-            onClick={() => { sessionStorage.removeItem('activeTournament'); setActiveTournament(null); navigate('/Dashboard'); }}
+            onClick={() => navigate('/Dashboard')}
             className="text-sm px-4 py-2 rounded-xl border border-slate-600 text-gray-300 hover:bg-slate-700 transition"
           >
             ← Back
@@ -414,6 +462,30 @@ function Tournament()
         )}
       </main>
       <BottomNav />
+      {pendingMatchInvite && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <h3 className="text-white text-lg font-semibold mb-2">Match Invite</h3>
+            <p className="text-slate-300 mb-5">
+              <span className="text-amber-400 font-semibold">{pendingMatchInvite.opponentName}</span> wants to start this match.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleAcceptMatchInvite}
+                className="flex-1 px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition"
+              >
+                Accept
+              </button>
+              <button
+                onClick={handleDeclineMatchInvite}
+                className="flex-1 px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+              >
+                Decline
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

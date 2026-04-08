@@ -69,7 +69,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
       <Bar />
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 pt-32 pb-32 sm:px-6 lg:px-8">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 pt-8 pb-32 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row gap-8 w-full">
 
             {/* Left column */}

@@ -13,5 +13,6 @@ export  const chatSocket: Socket = io(CHAT_URL, {
 
 export const gameSocket: Socket = io(GAME_URL, {
   autoConnect: false, // We manually connect in 
+  withCredentials: true,
 });
 
