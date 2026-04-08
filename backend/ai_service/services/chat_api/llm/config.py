@@ -2,8 +2,6 @@ import os
 import logging
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-# from langchain_groq import ChatGroq
-# from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage
 
 load_dotenv()
@@ -23,21 +21,6 @@ class Config:
                 "X-Title": "LLM Studio",
             }
         )
-
-
-        # self.llm = ChatGroq(
-        #     model="llama-3.3-70b-versatile",
-        #     temperature=0.7,
-        #     groq_api_key=os.getenv("GROQ_API_KEY"),
-        #     streaming=True
-        # )
-
-        # self.llm = ChatGoogleGenerativeAI(
-        #     model="gemini-2.5-flash",
-        #     temperature=0.7,
-        #     google_api_key=os.getenv("GOOGLE_API_KEY"),
-        #     streaming=True
-        # )
 
         self.system_message = SystemMessage(
             content=(
