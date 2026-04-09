@@ -12,7 +12,7 @@ function fetchAuthUser(): Promise<AuthUser | null> {
     return fetchUserPromise;
   }
 
-  fetchUserPromise = fetch('http://localhost:8080/authent/getuser/', {
+  fetchUserPromise = fetch('/authent/getuser/', {
     method: 'GET',
     credentials: 'include',
   })

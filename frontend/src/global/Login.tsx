@@ -59,7 +59,7 @@ function Login() {
       //trim to remove spaces from start and end
       const loginId = emailOrUsername.trim();
       const isEmail = loginId.includes("@");
-      const response = await fetch("http://localhost:8080/authent/login/", {
+      const response = await fetch("/authent/login/", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -83,7 +83,7 @@ function Login() {
       }
 
       // Fetch authenticated profile and push it into global auth context.
-      const userResponse = await fetch("http://localhost:8080/authent/getuser/", {
+      const userResponse = await fetch("/authent/getuser/", {
         method: "GET",
         credentials: "include",
       });
@@ -129,7 +129,7 @@ function Login() {
     setSignupLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8080/authent/register/", {
+      const response = await fetch("/authent/register/", {
         method: "POST",
         headers: {
           //this for http header telling server that request is formated as JSON
