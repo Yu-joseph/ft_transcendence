@@ -66,6 +66,8 @@ async function getTournamentBonusByUser(): Promise<Map<string, number>> {
       addPoints(bonusByUser, tournament.winnerId, TOURNAMENT_WIN_POINTS);
     }
 
+    //second place 
+
     const totalRounds = Math.log2(nextPowerOf2(participants.length));
 
     const secondPlace = participants.find(
@@ -237,6 +239,15 @@ async function forfeitMatch(io: Server, matchId: string, leaverId: string) {
 
   console.log(`Match ${matchId} forfeited by ${leaverId}, ${opponent.username} wins`);
 }
+export function isPlayerInActiveMatch(userId: string): boolean {
+  for (const match of matches.values()) {
+    if (match.status === 'playing' && match.players.some((p) => p.id === userId)) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 export function setupSocketHandlers(io: Server) {
   io.use(async (socket, next) => {
@@ -294,6 +305,7 @@ export function setupSocketHandlers(io: Server) {
       const target = players.get(targetSocketId);
       if (!sender || !target) return;
       if (targetSocketId === socket.id) return;
+      if (isPlayerInActiveMatch(target.id)) return;
 
       io.to(targetSocketId).emit('receive-invite', {
         from: sender,
@@ -306,6 +318,7 @@ export function setupSocketHandlers(io: Server) {
       const player1 = players.get(data.fromSocketId);
       const player2 = players.get(socket.id);
       if (!player1 || !player2) return;
+      if (isPlayerInActiveMatch(player1.id) || isPlayerInActiveMatch(player2.id)) return;
 
       [data.fromSocketId, socket.id].forEach(id => {
         const index = searchQueue.indexOf(id);

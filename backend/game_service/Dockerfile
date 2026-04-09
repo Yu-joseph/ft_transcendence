@@ -3,12 +3,12 @@ FROM node:20-alpine
 WORKDIR /app
 
 COPY api/package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY api/ .
 
+RUN npx prisma generate
 RUN npm run build
+RUN npm prune --omit=dev
 
-ENV DATABASE_URL=postgres://sayf:1234@db:5432/mydb
-
-CMD ["sh", "-c", "npx prisma db pull && npx prisma generate && npm start"]
+CMD ["npm", "start"]
