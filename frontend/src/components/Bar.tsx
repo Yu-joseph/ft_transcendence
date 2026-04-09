@@ -17,7 +17,7 @@ function Bar() {
     if (lowerUrl.startsWith("http://") || lowerUrl.startsWith("https://")) 
       return url; // already absolute
 
-    const base = "http://localhost:8080/authent";
+    const base = "/authent";
     // Ensure we always request /media/<file>
     const withMediaPrefix = url.startsWith("/media/")
       ? url
@@ -30,7 +30,7 @@ function Bar() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:8080/authent/logout/", {
+      await fetch("/authent/logout/", {
         method: "POST",
         credentials: "include",
       });

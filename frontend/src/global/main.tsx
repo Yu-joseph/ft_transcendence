@@ -14,11 +14,13 @@ import { ChatSystemLayout } from '../chat-system/ChatSystemLayout.tsx'
 import { Chat } from '../chat-system/pages/Chat.tsx'
 import { Friends } from '../chat-system/pages/Friends.tsx'
 import { Profile } from '../chat-system/pages/Profile.tsx'
+import GlobalInviteListener from '../components/GlobalInviteListener.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
       <BrowserRouter>
+        <GlobalInviteListener />
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
