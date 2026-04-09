@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import  {IoEllipsisHorizontal} from 'react-icons/io5';
-
 import { useAuth } from "../../../auth/useAuth";
-
 import { fetchClient } from '../../utils/fetchClient';
 import type { MessageItem } from '../../pages/Chat';
 import { useNavigate } from 'react-router-dom';
@@ -27,10 +25,14 @@ interface ChatMessageProp {
 export function ChatMessage({messages, friendId, convId, setConvId, setFriendId, setDeletedConv, isTyping} : ChatMessageProp) {
     const   [isDropDown, setIsDropDown] = useState<boolean>(false);
     const   [friendInfo, setFriendInfo] = useState<UserInfo | null>(null);
-    const { user } = useAuth();
+    const   { user } = useAuth();
     const   currentUserId = user?.id as string;
     const   navigate = useNavigate();
+    const   scroolToBottomRef = useRef<HTMLDivElement | null>(null);
 
+    useEffect(() => {
+        scroolToBottomRef.current?.scrollIntoView();
+    }, [messages, isTyping])
 
     useEffect(() => {
         console.log("In chat Message, messages is:", messages);
@@ -45,25 +47,25 @@ export function ChatMessage({messages, friendId, convId, setConvId, setFriendId,
             }
         }
         loadUserInfo();
-    }, [friendId])
+    }, [friendId, user, convId])
 
     /*********** Botton click************** */
-    const handleRemoveConversation = async () => {
-        try {
-            setIsDropDown(!isDropDown);
-            const   result = await fetchClient<number>(`/chat/conversations/${convId}`, {
-                method: 'DELETE',
-            });
-            console.log("deleted conversation", result);
-            if(result !== convId)
-                console.log('Ooops i remove another conversations');
-            setDeletedConv(result);
-            setConvId(null);
-            setFriendId(null);
-        } catch (err: any) {
-            console.log(err.message);
-        }
-    }
+    // const handleRemoveConversation = async () => {
+    //     try {
+    //         setIsDropDown(!isDropDown);
+    //         const   result = await fetchClient<number>(`/chat/conversations/${convId}`, {
+    //             method: 'DELETE',
+    //         });
+    //         console.log("deleted conversation", result);
+    //         if(result !== convId)
+    //             console.log('Ooops i remove another conversations');
+    //         setDeletedConv(result);
+    //         setConvId(null);
+    //         setFriendId(null);
+    //     } catch (err: any) {
+    //         console.log(err.message);
+    //     }
+    // }
 
     const   handleViewProfile = (userId: string | undefined) => {
         console.log("Profile UserId:", userId);
@@ -121,7 +123,7 @@ export function ChatMessage({messages, friendId, convId, setConvId, setFriendId,
                             <ul className='flex flex-col'>
                                 <li>
                                     <button
-                                        onClick={handleRemoveConversation}
+                                        onClick={() => {}}
                                         className='w-full text-left px-4 py-2.5 text-sm font-medium text-red-500 hover:text-red-400 hover:bg-slate-700/50 transition-colors'
                                         >
                                             Remove Conversation
@@ -150,8 +152,6 @@ export function ChatMessage({messages, friendId, convId, setConvId, setFriendId,
                                         <p>{m.tempId}</p>
                                     </div>
                                 </div>
-                                
-                                
                             </div>
                         );
                     })
@@ -169,6 +169,7 @@ export function ChatMessage({messages, friendId, convId, setConvId, setFriendId,
                         </div>
                     )
                 }
+                <div ref={scroolToBottomRef}></div>
             </div>
         </>
     );

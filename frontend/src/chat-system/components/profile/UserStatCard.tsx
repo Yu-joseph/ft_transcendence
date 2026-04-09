@@ -1,13 +1,40 @@
-export  function UserStatCard() {
+import React, { useEffect, useState } from "react";
+import { fetchClient } from "../../utils/fetchClient";
+
+interface UserStatInfo {
+    wins: number
+    losses: number
+}
+
+interface UserStatCardProps {
+    userId: string | null
+    isOwnProfile: boolean
+}
+
+export  function UserStatCard({userId, isOwnProfile}: UserStatCardProps) {
+    const   [userStat, setUserStat] = useState<UserStatInfo | null>(null);
+
+    useEffect(() => {
+        if(!userId)
+            return;
+        try {
+            const   result = fetchClient(`/game-api/api/${userId}/status`);
+            console.log(result);
+            // setUserStat(result);
+        } catch (err) {
+            console.log('error:', err);
+        }
+    }, [])
+
     const wins = 9;
     const losses = 6;
     const totalGames = wins + losses; 
     const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
-
+    console.log('User Stat', userStat);
     return (
         <div className="bg-[#111A3A]/80 border border-[#2A3A6B] rounded-2xl p-6 md:p-8 backdrop-blur-sm relative overflow-hidden w-full">
             <div className="absolute bottom-0 right-0 bg-emerald-500/5 h-64 w-64 rounded-full  -z-10"></div>
-            <h1 className="text-orange-400 text-xl font-bold mb-1 md:text-2xl">You Progress</h1>
+            <h1 className="text-orange-400 text-xl font-bold mb-1 md:text-2xl">{isOwnProfile ? 'You Progress' : 'Arena Progress'}</h1>
             <p className="text-slate-400 text-sm mb-8">Match statictics</p>
             
             <div className="grid grid-cols-2 gap-4 md:gap-8 mb-8">

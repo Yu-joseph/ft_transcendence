@@ -3,9 +3,7 @@ import { ChatInput } from "../components/chat/ChatInput";
 import { ChatMessage } from "../components/chat/ChatMessage";
 import { useLocation, type Location } from "react-router-dom";
 import { useEffect, useState } from "react";
-
 import { fetchClient } from "../utils/fetchClient";
-
 import { useChatSocket } from "../hooks/useChatSocket";
 
 export type MessageState = 'pending' | 'sent' | 'error';
@@ -42,6 +40,7 @@ export function Chat() {
   useEffect(() => {
     if (selectedConvId === null || isLoadedFromFriendProfile)
       return;
+    console.log('Loading History from conv Id');
     const loadHistoryByConvId = async () => {
       try {
         const result = await fetchClient<MessageItem[] | []>(`/chat/conversations/${selectedConvId}/messages`, {});
@@ -52,7 +51,7 @@ export function Chat() {
       }
     }
     loadHistoryByConvId();
-  }, [selectedConvId])
+  }, [selectedConvId, selectedFriendId])
 
   // when user come from friend profile to open chat message
   useEffect(() => {
@@ -72,10 +71,10 @@ export function Chat() {
       }
     }
     loadHistoryByFriendId();
-  }, [selectedFriendId])
+  }, [selectedFriendId, selectedConvId])
 
   /** ____________ SOCKET HANDLER ____________ */
-  useChatSocket({convId: selectedConvId, setMessages: setMessages, setIsTyping:setIsTyping });
+  useChatSocket({convId: selectedConvId, setMessages: setMessages, setIsTyping: setIsTyping });
   /*************************  Composnent **************************************** */
   return (
     <main className="h-full flex p-4 gap-4 overflow-hidden container mx-auto maximum-w-7xl">

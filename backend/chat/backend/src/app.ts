@@ -12,7 +12,7 @@ const   app = express();
   return this.toString();
 };
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:8080'],
+  origin: '*',
   credentials: true
 }));
 app.use(express.json());
