@@ -6,6 +6,7 @@ import { useAuth } from "../auth/useAuth";
 function Login() {
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
@@ -13,6 +14,9 @@ function Login() {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupFullname, setSignupFullname] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
+  const [signupPasswordConfirm, setSignupPasswordConfirm] = useState("");
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showSignupPasswordConfirm, setShowSignupPasswordConfirm] = useState(false);
   const [signupError, setSignupError] = useState<string | null>(null);
   const [signupSuccess, setSignupSuccess] = useState<string | null>(null);
   const [signupLoading, setSignupLoading] = useState(false);
@@ -59,7 +63,7 @@ function Login() {
       //trim to remove spaces from start and end
       const loginId = emailOrUsername.trim();
       const isEmail = loginId.includes("@");
-      const response = await fetch("http://localhost:8080/authent/login/", {
+      const response = await fetch("/authent/login/", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -83,7 +87,7 @@ function Login() {
       }
 
       // Fetch authenticated profile and push it into global auth context.
-      const userResponse = await fetch("http://localhost:8080/authent/getuser/", {
+      const userResponse = await fetch("/authent/getuser/", {
         method: "GET",
         credentials: "include",
       });
@@ -126,10 +130,16 @@ function Login() {
   const submitSignup = async () => {
     setSignupError(null);
     setSignupSuccess(null);
+
+    if (signupPassword !== signupPasswordConfirm) {
+      setSignupError("Passwords do not match.");
+      return;
+    }
+
     setSignupLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8080/authent/register/", {
+      const response = await fetch("/authent/register/", {
         method: "POST",
         headers: {
           //this for http header telling server that request is formated as JSON
@@ -159,6 +169,7 @@ function Login() {
       setSignupEmail("");
       setSignupFullname("");
       setSignupPassword("");
+      setSignupPasswordConfirm("");
       setTimeout(() => {
         setShowSignup(false);
         setSignupSuccess(null);
@@ -220,15 +231,24 @@ function Login() {
               <label htmlFor="password" className="block text-sm font-medium text-amber-200">
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg bg-slate-800 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                placeholder="Enter password"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showLoginPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-2.5 pr-14 rounded-lg bg-slate-800 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  placeholder="Enter password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-amber-300 hover:text-amber-200"
+                >
+                  {showLoginPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
 
             {error && (
@@ -334,15 +354,48 @@ function Login() {
                 <label htmlFor="signupPassword" className="block mb-1 text-sm font-medium text-amber-300">
                   Password
                 </label>
-                <input
-                  type="password"
-                  id="signupPassword"
-                  value={signupPassword}
-                  onChange={(e) => setSignupPassword(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                  placeholder="Choose password"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showSignupPassword ? "text" : "password"}
+                    id="signupPassword"
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
+                    className="w-full px-3 py-2 pr-14 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    placeholder="Choose password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSignupPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-amber-300 hover:text-amber-200"
+                  >
+                    {showSignupPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="signupPasswordConfirm" className="block mb-1 text-sm font-medium text-amber-300">
+                  Confirm password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showSignupPasswordConfirm ? "text" : "password"}
+                    id="signupPasswordConfirm"
+                    value={signupPasswordConfirm}
+                    onChange={(e) => setSignupPasswordConfirm(e.target.value)}
+                    className="w-full px-3 py-2 pr-14 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    placeholder="Re-enter password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSignupPasswordConfirm((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-amber-300 hover:text-amber-200"
+                  >
+                    {showSignupPasswordConfirm ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
 
               {signupError && (
