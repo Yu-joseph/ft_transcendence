@@ -11,6 +11,7 @@ import {
 } from './tournamentEngine';
 import { getOrCreatePlayer, getSocketUserId } from './tournamentPlayers';
 import { tournaments } from './tournamentStore';
+import { isPlayerInActiveMatch } from './handlers';
 
 export { advanceTournamentBracket } from './tournamentEngine';
 
@@ -222,6 +223,7 @@ export function setupTournamentHandlers(io: Server) {
         const caller = tournament.players.find((p) => p.id === userId);
         if (!caller) return;
 
+
         const tm = tournament.bracket.find(
           (m) => m.roundNumber === data.roundNumber && m.matchIndex === data.matchIndex,
         );
@@ -230,7 +232,14 @@ export function setupTournamentHandlers(io: Server) {
         if (tm.player1?.id !== caller.id && tm.player2?.id !== caller.id) return;
 
         const opponent = tm.player1?.id === caller.id ? tm.player2 : tm.player1;
+
         if (!opponent) return;
+                if (isPlayerInActiveMatch(caller.id) || isPlayerInActiveMatch(opponent.id)) {
+          socket.emit('tournament-error', {
+            message: 'Cannot request tournament match while one player is already in a match',
+          });
+          return;
+        }
 
         if (tm.requestedBy && tm.requestedBy !== caller.id) {
           actuallyStartMatch(io, tournament, tm);
@@ -273,7 +282,16 @@ export function setupTournamentHandlers(io: Server) {
 
         if (tm.player1?.id !== userId && tm.player2?.id !== userId) return;
         if (tm.requestedBy === userId) return;
+        const p1 = tm.player1;
+        const p2 = tm.player2;
+        if (!p1 || !p2) return;
 
+        if (isPlayerInActiveMatch(p1.id) || isPlayerInActiveMatch(p2.id)) {
+          socket.emit('tournament-error', {
+            message: 'Cannot start tournament match while one player is already in a match',
+          });
+          return;
+        }
         actuallyStartMatch(io, tournament, tm);
       },
     );
