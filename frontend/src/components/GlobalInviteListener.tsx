@@ -24,6 +24,7 @@ export default function GlobalInviteListener() {
 
 function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
   const [pendingInvite, setPendingInvite] = useState<Invite | null>(null);
+  const [declinedBy, setDeclinedBy] = useState<string | null>(null);
   const navigate = useNavigate();
   const { id, username } = user;
 
@@ -46,7 +47,7 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
     };
 
     const handleInviteDeclined = (data: { by: string }) => {
-      alert(`${data.by} declined your invite`);
+      setDeclinedBy(data.by);
     };
 
     gameSocket.on("connect", handleConnect);
@@ -66,6 +67,15 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
       gameSocket.disconnect();
     };
   }, [id, username, navigate]);
+
+  useEffect(() => {
+    if (!declinedBy) return;
+    const timeoutId = window.setTimeout(() => {
+      setDeclinedBy(null);
+    }, 4000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [declinedBy]);
 
   useEffect(() => {
     if (!pendingInvite) return;
@@ -99,35 +109,44 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
     setPendingInvite(null);
   };
 
-  if (!pendingInvite) {
+  if (!pendingInvite && !declinedBy) {
     return null;
   }
 
   return (
-    <div className="fixed top-4 right-4 z-60 w-72 max-w-[calc(100vw-2rem)]">
-      <div className="bg-slate-800 rounded-xl p-4 shadow-lg border border-slate-700">
-        <h3 className="text-white text-base font-semibold mb-2">Game Invite</h3>
-        <p className="text-slate-300 text-sm mb-4">
-          <span className="text-emerald-400 font-semibold">
-            {pendingInvite.from.username}
-          </span>{" "}
-          wants to play with you!
-        </p>
-        <div className="flex gap-2">
-          <button
-            onClick={handleAcceptInvite}
-            className="flex-1 px-3 py-2 rounded-lg bg-amber-500 text-white text-sm hover:bg-amber-800 transition"
-          >
-            Accept
-          </button>
-          <button
-            onClick={handleDeclineInvite}
-            className="flex-1 px-3 py-2 rounded-lg bg-blue-500 text-white text-sm hover:bg-blue-900 transition"
-          >
-            Decline
-          </button>
+    <div className="fixed top-4 right-4 z-[60] w-72 max-w-[calc(100vw-2rem)] space-y-3">
+      {pendingInvite && (
+        <div className="bg-slate-800 rounded-xl p-4 shadow-lg border border-slate-700">
+          <h3 className="text-white text-base font-semibold mb-2">Game Invite</h3>
+          <p className="text-slate-300 text-sm mb-4">
+            <span className="text-emerald-400 font-semibold">
+              {pendingInvite.from.username}
+            </span>{" "}
+            wants to play with you!
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={handleAcceptInvite}
+              className="flex-1 px-3 py-2 rounded-lg bg-amber-500 text-white text-sm hover:bg-amber-800 transition"
+            >
+              Accept
+            </button>
+            <button
+              onClick={handleDeclineInvite}
+              className="flex-1 px-3 py-2 rounded-lg bg-blue-500 text-white text-sm hover:bg-blue-900 transition"
+            >
+              Decline
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+      {declinedBy && (
+        <div className="bg-slate-900/95 rounded-lg p-3 shadow-lg border border-slate-700">
+          <p className="text-slate-200 text-sm">
+            <span className="text-amber-400 font-semibold">{declinedBy}</span> declined your invite.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
