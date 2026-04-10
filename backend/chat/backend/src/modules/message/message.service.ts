@@ -8,6 +8,7 @@ import { SendMessageType, MessagesWithConvId } from "./message.types.js";
 export  class MessagesServices {
     /** @function getMessages getting all messages from single conversation by conversation ID*/
     static async getMessagesByConvId(data: GetMessagesProps) {
+        console.log('User ID', data.currentUserId);
         const   conversationExist = await prisma.conversation.findUnique({
             where: {
                 id: data.conversationId
@@ -20,6 +21,7 @@ export  class MessagesServices {
         if (!conversationExist) {
             throw new AppError('Conversation Not found', 404);
         }
+        console.log('(((((((:' , conversationExist);
         const   isParticipant = conversationExist.User_Conversation_user1IdToUser.id === data.currentUserId || conversationExist.User_Conversation_user2IdToUser.id === data.currentUserId;
         if(!isParticipant)
             throw new AppError('You are not member of this conversation', 403);
@@ -122,6 +124,7 @@ export  class MessagesServices {
             }
         });
         const   io = getIo();
+        console.log(`Sending message to room ${conversationId}`);
         io.to(`ROOM_${conversationId}`).emit('message:new', saveMessage);
         // Broadcasting message the specified channel 
         // -----------------------------------------

@@ -5,6 +5,7 @@ import { useLocation, type Location } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { fetchClient } from "../utils/fetchClient";
 import { useChatSocket } from "../hooks/useChatSocket";
+import { useAuth } from "../../auth/useAuth";
 
 export type MessageState = 'pending' | 'sent' | 'error';
 
@@ -25,6 +26,8 @@ export interface MessagesWithConvId {
 }
 
 export function Chat() {
+  const {user} = useAuth();
+
 
   const location = useLocation() as Location & { state?: { selectedFriendId?: string } };
   const friendId = location.state?.selectedFriendId as string ?? null;
@@ -38,6 +41,8 @@ export function Chat() {
   const [deletedConversation, setDeletedConversation] = useState<number | null>(null);
 
   useEffect(() => {
+    console.log("=======>>>>THAT US Current user;", user?.id);
+    if(user === null) return ;
     if (selectedConvId === null || isLoadedFromFriendProfile)
       return;
     console.log('Loading History from conv Id');
@@ -47,14 +52,16 @@ export function Chat() {
         setMessages(result);
       } catch (err: any) {
         console.log(err);
-        setMessages([]);
+        // setMessages([]);
       }
     }
     loadHistoryByConvId();
-  }, [selectedConvId, selectedFriendId])
+  }, [selectedConvId, selectedFriendId, user])
 
   // when user come from friend profile to open chat message
   useEffect(() => {
+    if(user === null) return ;
+
     if (!selectedFriendId || selectedConvId)
       return;
     console.log('Comming from friend profile');
@@ -67,11 +74,11 @@ export function Chat() {
         setSelectedConvId(result.convId);
       } catch (err: any) {
         console.log(err);
-        setMessages([]);
+        // setMessages([]);
       }
     }
     loadHistoryByFriendId();
-  }, [selectedFriendId, selectedConvId])
+  }, [selectedFriendId, selectedConvId, user])
 
   /** ____________ SOCKET HANDLER ____________ */
   useChatSocket({convId: selectedConvId, setMessages: setMessages, setIsTyping: setIsTyping });

@@ -3,6 +3,8 @@ import  { IoSend }  from 'react-icons/io5';
 import { fetchClient } from '../../utils/fetchClient';
 import type { MessageItem, MessageState}   from    '../../pages/Chat';
 import { chatSocket } from '../../../socket/sock';
+import type { JoinChatInf } from '../../hooks/useChatSocket';
+import  {useAuth}   from    '../../../auth/useAuth';
 
 interface ChatInputPorps {
     convId: number | null
@@ -17,11 +19,15 @@ interface MessageToSendType {
 
 export  function    ChatInput({setMessages, convId}: ChatInputPorps) {
     const   ROOM_ID: string = `ROOM_${convId}`;
+
     const   [input, setInput] = useState<string>('');
     const   [isTyping,  setIsTyping] = useState<boolean>(false);
     const   typingTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const   {user} = useAuth();
 
     const   handleSendMessage = async (event: React.SyntheticEvent) => {
+        if(user === null)
+            return;
         event.preventDefault();
         const   message: string = input.trim();
         if(message === '') {
@@ -42,16 +48,18 @@ export  function    ChatInput({setMessages, convId}: ChatInputPorps) {
             console.log('message sended:', result);
         } catch (err:any) {
             console.log(err);
-            setMessages([]);
+            // setMessages([]);
         }
         setInput('');
     }
 
     const   handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if(user === null)
+            return ;
         const   messageValue: string = e.target.value;
         setInput(messageValue);
         if(!isTyping && messageValue.length > 0) {
-            chatSocket.emit('typing:start', ROOM_ID)
+            chatSocket.emit('typing:start', {room_id: ROOM_ID, userId: user.id, convId: convId} as JoinChatInf)
             setIsTyping(true);
         }
         clearTimeout(typingTimerRef.current);
