@@ -6,3 +6,4 @@ djangorestframework-simplejwt
 Pillow
 djangorestframework
 django-cors-headers
+social-auth-app-django
