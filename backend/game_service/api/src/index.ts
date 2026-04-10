@@ -4,7 +4,12 @@ import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import prisma from "./lib/prisma";
-import { setupSocketHandlers, getRankedUsers } from "./socket/handlers";
+import {
+  setupSocketHandlers,
+  getRankedUsers,
+  isPlayerInActiveMatch,
+  players,
+} from "./socket/handlers";
 import { setupTournamentHandlers } from "./socket/tournament";
 import { getUserIdFromToken } from "./auth/identity";
 
@@ -135,6 +140,58 @@ app.get("/api/me/tournaments", requireAuth, async (req, res) => {
     }));
 
     return res.json(result);
+  } catch {
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/api/users/:id/status", async (req, res) => {
+  try {
+    const userId = req.params.id?.trim();
+    if (!userId) {
+      return res.status(400).json({ error: "User id is required" });
+    }
+
+    const [user, rankedUsers, tournamentJoined, tournamentWins] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, username: true, status: true },
+      }),
+      getRankedUsers(),
+      prisma.tournamentParticipant.count({
+        where: { userId },
+      }),
+      prisma.tournament.count({
+        where: { winnerId: userId, status: "finished" },
+      }),
+    ]);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const ranked = rankedUsers.find((u) => u.id === userId);
+
+    const isPlaying = isPlayerInActiveMatch(userId);
+    const isOnline = Array.from(players.values()).some((p) => p.id === userId);
+
+    const status = isPlaying
+      ? "playing"
+      : isOnline
+      ? "online"
+      : (user.status || "offline").toLowerCase();
+
+    return res.json({
+      id: user.id,
+      username: user.username,
+      status,
+      rank: ranked?.rank ?? null,
+      xp: ranked?.xp ?? 0,
+      wins: ranked?.wins ?? 0,
+      losses: ranked?.losses ?? 0,
+      tournamentWins,
+      tournamentJoined,
+    });
   } catch {
     return res.status(500).json({ error: "Internal server error" });
   }
