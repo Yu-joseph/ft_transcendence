@@ -69,15 +69,18 @@ export default function Dashboard() {
     <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
       <Bar />
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 pt-8 pb-32 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row gap-8 w-full">
+      <main className="flex-1 w-full max-w-none pl-4 pr-4 pt-8 pb-32 sm:pl-5 sm:pr-6 lg:pl-6 lg:pr-8">
+          <div className="grid grid-cols-1 gap-8 w-full lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.9fr)]">
 
             {/* Left column */}
-            <div className="flex flex-col gap-6 flex-1">
+            <div className="flex flex-col gap-6">
               <h2 className="text-2xl font-bold text-white">
                 Welcome, <span className="text-amber-500">{user?.username ?? "Player"}</span>!
               </h2>
               <p className="text-gray-300">Choose an option below to get started.</p>
+
+              {/* Online players at the top-left */}
+              
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-lg mt-4">
                 <button onClick={() => navigate("/AiChallange")} className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-amber-500 hover:scale-105 transition-all duration-300 shadow-lg">
@@ -91,16 +94,17 @@ export default function Dashboard() {
                   <span className="text-gray-400 text-sm">Create Tournmanet</span>
                 </button>
               </div>
-              
-              {/* PlayerList now uses global auth context */}
               <PlayerList />
               <TournamentList />
             </div>
 
             {/* Right column */}
-            <div className="flex flex-col gap-6 w-full max-w-xl">
+            <div className="flex flex-col gap-6">
               <PlayerState />
               <MyTournamentsTable />
+            </div>
+
+            <div className="flex flex-col gap-6">
               <Leaderboard />
             </div>
 
