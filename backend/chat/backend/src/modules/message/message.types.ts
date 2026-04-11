@@ -26,3 +26,11 @@ export interface MessagesWithConvId {
   convId: bigint;
   messages: MessagesPayload[];
 }
+
+export type MessageState = 'pending' | 'sent' | 'error';
+
+export interface MessageToSendType {
+    content: string
+    tempId: string
+    status: MessageState
+}

@@ -1,3 +1,4 @@
+import { MessageState } from "../message/message.types.js"
 
 
 export  interface StartConversationData {
@@ -51,4 +52,6 @@ export interface MessagesPayload {
         username: string;
     },
     created_at: Date;
+    tempId?: string
+    status?: MessageState
 }

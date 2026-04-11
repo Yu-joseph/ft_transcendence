@@ -96,23 +96,6 @@ model Message {
   @@index([senderId], map: "Message_senderId_5dad428b_like")
 }
 
-model The_User {
-  id          String   @id @db.VarChar(255)
-  username    String   @unique @db.VarChar(255)
-  emailox     String   @unique @db.VarChar(255)
-  passwordixo String   @db.VarChar(255)
-  created_at  DateTime @db.Timestamptz(6)
-  updated_at  DateTime @db.Timestamptz(6)
-  avatar      String?  @db.VarChar(255)
-  status      String   @db.VarChar(50)
-  wins        Int
-  losses      Int
-
-  @@index([emailox], map: "The_User_emailox_576756cf_like")
-  @@index([id], map: "The_User_id_3e5573b1_like")
-  @@index([username], map: "The_User_username_ce9ae5c5_like")
-}
-
 /// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
 model Tournament {
   id                              String                  @id @db.VarChar(255)
@@ -159,14 +142,17 @@ model TournamentParticipant {
 model User {
   id                                      String                  @id @db.VarChar(255)
   username                                String                  @unique @db.VarChar(255)
-  email                                 String                  @unique @db.VarChar(255)
-  password                             String                  @db.VarChar(255)
+  email                                   String                  @unique @db.VarChar(255)
+  fullname                                String                  @db.VarChar(255)
+  password                                String                  @db.VarChar(255)
   created_at                              DateTime                @db.Timestamptz(6)
   updated_at                              DateTime                @db.Timestamptz(6)
-  avatar                                  String?                 @db.VarChar(255)
+  avatar                                  String?                 @db.VarChar(100)
   status                                  String                  @db.VarChar(50)
+  role                                    String                  @db.VarChar(50)
   wins                                    Int
   losses                                  Int
+  is_active                               Boolean
   Conversation_Conversation_user1IdToUser Conversation[]          @relation("Conversation_user1IdToUser")
   Conversation_Conversation_user2IdToUser Conversation[]          @relation("Conversation_user2IdToUser")
   Friend_Friend_receiverIdToUser          Friend[]                @relation("Friend_receiverIdToUser")
@@ -179,9 +165,9 @@ model User {
   Tournament_Tournament_winnerIdToUser    Tournament[]            @relation("Tournament_winnerIdToUser")
   TournamentParticipant                   TournamentParticipant[]
 
-  @@index([email], map: "User_emailox_52212af8_like")
   @@index([id], map: "User_id_dba046ea_like")
   @@index([username], map: "User_username_3851fdce_like")
+  @@index([email], map: "User_email_667201b5_like")
 }
 
 model auth_group {

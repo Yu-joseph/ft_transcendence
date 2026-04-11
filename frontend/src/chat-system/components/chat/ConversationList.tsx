@@ -28,7 +28,6 @@ interface   ConversationType {
 }
 
 export  function ConversationList({setConvId, convId, selectFriendId, deletedConvId}: ConversationListProps ) {
-
   const [conversationLists, setConversationList] = useState<ConversationType[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error| null>(null);
@@ -40,7 +39,6 @@ export  function ConversationList({setConvId, convId, selectFriendId, deletedCon
         setLoading(false);
         const result : ConversationType[] = await fetchClient('/chat/conversations', {});
         setConversationList(result);
-
       } catch (error: any) {
         setError(error);
         setConversationList([]);
@@ -50,8 +48,6 @@ export  function ConversationList({setConvId, convId, selectFriendId, deletedCon
       }
     };
     loadConversation();
-
-
   }, [])
 
   /****** Updated deleted Conv Id */

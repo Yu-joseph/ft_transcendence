@@ -1,7 +1,7 @@
 import { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 import  { Response }      from  'express';
 import { ResponseModule } from "../shared.utils.js";
-import { ProfileService } from "./profileService.js";
+import { ProfileService } from "./profile.service.js";
 
 export  class ProfileController {
     /**
@@ -9,16 +9,17 @@ export  class ProfileController {
      */
     static async viewProfile(req: AuthenticatedRequest, res: Response) {
         try {
-            const   userId = Number(req.params.id);
+            const   userId = req.params.id as string;
+            const   currentUserId = req.user?.user_id as string;
 
-            if (!Number.isInteger(userId) || userId <= 0) {
+            if (!userId) {
                 const response: ResponseModule<null> = {
                     success: false, message: 'Invalid user ID', data: null
                 };
                 return res.status(400).json(response);
             }
 
-            const   result = await ProfileService.viewProfile(userId);
+            const   result = await ProfileService.viewProfile(userId, currentUserId);
             const   response: ResponseModule<object> = {
                 success: true,
                 message: 'User info retrieved successfully',

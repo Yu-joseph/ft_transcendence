@@ -12,7 +12,7 @@ export  function AddFriend() {
     const   handleSubmit = async (e: any) => {
         e.preventDefault();
         const username = input.trim();
-        if(username === '' || username.length < 4) {
+        if(username === '') {
             console.log('empty form!!');
             setStatus({type: 'error', message: 'Enter at least 4 characters'});
             return;
@@ -63,7 +63,7 @@ export  function AddFriend() {
                     />
                     <button
                         type="submit"
-                        disabled={loading || input.trim().length < 4}
+                        disabled={loading || input.trim().length === 0}
                         className="bg-blue-600 absolute right-2 px-6 py-2 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors
                         disabled:opacity-50 disabled:cursor-not-allowed">
                         {loading ? 'Sending...' : 'Send Request'}

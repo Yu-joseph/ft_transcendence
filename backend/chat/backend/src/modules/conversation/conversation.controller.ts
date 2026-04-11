@@ -3,7 +3,6 @@ import { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 import { ResponseModule }       from    '../shared.utils.js';
 import { ConversationService } from './conversation.service.js';
 import { ExistingConversationsT } from './conversation.types.js';
-// import { getAuth } from '@clerk/express';
 
 export class    ConversationController {
     /**
