@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { gameSocket } from "../socket/sock";
 // import BottomNav from "../components/BottomNav";
@@ -7,6 +7,8 @@ import { useAuth } from "../auth/useAuth";
 
 
 type CellValue = "X" | "O" | null;
+
+const TURN_TIMEOUT_MS = 5000;
 
 interface Player {
   id: string;
@@ -54,6 +56,8 @@ function Game() {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [openmentLeaver, setopLeave] = useState(false);
   const [showWinModal, setShowWinModal] = useState(false);
+  const [turnRemainingMs, setTurnRemainingMs] = useState(TURN_TIMEOUT_MS);
+  const turnEndsAtRef = useRef<number | null>(null);
 
   // Derive move count from the current board state
   const getMoveCount = (symbol: "X" | "O"): number => {
@@ -104,6 +108,15 @@ function Game() {
       setMatchStatus(match.status);
       setPlayers(match.players);
       setPieceToRemove(null); // Reset piece selection on each update
+
+      const isActiveTurn = match.status === "playing" && !match.winner && !!match.currentTurn;
+      if (isActiveTurn) {
+        turnEndsAtRef.current = Date.now() + TURN_TIMEOUT_MS;
+        setTurnRemainingMs(TURN_TIMEOUT_MS);
+      } else {
+        turnEndsAtRef.current = null;
+        setTurnRemainingMs(TURN_TIMEOUT_MS);
+      }
       
       if (match.winner) {
         // Find winners username
@@ -147,6 +160,16 @@ function Game() {
       setMatchStatus(data.match.status);
       setPlayers(data.match.players);
 
+      const isActiveTurn =
+        data.match.status === "playing" && !data.match.winner && !!data.match.currentTurn;
+      if (isActiveTurn) {
+        turnEndsAtRef.current = Date.now() + TURN_TIMEOUT_MS;
+        setTurnRemainingMs(TURN_TIMEOUT_MS);
+      } else {
+        turnEndsAtRef.current = null;
+        setTurnRemainingMs(TURN_TIMEOUT_MS);
+      }
+
       if (data.match.winner) {
         const winnerPlayer = data.match.players.find(p => p.id === data.match.winner);
         setWinner(winnerPlayer?.username || data.match.winner);
@@ -189,6 +212,27 @@ function Game() {
 
   // Determine if it's my turn
   const isMyTurn = authUser && currentTurn === authUser.id;
+  const isTurnActive = matchStatus === "playing" && !winner && !!currentTurn;
+  const turnSecondsLeft = Math.max(0, Math.ceil(turnRemainingMs / 1000));
+
+  useEffect(() => {
+    if (!isTurnActive) {
+      turnEndsAtRef.current = null;
+      return;
+    }
+
+    if (!turnEndsAtRef.current) {
+      turnEndsAtRef.current = Date.now() + TURN_TIMEOUT_MS;
+    }
+
+    const timerId = setInterval(() => {
+      if (!turnEndsAtRef.current) return;
+      const remaining = Math.max(0, turnEndsAtRef.current - Date.now());
+      setTurnRemainingMs(remaining);
+    }, 200);
+
+    return () => clearInterval(timerId);
+  }, [currentTurn, isTurnActive]);
 
   // Debug states
   useEffect(() => {
@@ -308,6 +352,35 @@ function Game() {
             </div>
           )}
 
+          {players.length > 0 && (
+            <div className="grid grid-cols-2 gap-4 mt-4 w-full max-w-md">
+              {players.map((player, idx) => {
+                const isActivePlayer = isTurnActive && currentTurn === player.id;
+                const isMe = player.id === authUser?.id;
+                const symbolLabel = idx === 0 ? "X" : "O";
+
+                return (
+                  <div
+                    key={player.id}
+                    className={`rounded-xl px-4 py-3 border
+                      ${isActivePlayer ? "border-emerald-400 bg-emerald-500/10" : "border-slate-700 bg-slate-800/50"}`}
+                  >
+                    <div className="flex items-center justify-between text-slate-200 text-sm">
+                      <span>
+                        {player.username}
+                        {isMe ? " (You)" : ""}
+                      </span>
+                      <span className="text-xs text-slate-400">{symbolLabel}</span>
+                    </div>
+                    <div className={`text-2xl font-semibold ${isActivePlayer ? "text-emerald-300" : "text-slate-400"}`}>
+                      {isActivePlayer ? `${turnSecondsLeft}s` : "Paused"}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           <p className="text-white text-xl">{statusText}</p>
 
           {/* Instructions when need to remove a piece */}
@@ -324,6 +397,17 @@ function Game() {
               const isSelectedForRemoval = pieceToRemove === index;
               const isMyPiece = cell === mySymbol;
               const needsToSelectPiece = isMyTurn && mySymbol && getMoveCount(mySymbol) >= 3 && pieceToRemove === null;
+              const cellColor =
+                cell === "X" ? "bg-rose-700" :
+                cell === "O" ? "bg-cyan-700" :
+                "bg-slate-800";
+              const baseColor = isSelectedForRemoval
+                ? "bg-red-600 ring-4 ring-red-400"
+                : needsToSelectPiece && isMyPiece
+                  ? "bg-yellow-700 hover:bg-yellow-600"
+                  : cellColor;
+              const hoverClass = isMyTurn && !winner && !cell ? "hover:bg-slate-700" : "";
+              const cursorClass = isMyTurn && !winner ? "cursor-pointer" : "cursor-not-allowed opacity-80";
               
               return (
                 <button
@@ -331,13 +415,9 @@ function Game() {
                   onClick={() => handleClick(index)}
                   disabled={!isMyTurn || !!winner}
                   className={`w-20 h-20 text-3xl font-bold rounded-lg
-                            ${isSelectedForRemoval 
-                              ? "bg-red-600 ring-4 ring-red-400" 
-                              : needsToSelectPiece && isMyPiece
-                                ? "bg-yellow-700 hover:bg-yellow-600"
-                                : "bg-slate-800"}
+                            ${baseColor}
                             text-white
-                            ${isMyTurn && !winner ? "hover:bg-slate-700 cursor-pointer" : "cursor-not-allowed opacity-80"}
+                            ${hoverClass} ${cursorClass}
                             transition`}
                 >
                   {cell}
