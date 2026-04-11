@@ -1,28 +1,42 @@
 import React, { useEffect } from 'react';
 import  {chatSocket}  from    '../../socket/sock';
 import type { MessageItem } from '../pages/Chat';
+import  {useAuth}   from    '../../auth/useAuth';
 
 interface   UseChatSocketProps {
     convId: number | null
     setMessages: React.Dispatch<React.SetStateAction<MessageItem[]>>
-    setIsConnected: React.Dispatch<React.SetStateAction<boolean>>
+    setIsTyping: React.Dispatch<React.SetStateAction<boolean> >
+    
 }
 
-export  const   useChatSocket = ({convId, setMessages, setIsConnected}: UseChatSocketProps) => {
-    useEffect(() => {
-        console.log('ConversationId in socket effect:', convId);
+export interface JoinChatInf {
+    room_id: string
+    convId: number
+    userId: string
+}
 
+export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSocketProps) => {
+    const   {user} = useAuth();
+    useEffect(() => {
+        if(user === null)
+            return ;
+        console.log('Use Chat socket runned again');
+        console.log('ConversationId in socket effect:', convId);
         const   initSocket = async () => {
             if (!chatSocket.connected){
+                // console.log('Front sockewt not conneced');
                 chatSocket.connect();
-                setIsConnected(true);
+                // console.log('Front is conneced');
+
             }
         }
         initSocket();
         const ROM_ID: string | null = `ROOM_${convId}`;
         if (chatSocket.connected && convId !== null) {
+
             console.log('Joinning Chat ID:', ROM_ID);
-            chatSocket.emit('join-chat', ROM_ID);
+            chatSocket.emit('join-chat', {room_id: ROM_ID, convId: convId, userId: user?.id} as JoinChatInf);
         }
 
         const onConnect = () => {
@@ -42,12 +56,21 @@ export  const   useChatSocket = ({convId, setMessages, setIsConnected}: UseChatS
         
         const onDisconnect = () => {
             console.log(`I'm not connected to server`);
-            setIsConnected(false);
+        }
+        const   onTypingStart = (data: string) => {
+            setIsTyping(true);
+            console.log('its typinggg:', data);
+        }
+        const   onTypingStop = (data: string) => {
+            setIsTyping(false);
+            console.log('its typinggg:', data);
         }
         /************************************************* */
         chatSocket.on('connect', onConnect);
         chatSocket.on('message:new', onReceiveMessage)
         chatSocket.on('disconnect', onDisconnect);
+        chatSocket.on('typing:start', onTypingStart);
+        chatSocket.on('typing:stop', onTypingStop);
         /************************************************* */
         chatSocket.on('connect_error', (err: any) => console.error('SOCKET connect_error', err));
         chatSocket.on('connect_timeout', (t) => console.error('SOCKET connect_timeout', t));
@@ -56,6 +79,11 @@ export  const   useChatSocket = ({convId, setMessages, setIsConnected}: UseChatS
         chatSocket.on('reconnect_failed', () => console.error('SOCKET reconnect_failed'));
         return (() => {
             chatSocket.off('connect', onConnect);
+            chatSocket.emit('leave:conversation', ROM_ID);
+
+            // chatSocket.off('typing:start'), onTypingStart;
+            // chatSocket.off('typing:stop'), onTypingStop;
+
             chatSocket.off('message:new', onReceiveMessage);
             chatSocket.off('error');
             chatSocket.off('connect_timeout');

@@ -1,7 +1,5 @@
 import { AcceptFriendRequest, AddFriendRequest, BlockedFriendType, CancelFriendRequest, PendingFriendType, RemoveFriendShip } from "./friend.types.js";
 import { prisma } from "../../lib/prisma.js";
-// import  { Fr }
-// import { FriendsStatus } from "../../../generated/prisma/index.js";
 import { AppError } from "../../utils/AppError.js";
 import  {RequestType} from './friend.types.js';
 
@@ -15,7 +13,7 @@ export class FriendService {
         // console.log(users);
         const frId = await prisma.user.findUnique({
             where: {
-                username: data.receiverId
+                username: data.receiverId //  data.receiverId is username not ID
             }
         });
         if (!frId) {
@@ -33,8 +31,18 @@ export class FriendService {
             }
         });
         if (existing) {
-            if (existing.status === 'PENDING' || existing.status === 'ACCEPTED')
-                throw new AppError('A friend request is already pending or accepted between these users.', 400);
+            if (existing.status === 'ACCEPTED')
+                throw new AppError('A friend request is already accepted between these users.', 400);
+            if(existing.status === 'PENDING') {
+                const   result = await prisma.friend.update({
+                    where: {id: existing.id},
+                    data: {
+                        status: 'ACCEPTED',
+                        created_at: new Date()
+                    }
+                });
+                return result;
+            }
             if (existing.status === 'REJECTED') {
                 const result = await prisma.friend.update({
                     where: {
@@ -42,6 +50,8 @@ export class FriendService {
                         status: 'REJECTED'
                     },
                     data: {
+                        receiverId: frId.id,
+                        requesterId: data.requesterId,
                         status: 'PENDING',
                         created_at: new Date()
                     }
@@ -147,10 +157,7 @@ export class FriendService {
             case 'ACCEPTED':
                 const result = await prisma.friend.delete({
                     where: {
-                        id: exist.id,
-                        receiverId: data.friendId,
-                        requesterId: data.requesterId,
-                        status: 'ACCEPTED'
+                        id: exist.id
                     }
                 });
                 return result;
@@ -185,14 +192,14 @@ export class FriendService {
 }
     /*  _________ Get All FriendShip __________    */
     static async getFriends(userId: string) {
-
-        const inf = await prisma.user.findUnique({
+        console.log('User in friend service:', userId);
+        const Info = await prisma.user.findUnique({
             where: {
                 id: userId
             }
         });
 
-        console.log("User Info:->", inf);
+        console.log("User InfoInfoo:->", Info);
         const friendship = await prisma.friend.findMany({
             where: {
                 OR: [
