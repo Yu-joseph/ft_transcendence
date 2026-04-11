@@ -21,7 +21,6 @@ export  class MessagesServices {
         if (!conversationExist) {
             throw new AppError('Conversation Not found', 404);
         }
-        console.log('(((((((:' , conversationExist);
         const   isParticipant = conversationExist.User_Conversation_user1IdToUser.id === data.currentUserId || conversationExist.User_Conversation_user2IdToUser.id === data.currentUserId;
         if(!isParticipant)
             throw new AppError('You are not member of this conversation', 403);
@@ -90,9 +89,6 @@ export  class MessagesServices {
                 },
             },
         });
-        // // if (!messages) {
-        // //     throw new AppError('Messages of this conversation not found', 404);
-        // }
         return {convId: conversationExist.id, messages: messages?.Message ?? [] as MessagesPayload[]};
     }
     /** @function sendMessage getting all messages from single conversation */
@@ -117,6 +113,25 @@ export  class MessagesServices {
             conversationId: conversationId,
             created_at: new Date
         };
+        const   isFriend = await prisma.friend.findFirst({
+            where: {
+                OR: [
+                    {receiverId: convExist.user1Id, requesterId: convExist.user2Id},
+                    {receiverId: convExist.user2Id, requesterId: convExist.user1Id}
+                ]
+            }
+        });
+        if(isFriend === null) {
+            const   rmConv = await prisma.$transaction([
+                prisma.message.deleteMany({
+                    where: {conversationId: convExist.id}
+                }),
+                prisma.conversation.delete({
+                    where: { id: convExist.id }
+                })
+            ]);
+            throw new AppError('You are not friends anymore!', 403);
+        }
         const   saveMessage : MessagesPayload = await  prisma.message.create({
             data: newMessage,
             include: {
