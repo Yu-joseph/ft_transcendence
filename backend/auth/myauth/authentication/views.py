@@ -2,10 +2,22 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.conf import settings
 from django.shortcuts import redirect
+from django.conf import settings
+from django.shortcuts import redirect
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.hashers import make_password, check_password
 from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.exceptions import TokenError
+from .auth_utils import get_user_from_request
+from .models import User
+from .permissions import role_required
+import uuid
+import requests
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
@@ -128,6 +140,82 @@ def register(request):
         role="user"
     )
     return JsonResponse({"message": "User created"}, status=201)
+
+
+@csrf_exempt
+def update_users(request):
+    if request.method != "PATCH":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    tmp_user = get_user_from_request(request)
+    if not tmp_user:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    try:
+        body     = json.loads(request.body)
+        email    = body.get("email")
+        bio      = body.get("bio")
+        fullname = body.get("fullname")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "invalid JSON"}, status=400)
+
+    if not (email and bio and fullname):
+        return JsonResponse({"error": "email, bio and fullname required"}, status=400)
+
+    if email:
+        validator = EmailValidator()
+        try:
+            validator(email)
+        except ValidationError:
+            return JsonResponse({"error": "Invalid Email"}, status=400)
+        tmp_user.email = email
+
+    if fullname:
+        if not all(part.isalpha() for part in fullname.split()):
+            return JsonResponse({"error": "Invalid name"}, status=400)
+        tmp_user.fullname = fullname
+
+    if bio:
+        tmp_user.bio = bio
+
+    tmp_user.save()
+    return JsonResponse({"message": "profile updated"}, status=200)
+
+
+@csrf_exempt
+def changing_password(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    tmp_user = get_user_from_request(request)
+    if not tmp_user:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    try:
+        body            = json.loads(request.body)
+        curr_pass       = body.get("current_pass")
+        new_pass        = body.get("new_pass")
+        retype_new_pass = body.get("retype_new_pass")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    if not curr_pass or not new_pass or not retype_new_pass:
+        return JsonResponse({"error": "All fields are required"}, status=400)
+
+    if not check_password(curr_pass, tmp_user.password):
+        return JsonResponse({"error": "Incorrect current password"}, status=400)
+
+    if new_pass != retype_new_pass:
+        return JsonResponse({"error": "New passwords do not match"}, status=400)
+
+    try:
+        validate_password(new_pass, tmp_user)
+    except ValidationError as e:
+        return JsonResponse({"error": e.messages}, status=400)
+
+    tmp_user.password = make_password(new_pass)
+    tmp_user.save()
+    return JsonResponse({"message": "Password updated"}, status=200)
 
 
 @csrf_exempt
@@ -302,6 +390,9 @@ def forty_two_callback(request):
     access  = refresh.access_token
 
     response = JsonResponse({'message': 'Login successful'})
+    #yssf modification
+    response = redirect("/dashboard")
+    #yssf modification
     response.set_cookie(key='access_token',  value=str(access),  max_age=600,    httponly=True, secure=False, samesite='Lax', path='/')
     response.set_cookie(key='refresh_token', value=str(refresh), max_age=604800, httponly=True, secure=False, samesite='Lax', path='/')
     return response

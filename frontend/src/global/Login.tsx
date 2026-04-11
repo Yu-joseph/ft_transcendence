@@ -18,6 +18,7 @@ function Login() {
   const [signupError, setSignupError] = useState<string | null>(null);
   const [signupSuccess, setSignupSuccess] = useState<string | null>(null);
   const [signupLoading, setSignupLoading] = useState(false);
+  const intraLoginUrl = "/authent/42/login/";
   const { user, loading: authLoading, setUser } = useAuth();
   const navigate = useNavigate();
 
@@ -253,6 +254,22 @@ function Login() {
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
+
+            <div className="flex items-center gap-3">
+              <span className="h-px flex-1 bg-amber-400/20" aria-hidden />
+              <span className="text-[0.65rem] uppercase tracking-[0.35em] text-amber-200/70">or</span>
+              <span className="h-px flex-1 bg-amber-400/20" aria-hidden />
+            </div>
+
+            <a
+              href={intraLoginUrl}
+              className="w-full inline-flex items-center justify-center gap-3 rounded-lg border border-amber-400/40 bg-amber-500/5 px-4 py-2.5 text-amber-100 font-semibold hover:bg-amber-500/15 transition"
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-400/15 text-amber-200 text-sm font-semibold">
+                42
+              </span>
+              Sign in with Intra
+            </a>
 
             <p className="text-sm text-slate-300 text-center">
               Don't have an account?{" "}
