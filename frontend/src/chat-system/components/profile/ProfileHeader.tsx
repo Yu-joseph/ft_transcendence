@@ -109,7 +109,7 @@ export function ProfileHeader({ userGameStat, isOwnProfile, setIsOwnProfile, set
                     </div>
                 </div>
 
-                <p className="text-slate-400 mt-3 text-sm max-w-xl mx-auto md:mx-0 leading-relaxed">{userInfo?.bio ?? 'Unknown'}</p>
+                <p className="text-slate-400 mt-3 text-sm max-w-xl mx-auto md:mx-0 leading-relaxed">{userInfo?.bio ?? 'No description'}</p>
             </div>
 
             <div className="flex flex-col sm:flex-row w-full gap-3 md:w-auto mt-4 md:mt-0 justify-center">

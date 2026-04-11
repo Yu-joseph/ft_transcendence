@@ -19,12 +19,18 @@ interface EditProfileModalProps {
 
 export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditProfileModalProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // const   [username, setUsername] = useState<string>('');
+    // const   [email, setEmail] = useState<string>('');
+    // const   [bio, setBio] = useState<string>('');
+
+
     const   navigate = useNavigate();
 
     const [formData, setFormData] = useState({
-        fullname: initialData?.fullname || '',
-        bio: initialData?.bio || '',
-        email: initialData?.email || ''
+        fullname: initialData?.fullname || '' as string,
+        bio: initialData?.bio || '' as string,
+        email: initialData?.email || '' as string
     });
 
     // const   [avatar, setAvatar] = useState({avatar:})
@@ -47,6 +53,10 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
             // setFormData({ ...formData, avatar: file }); 
         }
     };
+
+
+
+
 
     const uploadAvatar = async (file: File) => {
         const fd = new FormData();
