@@ -10,55 +10,32 @@ type ChatWindowProps = {
   onFirstMessage: (firstMessage: string) => void
   initialMessages?: Message[]
   sessionId?: string | null
-}
-type UploadedFile = {
-  filename: string
-  url?: string
-  size?: number
+  onStreamingChange?: (streaming: boolean) => void
 }
 
-function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }: ChatWindowProps) {
+function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreamingChange }: ChatWindowProps) {
   const [messages, setMessages] = useState(initialMessages)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null)
+  const [showThinking, setShowThinking] = useState(false)
   const hasSentFirst = useRef(initialMessages.length > 0)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
-  const handleAttachClick = () => fileInputRef.current?.click()
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const formData = new FormData()
-    formData.append('file', file)
-    try {
-      const res = await fetch('/chatbot/upload', { method: 'POST', body: formData })
-      const data = await res.json()
-      setUploadedFile(data)
-    } catch {
-      console.log('Upload failed')
-    }
-  }
+  useEffect(() => {
+    onStreamingChange?.(loading)
+  }, [loading, onStreamingChange])
 
-  const removeFile = () => {
-    setUploadedFile(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
 
   const handleSend = async () => {
-    if ((!input.trim() && !uploadedFile) || loading) return
+    if (!input.trim() || loading) return
 
     let messageText = input
-    if (uploadedFile) {
-      messageText = input
-        ? `[File: ${uploadedFile.filename}] ${input}`
-        : `[File: ${uploadedFile.filename}]`
-    }
+
 
     const userMsg = { role: 'user', text: messageText }
     setMessages(prev => [...prev, userMsg])
@@ -69,93 +46,42 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }: ChatWin
     }
 
     setInput('')
-    setUploadedFile(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
     setLoading(true)
-
-    const imageKeywords = [
-      'generate image', 'create image', 'draw', 'make image',
-      'imagine', 'visualize', 'image of', 'picture of', 'photo of',
-      'generate for me image', 'show me image', 'show image',
-      'generate me', 'create me', 'make me'
-    ]
-    const isImageRequest = imageKeywords.some(kw => messageText.toLowerCase().includes(kw))
-
-    if (isImageRequest) {
-      try {
-        const response = await fetch('/chatbot/image', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: messageText, session_id: sessionId })
-        })
-
-        const data: { image_url?: string; error?: string } = await response.json();
-
-        if (!response.ok || !data.image_url) {
-          setMessages((prev) => [
-            ...prev,
-            { role: 'ai', text: data.error ?? 'Error generating image.' }
-          ]);
-        } else {
-          const imageHtml =
-            '<img src="' +
-            data.image_url +
-            '" alt="Generated image" class="max-w-full rounded-lg border border-blue-800" />';
-          setMessages((prev) => [...prev, { role: 'ai', text: imageHtml }]);
-        }
-      } catch {
-        setMessages((prev) => [
-          ...prev,
-          { role: 'ai', text: 'Error generating image.' }
-        ])
-      }
-
-      setLoading(false)
-      return
-    }
+    setShowThinking(true)
 
     try {
-      const response = await fetch('/chatbot/chat/stream', {
+      const response = await fetch('/chatbot/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: messageText })
+        body: JSON.stringify({ message: messageText, session_id: sessionId })
       })
-      if (!response.body) {
-        throw new Error('Empty response body')
-      }
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
 
-      setMessages(prev => [...prev, { role: 'ai', text: '' }])
-      setLoading(false)
+      const data: { role?: string; content?: string; error?: string } = await response.json()
 
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const token = line.slice(6)
-            if (token === '[DONE]') break
-            setMessages(prev => {
-              const updated = [...prev]
-              updated[updated.length - 1] = {
-                role: 'ai',
-                text: updated[updated.length - 1].text + token
-              }
-              return updated
-            })
-          }
-        }
+      if (!response.ok || !data.content) {
+        setMessages(prev => [
+          ...prev,
+          { role: 'ai', text: data.error ?? 'Error connecting to server.' }
+        ])
+      } else {
+        setMessages(prev => [
+          ...prev,
+          { role: 'ai', text: data.content }
+        ])
       }
     } catch {
       setMessages(prev => [...prev, { role: 'ai', text: 'Error connecting to server.' }])
+    } finally {
       setLoading(false)
     }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (loading) {
+      e.preventDefault()
+      return
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -179,6 +105,47 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }: ChatWin
       console.log('Title generation failed')
     }
   }
+  const MAX_INPUT_HEIGHT = 180
+
+  const resizeTextarea = () => {
+    const el = textareaRef.current
+    if (!el) return
+
+    el.style.height = 'auto'
+    const nextHeight = Math.min(el.scrollHeight, MAX_INPUT_HEIGHT)
+    el.style.height = String(nextHeight) + 'px'
+    el.style.overflowY = el.scrollHeight > MAX_INPUT_HEIGHT ? 'auto' : 'hidden'
+  }
+
+  useEffect(() => {
+    resizeTextarea()
+  }, [input])
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value)
+  }
+
+  // Focus when Agent page opens
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      const el = textareaRef.current
+      if (!el) return
+      el.focus({ preventScroll: true })
+
+      // Keep cursor at end
+      const pos = el.value.length
+      el.setSelectionRange(pos, pos)
+    })
+
+    return () => cancelAnimationFrame(id)
+  }, [])
+
+  // Keep focus after AI finishes answering
+  useEffect(() => {
+    if (!loading) {
+      textareaRef.current?.focus({ preventScroll: true })
+    }
+  }, [loading])
 
   return (
     <div className="flex flex-1 flex-col bg-slate-900/80 border border-blue-800 rounded-2xl overflow-hidden shadow-2xl">
@@ -193,7 +160,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }: ChatWin
             </div>
             <h1 className="text-[26px] font-bold text-amber-400 mb-2">Hey, Ready to dive in??</h1>
             <p className="text-[13px] text-slate-300 leading-relaxed max-w-105 mx-auto">
-              Share a board state, upload a file, or ask for a tactic to get started.
+              ask anything.
             </p>
           </div>
         )}
@@ -225,7 +192,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }: ChatWin
           </div>
         ))}
 
-        {loading && (
+        {loading && showThinking && (
           <div className="flex flex-col gap-2 max-w-160">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-[13px] text-amber-300">
@@ -247,41 +214,27 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId }: ChatWin
       </div>
 
       <div className="px-10 pb-4 pt-3 border-t border-blue-800 bg-slate-900/70">
-        {uploadedFile && (
-          <div className="flex items-center gap-2 px-3 py-1.5 mb-2 bg-slate-800 border border-blue-700 rounded-lg w-fit text-xs text-slate-200">
-            <span className="text-sm">📄</span>
-            <span>{uploadedFile.filename}</span>
-            <button className="text-red-400 hover:text-red-300 text-sm" onClick={removeFile}>
-              ✕
-            </button>
-          </div>
-        )}
 
-        <div className="flex items-center bg-slate-900 border border-blue-700 rounded-xl px-3 py-2 gap-3 transition-colors focus-within:border-amber-400/60">
-          <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
-          <button className="text-[16px] text-slate-300 hover:text-amber-300 p-1.5 rounded-md" onClick={handleAttachClick} title="Attach file">
-            📎
-          </button>
+        <div className="flex items-end bg-slate-900 border border-blue-700 rounded-xl px-3 py-2 gap-3 transition-colors focus-within:border-amber-400/60">
           <textarea
-            placeholder="Describe the board state or ask for a tactic…"
+            ref={textareaRef}
+            autoFocus
+            placeholder={loading ? 'Arena AI is thinking...' : 'ask...'}
             rows={1}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            className="flex-1 bg-transparent border-none text-slate-100 text-sm outline-none font-inherit resize-none placeholder:text-slate-500"
+            disabled={loading}
+            className="flex-1 bg-transparent border-none text-slate-100 text-left text-sm outline-none font-inherit resize-none placeholder:text-slate-500 leading-6 max-h-[180px] mb-2 overflow-y-hidden disabled:opacity-60 disabled:cursor-not-allowed"
           />
           <button
             className="w-9 h-9 bg-amber-500 text-slate-900 font-semibold rounded-lg flex items-center justify-center transition-opacity disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed hover:opacity-90"
             onClick={handleSend}
-            disabled={loading}
+            disabled={loading || !input.trim()}
           >
             ↑
           </button>
         </div>
-
-        <p className="text-center text-[10px] text-slate-400 mt-2 tracking-[0.06em]">
-          STRATEGY ENGINE V3.0.1 · PRECISION TRAINING MODE
-        </p>
       </div>
     </div>
   )

@@ -9,6 +9,9 @@ from database import db, get_sessions
 from routes import ChatManager
 from llm.chains import generate_title
 from database import get_images
+import jwt
+from langchain_core.messages  import HumanMessage
+
 
 load_dotenv()
 
@@ -59,8 +62,21 @@ GAME_API_URL = os.getenv("GAME_API_URL", "http://game-api:5001")
 chat = ChatManager()
 
 
+
+
 def get_user_id():
-    return request.headers.get('X-User-Id')
+    token = request.cookies.get('access_token')
+    if not token:
+        return None
+    try:
+        secret = os.getenv('DJANGO_SECRET_KEY')
+        decoded = jwt.decode(token, secret, algorithms=['HS256'])
+        return str(decoded.get('user_id'))
+    except Exception as e:
+        print(f"[JWT] Failed to decode token: {e}")
+        return None
+
+
 
 @app.route('/')
 def home():
@@ -126,20 +142,21 @@ def api_chat_stream():
         headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'}
     )
 
+# @app.route('/api/image', methods=['POST'])
+# def api_image():
+#     data = request.get_json()
+#     message = data.get('message', '').strip()
+#     if not message:
+#         return jsonify({'error': 'Empty prompt'}), 400
 
-@app.route('/api/image', methods=['POST'])
-def api_image():
-    data    = request.get_json()
-    message = data.get('message', '').strip()
-    if not message:
-        return jsonify({'error': 'Empty prompt'}), 400
+#     chat.set_user(get_user_id())  # ← add this line
+#     result = chat.generate_image(message, user_id=get_user_id())
 
-    result = chat.generate_image(message, user_id=get_user_id())
+#     if isinstance(result, str) and result.startswith('/static/'):
+#         return jsonify({'image_url': result})
 
-    if isinstance(result, str) and result.startswith('/static/'):
-        return jsonify({'image_url': result})
-    
-    return jsonify({'error': result or 'Image generation failed'}), 500  # ← add this
+#     return jsonify({'error': result or 'Image generation failed'}), 500
+
 
 
 @app.route('/api/new-session', methods=['POST'])
@@ -218,12 +235,31 @@ def handle_exception(e):
 def generate_title_route():
     data = request.json
     message = data.get("message", "")
-
     if not message:
         return jsonify({"title": "New Chat"})
+    chat.set_user(get_user_id())
+    return jsonify({"title": chat.generate_title(message)})
 
-    title = generate_title(message)
-    return jsonify({"title": title})
+
+    
+@app.route('/api/is-image-request', methods=['POST'])
+def is_image_request():
+    data = request.get_json()
+    message = data.get('message', '')
+    chat.set_user(get_user_id())
+    try:
+        bot = chat._bot()
+        response = bot.llm.invoke([
+            HumanMessage(content=f'Is this message asking to generate, create, or draw an image or picture? Reply only "yes" or "no": "{message}"')
+        ])
+        answer = response.content.strip().lower()
+        print(f"[ImageCheck] message='{message}' answer='{answer}'")
+        return jsonify({'is_image': 'yes' in answer})
+    except Exception as e:
+        print(f"[ImageCheck ERROR] {e}")
+        return jsonify({'is_image': False})
+
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)

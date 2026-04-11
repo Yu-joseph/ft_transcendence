@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef , useState } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
 import Bar from '../components/Bar';
@@ -20,28 +20,85 @@ function Chatbot() {
   const [activeSession, setActiveSession] = useState<string | null>(null);
   const [loadedMessages, setLoadedMessages] = useState<Message[]>([]);
   const [chatKey, setChatKey] = useState(0);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const pendingSessionRef = useRef<string | null>(null);
   const ACTIVE_SESSION_STORAGE_KEY = 'chatbot_active_session_id';
+  const SESSION_CACHE_STORAGE_KEY = 'chatbot_sessions_cache';
+  const didInitRef = useRef(false);
+
+  const parseSessionsPayload = (payload: unknown): Session[] => {
+    if (Array.isArray(payload)) return payload as Session[];
+    if (
+      payload &&
+      typeof payload === 'object' &&
+      Array.isArray((payload as { sessions?: unknown }).sessions)
+    ) {
+      return (payload as { sessions: Session[] }).sessions
+    }
+    return []
+  };
+
+  const readCachedSessions = (): Session[] => {
+    try {
+      const raw = localStorage.getItem(SESSION_CACHE_STORAGE_KEY);
+      if (!raw) return [];
+      const parsed: unknown = JSON.parse(raw);
+      return Array.isArray(parsed) ? (parsed as Session[]) : [];
+    } catch {
+      return []
+    }
+  };
 
   useEffect(() => {
+    if (sessions.length > 0) {
+      localStorage.setItem(SESSION_CACHE_STORAGE_KEY, JSON.stringify(sessions));
+    }
+  }, [sessions]);
+
+  useEffect(() => {
+    if (didInitRef.current) return;
+    didInitRef.current = true;
+
     const init = async () => {
-    try {
-    const res = await fetch('/chatbot/sessions');
-    const data = (await res.json()) as Session[];
+      try {
+        const res = await fetch('/chatbot/sessions');
+        if (!res.ok) throw new Error('sessions request failed: ' + res.status);
 
-    if (Array.isArray(data) && data.length > 0) {
-    setSessions(data);
+        const payload: unknown = await res.json();
+        const fetchedSessions = parseSessionsPayload(payload);
 
-    const savedSessionId = localStorage.getItem(ACTIVE_SESSION_STORAGE_KEY);
-    const sessionToLoad =
-    data.find((s) => s.session_id === savedSessionId)?.session_id ?? data[0].session_id;
+        if (fetchedSessions.length === 0) {
+          await handleNewChat();
+          return
+        }
 
-    await handleSelectSession(sessionToLoad);
-    } else {
-    await handleNewChat();
-    }
-    } catch {
-    console.error('Could not load sessions');
-    }
+        setSessions(fetchedSessions);
+        localStorage.setItem(SESSION_CACHE_STORAGE_KEY, JSON.stringify(fetchedSessions));
+
+        const savedSessionId = localStorage.getItem(ACTIVE_SESSION_STORAGE_KEY);
+        const sessionToLoad =
+          fetchedSessions.find((s) => s.session_id === savedSessionId)?.session_id ??
+          fetchedSessions[0].session_id;
+
+        await handleSelectSession(sessionToLoad);
+      } catch (error) {
+        console.error('Could not load sessions', error);
+
+        const cachedSessions = readCachedSessions();
+        if (cachedSessions.length > 0) {
+          setSessions(cachedSessions);
+
+          const savedSessionId = localStorage.getItem(ACTIVE_SESSION_STORAGE_KEY);
+          const sessionToLoad =
+            cachedSessions.find((s) => s.session_id === savedSessionId)?.session_id ??
+            cachedSessions[0].session_id;
+
+          await handleSelectSession(sessionToLoad);
+          return
+        }
+
+        await handleNewChat();
+      }
     };
 
     void init();
@@ -67,6 +124,10 @@ function Chatbot() {
       }
   };
   const handleSelectSession = async (sessionId: string) => {
+    if (isStreaming) {
+      pendingSessionRef.current = sessionId
+      return
+    }
     setActiveSession(sessionId);
     localStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, sessionId);
 
@@ -105,15 +166,37 @@ function Chatbot() {
     );
   };
 
+  const requestNewChat = async () => {
+    if (isStreaming) return
+    await handleNewChat()
+  }
+
+  const requestSelectSession = async (sessionId: string) => {
+    if (isStreaming) {
+      pendingSessionRef.current = sessionId
+      return
+    }
+    await handleSelectSession(sessionId)
+  }
+
+  useEffect(() => {
+    if (!isStreaming && pendingSessionRef.current) {
+      const next = pendingSessionRef.current
+      pendingSessionRef.current = null
+      void handleSelectSession(next)
+    }
+  }, [isStreaming])
+
   return (
     <div className="flex h-screen overflow-hidden flex-col z-10 bg-slate-950">
       <Bar />
       <div className="flex flex-1 p-2 pb-20 bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 overflow-hidden">
         <Sidebar
-          onNewChat={handleNewChat}
+          onNewChat={requestNewChat}
           sessions={sessions}
           activeSession={activeSession}
-          onSelectSession={handleSelectSession}
+          onSelectSession={requestSelectSession}
+          disabled={isStreaming}
         />
         <div className="flex-1 flex flex-col overflow-hidden px-2">
           <ChatWindow
@@ -121,6 +204,7 @@ function Chatbot() {
             sessionId={activeSession}
             onFirstMessage={updateSessionTitle}
             initialMessages={loadedMessages}
+            onStreamingChange={setIsStreaming}
           />
         </div>
       </div>

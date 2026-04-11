@@ -66,8 +66,8 @@ def login(request):
     access  = refresh.access_token
 
     response = JsonResponse({"message": "Login successful"})
-    response.set_cookie(key="access_token",  value=str(access),  max_age=600,    httponly=True, secure=False, samesite="Lax", path="/")
-    response.set_cookie(key="refresh_token", value=str(refresh), max_age=604800, httponly=True, secure=False, samesite="Lax", path="/")
+    response.set_cookie(key="access_token",  value=str(access),  max_age=60000000,    httponly=True, secure=False, samesite="Lax", path="/")
+    response.set_cookie(key="refresh_token", value=str(refresh), max_age=60480000000, httponly=True, secure=False, samesite="Lax", path="/")
     return response
 
 
@@ -205,6 +205,88 @@ def changing_password(request):
     tmp_user.save()
     return JsonResponse({"message": "Password updated"}, status=200)
 
+
+@csrf_exempt
+def update_users(request):
+    if request.method != "PATCH":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    tmp_user = get_user_from_request(request)
+    if not tmp_user:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+    fields_to_update = [] 
+    try:
+        body     = json.loads(request.body)
+        email    = body.get("email")
+        bio      = body.get("bio")
+        fullname = body.get("fullname")
+        # avatar   = request.FILES.get("avatar")             
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "invalid JSON"}, status=400)
+
+    if not email and not bio and not fullname:
+        return JsonResponse({"Find a job hhh" : "Ta sir 9lab ela stage onta katbdl liya f profile awdy awdy"}, status = 400)
+
+    if email and email is not None and email.strip() != "":
+        # if email.strip() == "":
+            # return JsonResponse({"error": "Invalid email"}, status=400)
+        validator = EmailValidator()
+        try:
+            validator(email)
+        except ValidationError:
+            return JsonResponse({"error": "Invalid email"}, status=400)
+        tmp_user.email = email
+        fields_to_update.append("email")
+
+    if fullname :
+        if not all(part.isalpha() for part in fullname.split()):
+            return JsonResponse({"error": "Invalid name"}, status=400)
+        tmp_user.fullname = fullname
+        fields_to_update.append("fullname")
+
+    if bio:
+        tmp_user.bio = bio
+        fields_to_update.append("bio")
+
+    tmp_user.save(update_fields=fields_to_update)
+
+    return JsonResponse({"message" : "profile updated"} , status=200)
+
+@csrf_exempt
+def changing_password(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    
+    tmp_user = get_user_from_request(request)
+    if not tmp_user:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+    
+    try:
+        body            = json.loads(request.body)
+        curr_pass       = body.get("current_pass")
+        new_pass        = body.get("new_pass")
+        retype_new_pass = body.get("retype_new_pass")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    
+    if not curr_pass or not new_pass or not retype_new_pass:
+        return JsonResponse({"error": "All fields are required"}, status=400)
+    
+    if not check_password(curr_pass, tmp_user.password):
+        return JsonResponse({"error": "Incorrect current password"}, status=400)
+    
+    if new_pass != retype_new_pass:
+        return JsonResponse({"error": "New passwords do not match"}, status=400)
+    
+    try:
+        validate_password(new_pass, tmp_user)
+    except ValidationError as e:
+        return JsonResponse({"error": e.messages}, status=400)
+    
+    tmp_user.password = make_password(new_pass)
+    tmp_user.save()
+    
+    return JsonResponse({"message": "Password updated"}, status=200)
 
 @csrf_exempt
 def logout(request):

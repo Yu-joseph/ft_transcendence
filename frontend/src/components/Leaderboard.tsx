@@ -5,7 +5,8 @@ type LeaderboardPlayer = {
   username: string
   wins: number
   losses: number
-  draws: number
+  xp: number
+  rank: number
 }
 
 export default function Leaderboard() {
@@ -45,7 +46,7 @@ export default function Leaderboard() {
     <section className="w-full bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit">
       <div className="px-6 py-4 border-b border-blue-800">
         <h3 className="text-xl font-semibold text-amber-500">Leaderboard</h3>
-        <p className="text-sm text-gray-400">Top players by wins</p>
+        <p className="text-sm text-gray-400">Top players ranked by the backend</p>
       </div>
 
       {loading ? (
@@ -57,22 +58,23 @@ export default function Leaderboard() {
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-slate-900">
+            <thead className="bg-slate-950">
               <tr>
                 <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Rank</th>
                 <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Player</th>
+                <th className="px-8 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">XP</th>
                 <th className="px-8 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Wins</th>
                 <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Losses</th>
               </tr>
             </thead>
             <tbody>
-              {leaderboard.map((player, index) => (
+              {leaderboard.map((player) => (
                 <tr key={player.id} className="border-t border-slate-700/70 hover:bg-slate-700/40">
-                  <td className="px-6 py-3 text-white font-medium">#{index + 1}</td>
+                  <td className="px-6 py-3 text-white font-medium">#{player.rank}</td>
                   <td className="px-6 py-3 text-white">{player.username}</td>
+                  <td className="px-10 py-3 text-cyan-300 font-semibold">{player.xp}</td>
                   <td className="px-10 py-3 text-emerald-300 font-semibold">{player.wins}</td>
                   <td className="px-10 py-3 text-rose-300">{player.losses}</td>
-                  <td className="px-6 py-3 text-sky-300">{player.draws}</td>
                 </tr>
               ))}
             </tbody>

@@ -1,0 +1,27 @@
+import jwt, { JwtPayload } from "jsonwebtoken";
+
+type AuthTokenPayload = JwtPayload & {
+  user_id?: string | number;
+};
+
+const JWT_SECRET = process.env.SECRET_KEY || process.env.DJANGO_SECRET_KEY;
+
+export async function getUserIdFromToken(token: string): Promise<string | null> {
+  if (!JWT_SECRET) {
+    console.error("Missing JWT secret. Set SECRET_KEY or DJANGO_SECRET_KEY.");
+    return null;
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET, {
+      algorithms: ["HS256"],
+    }) as string | AuthTokenPayload;
+
+    if (typeof decoded === "string") return null;
+    if (decoded.user_id === undefined || decoded.user_id === null) return null;
+
+    return String(decoded.user_id);
+  } catch {
+    return null;
+  }
+}

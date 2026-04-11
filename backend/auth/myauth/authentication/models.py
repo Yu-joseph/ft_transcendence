@@ -11,6 +11,7 @@ class User(models.Model):
     username   = models.CharField(max_length=255, unique=True, blank=False,null=False)
     email      = models.CharField(max_length=255, unique=True, blank=False,null=False)
     fullname   = models.CharField(max_length=255, blank=True)
+    bio        = models.CharField(max_length=255,blank=True)
     password   = models.CharField(max_length=255, blank=False, null=False)
     created_at = models.DateTimeField(auto_now_add=True)   
     updated_at = models.DateTimeField(auto_now=True)   

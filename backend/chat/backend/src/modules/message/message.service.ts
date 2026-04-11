@@ -8,6 +8,7 @@ import { SendMessageType, MessagesWithConvId } from "./message.types.js";
 export  class MessagesServices {
     /** @function getMessages getting all messages from single conversation by conversation ID*/
     static async getMessagesByConvId(data: GetMessagesProps) {
+        console.log('User ID', data.currentUserId);
         const   conversationExist = await prisma.conversation.findUnique({
             where: {
                 id: data.conversationId
@@ -88,9 +89,6 @@ export  class MessagesServices {
                 },
             },
         });
-        // // if (!messages) {
-        // //     throw new AppError('Messages of this conversation not found', 404);
-        // }
         return {convId: conversationExist.id, messages: messages?.Message ?? [] as MessagesPayload[]};
     }
     /** @function sendMessage getting all messages from single conversation */
@@ -115,6 +113,25 @@ export  class MessagesServices {
             conversationId: conversationId,
             created_at: new Date
         };
+        const   isFriend = await prisma.friend.findFirst({
+            where: {
+                OR: [
+                    {receiverId: convExist.user1Id, requesterId: convExist.user2Id},
+                    {receiverId: convExist.user2Id, requesterId: convExist.user1Id}
+                ]
+            }
+        });
+        if(isFriend === null) {
+            const   rmConv = await prisma.$transaction([
+                prisma.message.deleteMany({
+                    where: {conversationId: convExist.id}
+                }),
+                prisma.conversation.delete({
+                    where: { id: convExist.id }
+                })
+            ]);
+            throw new AppError('You are not friends anymore!', 403);
+        }
         const   saveMessage : MessagesPayload = await  prisma.message.create({
             data: newMessage,
             include: {
@@ -122,6 +139,7 @@ export  class MessagesServices {
             }
         });
         const   io = getIo();
+        console.log(`Sending message to room ${conversationId}`);
         io.to(`ROOM_${conversationId}`).emit('message:new', saveMessage);
         // Broadcasting message the specified channel 
         // -----------------------------------------

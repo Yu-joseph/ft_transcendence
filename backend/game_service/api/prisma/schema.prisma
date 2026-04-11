@@ -4,5 +4,66 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgres://sayf:1234@db:5432/mydb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                                    String                  @id @db.VarChar(255)
+  username                              String                  @unique @db.VarChar(255)
+  email                                 String                  @unique @db.VarChar(255)
+  password                              String                  @db.VarChar(255)
+  created_at                            DateTime                @db.Timestamptz(6)
+  updated_at                            DateTime                @db.Timestamptz(6)
+  avatar                                String?                 @db.VarChar(255)
+  status                                String                  @db.VarChar(50)
+  wins                                  Int
+  losses                                Int
+  Game_Game_playerOIdToUser             Game[]                  @relation("Game_playerOIdToUser")
+  Game_Game_playerXIdToUser             Game[]                  @relation("Game_playerXIdToUser")
+  Game_Game_winnerIdToUser              Game[]                  @relation("Game_winnerIdToUser")
+  Tournament_Tournament_creatorIdToUser Tournament[]            @relation("Tournament_creatorIdToUser")
+  Tournament_Tournament_winnerIdToUser  Tournament[]            @relation("Tournament_winnerIdToUser")
+  TournamentParticipant                 TournamentParticipant[]
+}
+
+model Game {
+  id                        String      @id @db.VarChar(255)
+  board                     String[]    @db.VarChar(1)
+  status                    String      @db.VarChar(50)
+  result                    String      @db.VarChar(50)
+  created_at                DateTime    @db.Timestamptz(6)
+  tournamentId              String?     @db.VarChar(255)
+  playerOId                 String      @db.VarChar(255)
+  playerXId                 String      @db.VarChar(255)
+  winnerId                  String?     @db.VarChar(255)
+  User_Game_playerOIdToUser User        @relation("Game_playerOIdToUser", fields: [playerOId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User_Game_playerXIdToUser User        @relation("Game_playerXIdToUser", fields: [playerXId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Tournament                Tournament? @relation(fields: [tournamentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User_Game_winnerIdToUser  User?       @relation("Game_winnerIdToUser", fields: [winnerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Tournament {
+  id                              String                  @id @db.VarChar(255)
+  name                            String                  @db.VarChar(255)
+  status                          String                  @db.VarChar(50)
+  created_at                      DateTime                @db.Timestamptz(6)
+  creatorId                       String                  @db.VarChar(255)
+  winnerId                        String?                 @db.VarChar(255)
+  Game                            Game[]
+  User_Tournament_creatorIdToUser User                    @relation("Tournament_creatorIdToUser", fields: [creatorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User_Tournament_winnerIdToUser  User?                   @relation("Tournament_winnerIdToUser", fields: [winnerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TournamentParticipant           TournamentParticipant[]
+}
+
+model TournamentParticipant {
+  id                  String     @id @db.VarChar(255)
+  seed                Int
+  eliminated          Boolean
+  eliminated_in_round Int?
+  tournamentId        String     @db.VarChar(255)
+  userId              String     @db.VarChar(255)
+  Tournament          Tournament @relation(fields: [tournamentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User                User       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([tournamentId, userId], map: "TournamentParticipant_tournamentId_userId_cbceec4e_uniq")
 }

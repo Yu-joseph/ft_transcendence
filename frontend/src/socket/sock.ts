@@ -9,9 +9,11 @@ const GAME_URL = `http://${HOST}:1339`;
 
 export  const chatSocket: Socket = io(CHAT_URL, {
   autoConnect: false,
+  withCredentials: true
 });
 
 export const gameSocket: Socket = io(GAME_URL, {
   autoConnect: false, // We manually connect in 
+  withCredentials: true,
 });
 

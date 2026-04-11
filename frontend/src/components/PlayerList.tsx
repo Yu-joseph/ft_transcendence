@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { gameSocket } from "../socket/sock";
 import { useAuth } from "../auth/useAuth";
 import { MdOnlinePrediction } from "react-icons/md";
@@ -11,80 +10,27 @@ type Player = {
   status?: "online" | "playing";
 };
 
-type Invite = {
-  from: Player;
-  inviteId: string;
-};
-
 // Use the global auth context
 export default function PlayerList() {
   const [players, setPlayers] = useState<Player[]>([]);
-  const [pendingInvite, setPendingInvite] = useState<Invite | null>(null);
   const [sentToast, setSentToast] = useState<string | null>(null);
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   useEffect(() => {
     if (!user) return; // Wait until user is fully loaded
 
-    gameSocket.connect();
-
-    const handleConnect = () => {
-      gameSocket.emit("join-lobby", {
-        id: user.id,
-        username: user.fullName ?? user.username ?? "Guest",
-      });
-    };
-
     const handlePlayersUpdate = (List: Player[]) => setPlayers(List);
-    const handleReceiveInvite = (invite: Invite) => setPendingInvite(invite);
-    const handleInviteDeclined = (data: { by: string }) => alert(`${data.by} declined your invite`);
-    
-    const handleMatchFound = (data: { matchId: string; match: unknown; symbol: string }) => {
-      navigate(`/game/${data.matchId}`, {
-        state: { symbol: data.symbol, match: data.match },
-      });
-    };
-
-    gameSocket.on("connect", handleConnect);
     gameSocket.on("players-update", handlePlayersUpdate);
-    gameSocket.on("receive-invite", handleReceiveInvite);
-    gameSocket.on("match-found", handleMatchFound);
-    gameSocket.on("invite-declined", handleInviteDeclined);
-
-    if (gameSocket.connected) handleConnect();
 
     return () => {
-      gameSocket.off("connect", handleConnect);
       gameSocket.off("players-update", handlePlayersUpdate);
-      gameSocket.off("receive-invite", handleReceiveInvite);
-      gameSocket.off("match-found", handleMatchFound);
-      gameSocket.off("invite-declined", handleInviteDeclined);
     };
-  }, [user, navigate]);
+  }, [user]);
 
   const handleSendInvite = (targetSocketId: string, username: string) => {
     gameSocket.emit("send-invite", targetSocketId);
     setSentToast(`Invite sent to ${username}!`);
     setTimeout(() => setSentToast(null), 3000);
-  };
-
-  const handleAcceptInvite = () => {
-    if (!pendingInvite) return;
-    gameSocket.emit("accept-invite", {
-      inviteId: pendingInvite.inviteId,
-      fromSocketId: pendingInvite.from.socketId,
-    });
-    setPendingInvite(null);
-  };
-
-  const handleDeclineInvite = () => {
-    if (!pendingInvite) return;
-    gameSocket.emit("decline-invite", {
-      inviteId: pendingInvite.inviteId,
-      fromSocketId: pendingInvite.from.socketId,
-    });
-    setPendingInvite(null);
   };
 
   const otherPlayers = players.filter((p) => p.socketId !== gameSocket.id);
@@ -127,27 +73,6 @@ export default function PlayerList() {
         </div>
       )}
 
-      {pendingInvite && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-xl p-6 max-w-sm w-full mx-4">
-            <h3 className="text-white text-xl font-semibold mb-4">Game Invite</h3>
-            <p className="text-slate-300 mb-6">
-              <span className="text-emerald-400 font-semibold">
-                {pendingInvite.from.username}
-              </span>{" "}
-              wants to play with you!
-            </p>
-            <div className="flex gap-3">
-              <button onClick={handleAcceptInvite} className="flex-1 px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition">
-                Accept
-              </button>
-              <button onClick={handleDeclineInvite} className="flex-1 px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition">
-                Decline
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
