@@ -37,8 +37,6 @@ export function useProfileHeader({userId, user, setIsOwnProfile} : UseUserProfil
             try {
                 console.log("TRhe ID in PARAM:", userId);
                 const result = await fetchClient<UserProfileInfo>(`/profile/${userId}`); /** */
-                result.bio = 'hjfshj fhsdjfhsdjf jbfjsbfjs jbfjsbsdjf jbjfbjbfsd';
-                result.fullname = 'Colonel Ondroskotch';
                 if (result.id !== user.id)
                     console.log('it is not my profile');
                 setIsOwnProfile(result.id === user?.id);
@@ -108,8 +106,28 @@ export function useProfileHeader({userId, user, setIsOwnProfile} : UseUserProfil
     }
 /**_________________________________________________________________________________ */
     const handleSaveProfile = async (updatedData: any) => {
+        console.log('This is the Updated Info:', updatedData);
         try {
-            /***** */
+            // if(updatedData.email.trim() === '')
+            //     updatedData.email = null;
+
+            const   result = await fetch('/authent/update_users/', {
+                method: 'PATCH',
+                credentials: 'include',
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(updatedData)
+            });
+            if (!result.ok) {
+                throw new Error('Error updating information');
+            }
+            console.log('Result of the updated:', result);
+            console.log("Prev user info:", userInfo);
+            if(updatedData.email.trim() === '')
+                updatedData.email = userInfo?.email;
+            if(updatedData.fullname.trim() === '')
+                updatedData.fullname = userInfo?.fullname;
             setUserInfo(prev => prev ? { ...prev, ...updatedData } : null);
             setIsEditing(false);
         } catch (error) {

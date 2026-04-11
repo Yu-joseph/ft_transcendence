@@ -138,36 +138,43 @@ def update_users(request):
     tmp_user = get_user_from_request(request)
     if not tmp_user:
         return JsonResponse({"error": "Not authenticated"}, status=401)
-
+    fields_to_update = [] 
     try:
         body     = json.loads(request.body)
         email    = body.get("email")
         bio      = body.get("bio")
         fullname = body.get("fullname")
+        # avatar   = request.FILES.get("avatar")             
     except json.JSONDecodeError:
         return JsonResponse({"error": "invalid JSON"}, status=400)
 
-    if not (email and bio and fullname):
-        return JsonResponse({"error": "email, bio and fullname required"}, status=400)
+    if not email and not bio and not fullname:
+        return JsonResponse({"Find a job hhh" : "Ta sir 9lab ela stage onta katbdl liya f profile awdy awdy"}, status = 400)
 
-    if email:
+    if email and email is not None and email.strip() != "":
+        # if email.strip() == "":
+            # return JsonResponse({"error": "Invalid email"}, status=400)
         validator = EmailValidator()
         try:
             validator(email)
         except ValidationError:
-            return JsonResponse({"error": "Invalid Email"}, status=400)
+            return JsonResponse({"error": "Invalid email"}, status=400)
         tmp_user.email = email
+        fields_to_update.append("email")
 
-    if fullname:
+    if fullname :
         if not all(part.isalpha() for part in fullname.split()):
             return JsonResponse({"error": "Invalid name"}, status=400)
         tmp_user.fullname = fullname
+        fields_to_update.append("fullname")
 
     if bio:
         tmp_user.bio = bio
+        fields_to_update.append("bio")
 
-    tmp_user.save()
-    return JsonResponse({"message": "profile updated"}, status=200)
+    tmp_user.save(update_fields=fields_to_update)
+
+    return JsonResponse({"message" : "profile updated"} , status=200)
 
 
 @csrf_exempt

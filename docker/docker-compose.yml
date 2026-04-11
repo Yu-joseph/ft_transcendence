@@ -44,7 +44,7 @@ services:
     environment:
       - VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
       - VITE_API_URL=http://localhost:5173
-      - VITE_CHAT_API=http://10.30.234.188:8080/api
+      - VITE_CHAT_API=http://localhost:8080/api
     build: ../frontend
     volumes:
       - ../frontend:/app/
@@ -127,8 +127,8 @@ services:
     environment:
       SECRET_KEY: 'django-insecure-4vkpyy2bkd3(%hi=nhqdr(yx5j71%*zf!o!ej2kfnivhbno!%n'
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
-    volumes:
-      - ../backend/chat/backend:/app
+    # volumes:
+    #   - ../backend/chat/backend:/app
     networks:
       - app-network
 

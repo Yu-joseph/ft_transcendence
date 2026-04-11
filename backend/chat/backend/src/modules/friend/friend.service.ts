@@ -146,6 +146,7 @@ export class FriendService {
                     {receiverId: data.requesterId, requesterId: data.friendId}
                 ]
             }
+            
         });
         if (!exist)
             throw new AppError('FriendShip not found', 404);
