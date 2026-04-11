@@ -32,6 +32,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -52,10 +53,13 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',    
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'myauth.wsgi.application'
 
@@ -69,6 +73,10 @@ DATABASES = {
         'PORT' : '5432'
     }
 }
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -100,5 +108,9 @@ MEDIA_URL = '/media/'
 STATIC_URL = 'static/'
 
 STATIC_ROOT = '/app/static'
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
+SOCIAL_AUTH_42_KEY    = 'u-s4t2ud-ded6e687b26b0218e9a66fafb8ed15c58b5d355add51059bbaea360d342f4143'
+SOCIAL_AUTH_42_SECRET = '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'
+FORTY_TWO_REDIRECT_URI = 'http://localhost:8080/authent/42/callback/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
