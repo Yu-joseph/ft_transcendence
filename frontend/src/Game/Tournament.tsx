@@ -491,13 +491,13 @@ function Tournament()
             <div className="flex gap-3">
               <button
                 onClick={handleAcceptMatchInvite}
-                className="flex-1 px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition"
+                className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-800 transition"
               >
                 Accept
               </button>
               <button
                 onClick={handleDeclineMatchInvite}
-                className="flex-1 px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+                className="flex-1 px-4 py-2 rounded-lg bg-amber-600 text-white hover:bg-amber-800 transition"
               >
                 Decline
               </button>
