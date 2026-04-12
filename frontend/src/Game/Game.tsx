@@ -135,6 +135,7 @@ function Game() {
 
     const handleTournamentFinished = () => {
       // whole tournament is over — always go back to Dashboard, not Tournament page
+      sessionStorage.removeItem("activeTournament");
       setBackTo('/Dashboard')
     };
 

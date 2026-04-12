@@ -245,8 +245,25 @@ function Tournament()
     }
 
     const onError = (data: { message: string }) => {
-      setError(data.message)
+      const message = data.message ?? 'Something went wrong'
+      setError(message)
+      if (message === 'Tournament not found' || message === 'No active tournament found') {
+        sessionStorage.removeItem('activeTournament')
+        activeTournamentIdRef.current = null
+        setActiveTournament(null)
+      }
       setTimeout(() => setError(null), 3500)
+    }
+
+    const onCancelled = (data: { tournamentId: string; reason?: string }) => {
+      if (activeTournamentIdRef.current && data.tournamentId !== activeTournamentIdRef.current) {
+        return
+      }
+      sessionStorage.removeItem('activeTournament')
+      activeTournamentIdRef.current = null
+      setActiveTournament(null)
+      setLoading(false)
+      navigate('/Dashboard', { replace: true })
     }
 
     const onMatchInvite = (data: TournamentMatchInvite) => {
@@ -260,6 +277,7 @@ function Tournament()
     gameSocket.on('tournament-created', onCreated)
     gameSocket.on('match-found', onMatchFound)
     gameSocket.on('tournament-error', onError)
+    gameSocket.on('tournament-cancelled', onCancelled)
     gameSocket.on('tournament-match-confirm', onMatchInvite)
 
     // Re-emit join so the server resends tournament-update after page reload
@@ -285,6 +303,7 @@ function Tournament()
       gameSocket.off('tournament-created', onCreated)
       gameSocket.off('match-found', onMatchFound)
       gameSocket.off('tournament-error', onError)
+      gameSocket.off('tournament-cancelled', onCancelled)
       gameSocket.off('tournament-match-confirm', onMatchInvite)
       if (timeout) clearTimeout(timeout)
       if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current)
