@@ -16,6 +16,7 @@ import { Friends } from '../chat-system/pages/Friends.tsx'
 import { Profile } from '../chat-system/pages/Profile.tsx'
 import GlobalInviteListener from '../components/GlobalInviteListener.tsx'
 import ChangePassw from '../auth/ChangePassw.tsx'
+import ChangeIntra from './ChangeIntra.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -31,6 +32,9 @@ createRoot(document.getElementById('root')!).render(
             <Route path ="/Friends" element={<Friends />} />
             <Route path='/Profile/:id/' element={<Profile />} />
           </Route>
+          <Route path='/changeps' element={<ProtectedRoute><ChangeIntra/></ProtectedRoute>}></Route>
+          {/* Intra backend redirect uses a different casing, keep an alias route. */}
+          <Route path='/ChangeIntra' element={<ProtectedRoute><ChangeIntra/></ProtectedRoute>}></Route>
           <Route path="/Tournament" element={<ProtectedRoute><Tournament /></ProtectedRoute>} />
           <Route path="/game/:matchId" element={<ProtectedRoute><Game /></ProtectedRoute>} />
           <Route path="/AiChallange" element={<ProtectedRoute><AiChallange /></ProtectedRoute>} />
