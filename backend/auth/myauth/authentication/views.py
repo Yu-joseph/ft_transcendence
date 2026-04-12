@@ -78,8 +78,8 @@ def login(request):
     access  = refresh.access_token
 
     response = JsonResponse({"message": "Login successful"})
-    response.set_cookie(key="access_token",  value=str(access),  max_age=600,    httponly=True, secure=False, samesite="Lax", path="/")
-    response.set_cookie(key="refresh_token", value=str(refresh), max_age=604800, httponly=True, secure=False, samesite="Lax", path="/")
+    response.set_cookie(key="access_token",  value=str(access),  max_age=settings.ACCESS_TOKEN_COOKIE_MAX_AGE,    httponly=True, secure=False, samesite="Lax", path="/")
+    response.set_cookie(key="refresh_token", value=str(refresh), max_age=settings.REFRESH_TOKEN_COOKIE_MAX_AGE, httponly=True, secure=False, samesite="Lax", path="/")
     return response
 
 
