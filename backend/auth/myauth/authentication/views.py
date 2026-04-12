@@ -232,7 +232,6 @@ def update_users(request):
         email    = body.get("email")
         bio      = body.get("bio")
         fullname = body.get("fullname")
-        # avatar   = request.FILES.get("avatar")             
     except json.JSONDecodeError:
         return JsonResponse({"error": "invalid JSON"}, status=400)
 
@@ -292,7 +291,7 @@ def changing_password(request):
         return JsonResponse({"error": "New passwords do not match"}, status=400)
 
     try:
-        validate_password(new_pass, tmp_user)
+        validate_password(new_pass, user=tmp_user)
     except ValidationError as e:
         return JsonResponse({"error": e.messages}, status=400)
 
@@ -383,20 +382,40 @@ def forty_two_callback(request):
             username=user_data['login'],
             email=user_data.get('email', ''),
             fullname=f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip(),
-            password=make_password(None),
             role='user',
         )
     refresh = RefreshToken.for_user(user)
     access  = refresh.access_token
 
     response = JsonResponse({'message': 'Login successful'})
-    #yssf modification
     response = redirect("/dashboard")
-    #yssf modification
     response.set_cookie(key='access_token',  value=str(access),  max_age=600,    httponly=True, secure=False, samesite='Lax', path='/')
     response.set_cookie(key='refresh_token', value=str(refresh), max_age=604800, httponly=True, secure=False, samesite='Lax', path='/')
     return response
 
+@csrf_exempt
+def password_42(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    
+    tmp_user = get_user_from_request(request)
+    if not tmp_user:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    try:
+        body     = json.loads(request.body)
+        password    = body.get("password")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "invalid JSON"}, status=400)
+    
+    try:
+        validate_password(password, user=tmp_user)
+    except ValidationError as e:
+        return JsonResponse({"error": e.messages}, status=400)
+
+    tmp_user.password = make_password(password)
+    tmp_user.save()
+    return JsonResponse({"message": "password added"}, status=201)
 
 @csrf_exempt
 def get_user(request):
