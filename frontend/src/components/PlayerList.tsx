@@ -40,29 +40,44 @@ export default function PlayerList() {
       <div className="bg-slate-800 border border-blue-700 rounded-xl p-5 w-full max-w-lg">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-amber-500 text-xl font-semibold">Online Players</h2>
-          <span className="text-green-400 text-sm">{players.length} online</span>
+          <span className="text-green-400 text-sm">{players.length - 1} online</span>
         </div>
 
         {otherPlayers.length === 0 ? (
           <p className="text-slate-400">No other players online yet...</p>
         ) : (
           <ul className="space-y-2">
-            {otherPlayers.map((p) => (
-              <li
-                key={p.socketId}
-                className="flex items-center justify-between bg-slate-700 rounded-lg px-4 py-2"
-              >
-                <span className="text-white inline-flex items-center gap-1">
-                  {p.username} <span className="text-green-400"><MdOnlinePrediction /></span>
-                </span>
-                <button
-                  onClick={() => handleSendInvite(p.socketId, p.username)}
-                  className="px-3 py-1 text-sm rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition"
+            {otherPlayers.map((p) => {
+              const isPlaying = p.status === "playing";
+
+              return (
+                <li
+                  key={p.socketId}
+                  className="flex items-center justify-between bg-slate-700 rounded-lg px-4 py-2"
                 >
-                  Challenge
-                </button>
-              </li>
-            ))}
+                  <span className="text-white inline-flex items-center gap-2">
+                    {p.username}
+                    <span
+                      className={isPlaying ? "text-amber-400 text-xs" : "text-green-400 text-xs"}
+                    >
+                      {isPlaying ? "Playing" : "Online"}
+                    </span>
+                  </span>
+
+                  <button
+                    onClick={() => handleSendInvite(p.socketId, p.username)}
+                    disabled={isPlaying}
+                    className={`px-3 py-1 text-sm rounded-lg text-white transition ${
+                      isPlaying
+                        ? "bg-slate-500 cursor-not-allowed"
+                        : "bg-emerald-500 hover:bg-emerald-600"
+                    }`}
+                  >
+                    {isPlaying ? "In Match" : "Challenge"}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

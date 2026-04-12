@@ -11,6 +11,11 @@ type TournamentEntry = {
   maxPlayers: number;
 };
 
+type JoinedTournamentEntry = {
+  tournamentId: string;
+  status: string;
+};
+
 export default function TournamentList() {
   const [tournaments, setTournaments] = useState<TournamentEntry[]>([]);
   const [joinedTournamentIds, setJoinedTournamentIds] = useState<string[]>([]);
@@ -40,7 +45,16 @@ export default function TournamentList() {
         });
         if (!response.ok)
           return;
-        const data = (await response.json()) as { tournamentId: string }[];
+        const data = (await response.json()) as JoinedTournamentEntry[];
+        const active = getStoredActiveTournament();
+        if (active?.tournamentId) {
+          const stillActive = data.some(
+            (entry) => entry.tournamentId === active.tournamentId && entry.status !== "finished",
+          );
+          if (!stillActive) {
+            sessionStorage.removeItem("activeTournament");
+          }
+        }
         setJoinedTournamentIds(data.map((entry) => entry.tournamentId));
       } catch {
         setJoinedTournamentIds([]);
@@ -69,6 +83,11 @@ export default function TournamentList() {
 
     const onRemoved = ({ tournamentId }: { tournamentId: string }) => {
       setTournaments((prev) => prev.filter((t) => t.tournamentId !== tournamentId));
+      setJoinedTournamentIds((prev) => prev.filter((id) => id !== tournamentId));
+      const active = getStoredActiveTournament();
+      if (active?.tournamentId === tournamentId) {
+        sessionStorage.removeItem("activeTournament");
+      }
     };
 
     const onCreated = (data: { tournamentId: string }) => {

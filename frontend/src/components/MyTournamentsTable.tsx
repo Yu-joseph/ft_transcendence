@@ -92,28 +92,26 @@ export default function MyTournamentsTable() {
         <div className="px-6 py-8 text-gray-300">You have not joined any tournament yet.</div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full table-fixed text-left">
             <thead className="bg-slate-950">
               <tr>
-                <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Tournament</th>
-                <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Status</th>
-                <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">You</th>
-                <th className="px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Bracket Position</th>
+                <th className="w-1/2 px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Tournament</th>
+                <th className="w-1/4 px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">Status</th>
+                <th className="w-1/4 px-5 py-3 text-xs font-semibold text-gray-300 uppercase tracking-wide">You</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((entry) => (
                 <tr key={entry.tournamentId} className="border-t border-slate-700/70 hover:bg-slate-700/40">
-                  <td className="px-6 py-3 text-white">
+                  <td className="w-1/2 px-6 py-3 text-white">
                     <p className="font-semibold">{entry.name}</p>
                     <p className="text-xs text-gray-400">By {entry.creator?.username ?? "Unknown"}</p>
                   </td>
-                  <td className="px-6 py-3 text-gray-200 capitalize">{getDisplayStatus(entry).replace("-", " ")}</td>
-                  <td className="px-6 py-3 text-amber-300 capitalize">
+                  <td className="w-1/4 px-6 py-3 text-gray-200 capitalize">{getDisplayStatus(entry).replace("-", " ")}</td>
+                  <td className="w-1/4 px-6 py-3 text-amber-300 capitalize">
                     {entry.userStatus}
                     {entry.eliminatedInRound ? ` (R${entry.eliminatedInRound})` : ""}
                   </td>
-                  <td className="px-6 py-3 text-cyan-300">#{entry.seed}</td>
                 </tr>
               ))}
             </tbody>
