@@ -37,6 +37,23 @@ type RankedStats = BaseStats & {
   rank: number;
 };
 
+
+type LobbyPlayer = Player & {
+  status: 'online' | 'playing';
+};
+
+function getLobbyPlayersSnapshot(): LobbyPlayer[] {
+  return Array.from(players.values()).map((player) => ({
+    ...player,
+    status: isPlayerInActiveMatch(player.id) ? 'playing' : 'online',
+  }));
+}
+
+export function emitLobbyPlayersUpdate(io: Server) {
+  io.emit('players-update', getLobbyPlayersSnapshot());
+  io.emit('enlineusers', players.size);
+}
+
 function clearTurnTimer(matchId: string) {
   const t = turnTimeouts.get(matchId);
   if (!t) return;
@@ -113,6 +130,7 @@ async function applyMove(
       clearTurnTimer(match.id);
       await finalizeGame(match);
       matches.delete(match.id);
+      emitLobbyPlayersUpdate(io);
       if (match.tournamentId) {
         advanceTournamentBracket(io, match.tournamentId, match);
       }
@@ -350,6 +368,7 @@ async function forfeitMatch(io: Server, matchId: string, leaverId: string) {
     clearTurnTimer(matchId);
     await finalizeGame(match);
     matches.delete(matchId);
+    emitLobbyPlayersUpdate(io);
     if (match.tournamentId) {
       advanceTournamentBracket(io, match.tournamentId, match);
     }
@@ -401,8 +420,7 @@ export function setupSocketHandlers(io: Server) {
           existing.socketId = socket.id;
           existing.username = username; // optional update
           players.set(socket.id, existing);
-          io.emit('players-update', Array.from(players.values()));
-          io.emit('enlineusers', players.size);
+          emitLobbyPlayersUpdate(io);
           return;
         }
       }
@@ -415,8 +433,7 @@ export function setupSocketHandlers(io: Server) {
       };
 
       players.set(socket.id, player);
-      io.emit('players-update', Array.from(players.values()));
-      io.emit('enlineusers', players.size);
+      emitLobbyPlayersUpdate(io);
       console.log(`${data.username} joined the lobby`);
     });
 
@@ -457,6 +474,7 @@ export function setupSocketHandlers(io: Server) {
 
       matches.set(matchId, match);
       startTurnTimerForMatch(io, matchId);
+      emitLobbyPlayersUpdate(io);
 
       // Save to DB immediately
       try {
@@ -524,6 +542,7 @@ export function setupSocketHandlers(io: Server) {
       }
 
       bindPlayerToSocket(player, socket.id);
+      emitLobbyPlayersUpdate(io);
       const symbol = match.players[0].id === userId ? 'X' : 'O';
       socket.emit('match-found', { matchId: data.matchId, match, symbol });
     });
@@ -568,8 +587,7 @@ export function setupSocketHandlers(io: Server) {
       }
 
       players.delete(socket.id);
-      io.emit('players-update', Array.from(players.values()));
-      io.emit('enlineusers', players.size);
+      emitLobbyPlayersUpdate(io);
       console.log('User disconnected:', player?.username || socket.id);
     });
   });
@@ -607,3 +625,4 @@ function readCookie(cookieHeader: string | undefined, name: string): string | nu
   const hit = parts.find((p) => p.startsWith(name + "="));
   return hit ? decodeURIComponent(hit.slice(name.length + 1)) : null;
 }
+
