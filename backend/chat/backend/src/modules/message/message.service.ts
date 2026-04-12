@@ -74,10 +74,6 @@ export  class MessagesServices {
         if (!conversationExist) {
             throw new AppError('Conversation Not found', 404);
         }
-        // const   isParticipant = conversationExist.user1.id === data.currentUserId || conversationExist.user2.id === data.currentUserId;
-        // if(!isParticipant)
-        //     throw new AppError('You are not member of this conversation', 403);
-
         const messages = await prisma.conversation.findUnique({
             where: {
                 id: conversationExist.id
@@ -140,9 +136,8 @@ export  class MessagesServices {
         });
         const   io = getIo();
         console.log(`Sending message to room ${conversationId}`);
+
         io.to(`ROOM_${conversationId}`).emit('message:new', saveMessage);
-        // Broadcasting message the specified channel 
-        // -----------------------------------------
         const   updateConv = await prisma.conversation.update({
             where: {
                 id: conversationId
@@ -151,6 +146,13 @@ export  class MessagesServices {
                 updated_at: new Date()
             }
         });
+        
+        io.to(convExist.user1Id).to(convExist.user2Id).emit('conversation:updated',
+            {
+                lastMessage: {
+                    id: saveMessage.id, created_at: saveMessage.created_at, content: saveMessage.content, senderId: saveMessage.User.id
+                } 
+                , updated_at: updateConv.updated_at, convId: updateConv.id});
         return saveMessage;
     }
 }

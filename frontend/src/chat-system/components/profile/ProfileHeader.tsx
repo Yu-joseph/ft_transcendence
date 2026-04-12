@@ -34,8 +34,6 @@ export function ProfileHeader({ userGameStat, isOwnProfile, setIsOwnProfile, set
         setUserId(userInfo?.id ?? null);
     }, [userInfo, setUserId])
 
-    console.log("paramsId:", params.id, user);
-
     const friendButtonConfig = {
         not: {
             label: 'Add Friend', icon: <UserPlus className="w-4 h-4" />, classname: 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white hover:border-transparent', disabled: false,

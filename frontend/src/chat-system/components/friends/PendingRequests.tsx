@@ -6,6 +6,7 @@ type RequestType = 'incoming' | 'outgoing';
 
 interface PendingFriendType {
     friendRequestId: number
+    status: string
     userInfo: {
         id: string
         username: string
@@ -88,8 +89,11 @@ export  function    PendingRequests() {
                 </h1>
                 <p className='mt-1 text-slate-400'>Manage your incoming and outgoing friend requests.</p>
             </div>
+            {/* / ******************************************************* */ }
             <div className='flex flex-col gap-4'>
-                {pendingFriend.map((penFr) => (
+                {pendingFriend
+                    .filter(p => !(p.status === 'REJECTED' && p.type === 'incoming'))
+                    .map((penFr) => (
                     <div key={penFr.friendRequestId}
                         className='flex items-center justify-between bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 transition-all hover:bg-slate-800/60'
                     >

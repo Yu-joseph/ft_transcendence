@@ -26,7 +26,7 @@ export  function    ChatInput({setMessages, convId}: ChatInputPorps) {
     const   {user} = useAuth();
 
     const   handleSendMessage = async (event: React.SyntheticEvent) => {
-        if(user === null)
+        if(user === null || convId === null)
             return;
         event.preventDefault();
         const   message: string = input.trim();

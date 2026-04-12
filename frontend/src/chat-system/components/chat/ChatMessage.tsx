@@ -16,13 +16,13 @@ interface ChatMessageProp {
     friendId: string | null
     messages: MessageItem[]
     convId: number | null
-    setConvId: React.Dispatch<React.SetStateAction<number | null>>
-    setFriendId: React.Dispatch<React.SetStateAction<string | null>>
-    setDeletedConv: React.Dispatch<React.SetStateAction<number | null>>
+    // setConvId: React.Dispatch<React.SetStateAction<number | null>>
+    // setFriendId: React.Dispatch<React.SetStateAction<string | null>>
+    // setDeletedConv: React.Dispatch<React.SetStateAction<number | null>>
     isTyping: boolean
 }  
 
-export function ChatMessage({messages, friendId, convId, setConvId, setFriendId, setDeletedConv, isTyping} : ChatMessageProp) {
+export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessageProp) {
     const   [isDropDown, setIsDropDown] = useState<boolean>(false);
     const   [friendInfo, setFriendInfo] = useState<UserInfo | null>(null);
     const   { user } = useAuth();

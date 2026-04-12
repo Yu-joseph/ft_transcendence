@@ -51,7 +51,8 @@ export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSock
 
         const onReceiveMessage = (newMessage: MessageItem) => {
             console.log('i receive this message:', newMessage);
-            setMessages(prev => [...prev, newMessage])
+            setMessages(prev => [...prev, newMessage]);
+            chatSocket.emit('update:conversation', ROM_ID);
         }
         
         const onDisconnect = () => {

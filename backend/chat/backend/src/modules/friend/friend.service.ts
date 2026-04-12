@@ -178,8 +178,18 @@ export class FriendService {
         switch (existed.status) {
             case 'ACCEPTED':
                 throw new AppError('Cannot cancel a request that has already been accepted. Try removing the friendship instead.', 400)
-            case 'REJECTED':
-                throw new AppError('Cannot cancel a request that has already been rejected. Try removing the friendship instead.', 400);
+            case 'REJECTED': {
+                if(existed.requesterId !== data.userId)
+                    throw new AppError('Cannot cancel a request that has already been rejected. Try removing the friendship instead.', 400);
+                const result = await prisma.friend.delete({
+                    where: {
+                        id: data.friendRequestId,
+                        requesterId: data.userId,
+                        status: 'REJECTED'
+                    }
+                });
+                return result;
+            }
             case 'PENDING':
                 const result = await prisma.friend.delete({
                     where: {
@@ -239,19 +249,19 @@ export class FriendService {
         const pendingRequest = await prisma.friend.findMany({
             where: {
                 OR: [
-                    { receiverId: userId }, { requesterId: userId }
+                    { receiverId: userId }, { requesterId: userId }, {status: 'PENDING'}, {status: 'REJECTED'}
                 ],
-                status: 'PENDING'
             },
             include: {
                 User_Friend_receiverIdToUser: { select: { id: true, username: true, avatar: true } },
-                User_Friend_requesterIdToUser: { select: { id: true, username: true, avatar: true } }
+                User_Friend_requesterIdToUser: { select: { id: true, username: true, avatar: true } },
             }
         });
         const data : PendingFriendType[] = pendingRequest.map(penReq => {
             const   type : RequestType =  penReq.requesterId === userId ? 'outgoing' : 'incoming';
             const   friendRequest : PendingFriendType = {
                 friendRequestId: penReq.id,
+                status: penReq.status,
                 userInfo: type === 'outgoing' ? penReq.User_Friend_receiverIdToUser : penReq.User_Friend_requesterIdToUser,
                 type: type
             }

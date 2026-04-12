@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { fetchClient } from "../../utils/fetchClient";
+import { chatSocket } from "../../../socket/sock";
 
 interface ConversationListProps {
   setConvId: React.Dispatch<React.SetStateAction<number | null>>;
   convId: number | null
   selectFriendId: React.Dispatch<React.SetStateAction<string | null>>
-  deletedConvId: number | null;
+  // deletedConvId: number | null;
 }
 
 interface   ConversationType {
@@ -27,7 +28,18 @@ interface   ConversationType {
     updated_at: Date
 }
 
-export  function ConversationList({setConvId, convId, selectFriendId, deletedConvId}: ConversationListProps ) {
+interface UpdatedConversationEvent {
+  lastMessage: {
+    id: number,
+    created_at: Date,
+    content: string,
+    senderId: string
+  }
+  updated_at: Date
+  convId: bigint
+}
+
+export  function ConversationList({setConvId, convId, selectFriendId}: ConversationListProps ) {
   const [conversationLists, setConversationList] = useState<ConversationType[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error| null>(null);
@@ -39,6 +51,7 @@ export  function ConversationList({setConvId, convId, selectFriendId, deletedCon
         setLoading(false);
         const result : ConversationType[] = await fetchClient('/chat/conversations', {});
         setConversationList(result);
+        // setReloadConv(false);
       } catch (error: any) {
         setError(error);
         setConversationList([]);
@@ -50,10 +63,40 @@ export  function ConversationList({setConvId, convId, selectFriendId, deletedCon
     loadConversation();
   }, [])
 
-  /****** Updated deleted Conv Id */
+  
   useEffect(() => {
-    setConversationList(prev => prev.filter(conv => conv.id !== deletedConvId))
-  }, [deletedConvId])
+    
+    const onConversationUpdate = (updatedData: UpdatedConversationEvent) => {
+      console.log("in Conversation Updated event");
+      const convIdNum = Number(updatedData.convId);
+      setConversationList(prev => {
+
+        const updatedList = prev.map( conv => {
+          if(conv.id != convIdNum)
+            return conv;
+          const newMessage = {
+            id: updatedData.lastMessage.id, content: updatedData.lastMessage.content, created_at: updatedData.lastMessage.created_at, senderId: updatedData.lastMessage.senderId
+          };
+          return {
+            ...conv,
+            lastMessage: newMessage,
+            updated_at: updatedData.updated_at
+          }
+        })
+        return updatedList.sort((a, b) => +new Date(b.updated_at).getTime() - +new Date(a.updated_at).getTime());
+    });
+  };
+    chatSocket.on('conversation:updated', onConversationUpdate);
+
+    return () => {
+      chatSocket.off('conversation:updated', onConversationUpdate);
+    }
+  }, [])
+
+  /****** Updated deleted Conv Id */
+  // useEffect(() => {
+  //   setConversationList(prev => prev.filter(conv => conv.id !== deletedConvId))
+  // }, [deletedConvId])
 
   if(!loading)
     return <div className="text-slate-500 flex items-center justify-center h-full">Loading...</div>
