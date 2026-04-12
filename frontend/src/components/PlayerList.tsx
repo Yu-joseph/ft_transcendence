@@ -40,7 +40,7 @@ export default function PlayerList() {
       <div className="bg-slate-800 border border-blue-700 rounded-xl p-5 w-full max-w-lg">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-amber-500 text-xl font-semibold">Online Players</h2>
-          <span className="text-green-400 text-sm">{players.length} online</span>
+          <span className="text-green-400 text-sm">{players.length - 1} online</span>
         </div>
 
         {otherPlayers.length === 0 ? (
