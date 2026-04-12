@@ -101,15 +101,16 @@ function Game() {
     if (!matchId) 
       return;
 
-    const handleMatchUpdate = (match: Match) => {
-      console.log("Match update received:", match);
+    const applyIncomingMatch = (match: Match) => {
       setBoard(match.board as CellValue[]);
       setCurrentTurn(match.currentTurn);
       setMatchStatus(match.status);
       setPlayers(match.players);
-      setPieceToRemove(null); // Reset piece selection on each update
+      setPieceToRemove(null);
 
-      const isActiveTurn = match.status === "playing" && !match.winner && !!match.currentTurn;
+      const isActiveTurn =
+        match.status === "playing" && match.winner === null && !!match.currentTurn;
+
       if (isActiveTurn) {
         turnEndsAtRef.current = Date.now() + TURN_TIMEOUT_MS;
         setTurnRemainingMs(TURN_TIMEOUT_MS);
@@ -117,14 +118,15 @@ function Game() {
         turnEndsAtRef.current = null;
         setTurnRemainingMs(TURN_TIMEOUT_MS);
       }
-      
+
       if (match.winner) {
-        // Find winners username
-        const winnerPlayer = match.players.find(p => p.id === match.winner);
-        setWinner(winnerPlayer?.username || match.winner);
+        const winnerPlayer = match.players.find((p) => p.id === match.winner);
+        setWinner(winnerPlayer?.username ?? match.winner);
         setShowWinModal(true);
-      } else if (match.status === 'finished' && !match.winner) {
+      } else if (match.status === "finished") {
         setWinner("Draw");
+      } else {
+        setWinner(null);
       }
     };
 
@@ -139,12 +141,12 @@ function Game() {
       setBackTo('/Dashboard')
     };
 
-    gameSocket.on("match-update", handleMatchUpdate);
+    gameSocket.on("match-update", applyIncomingMatch);
     gameSocket.on("opponent-forfeited", handleOpponentForfeited);
     gameSocket.on("tournament-finished", handleTournamentFinished);
 
     return () => {
-      gameSocket.off("match-update", handleMatchUpdate);
+      gameSocket.off("match-update", applyIncomingMatch);
       gameSocket.off("opponent-forfeited", handleOpponentForfeited);
       gameSocket.off("tournament-finished", handleTournamentFinished);
     };

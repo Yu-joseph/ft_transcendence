@@ -1,7 +1,7 @@
 import { Server } from 'socket.io';
 import prisma from '../lib/prisma';
 import { Match, Tournament, TournamentMatch } from '../types/game';
-import { createGameInDB, matches } from './handlers';
+import { createGameInDB, matches, startTurnTimerForMatch } from './handlers';
 import { getMatchesForRound, nextPowerOf2, propagateWinner } from './tournamentBracket';
 import { tournaments } from './tournamentStore';
 
@@ -53,6 +53,7 @@ export function actuallyStartMatch(io: Server, tournament: Tournament, tm: Tourn
   };
 
   matches.set(matchId, match);
+  startTurnTimerForMatch(io,matchId);
   tm.matchId = matchId;
   tm.status = 'playing';
   tm.requestedBy = null;

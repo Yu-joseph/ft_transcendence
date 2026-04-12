@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 import os
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -114,3 +115,14 @@ SOCIAL_AUTH_42_KEY    = 'u-s4t2ud-ded6e687b26b0218e9a66fafb8ed15c58b5d355add5105
 SOCIAL_AUTH_42_SECRET = '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'
 FORTY_TWO_REDIRECT_URI = 'http://localhost:8080/authent/42/callback/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+SIMPLE_JWT = {
+"ACCESS_TOKEN_LIFETIME": timedelta(hours=2), # change as needed
+"REFRESH_TOKEN_LIFETIME": timedelta(days=14), # change as needed
+"ROTATE_REFRESH_TOKENS": False,
+"BLACKLIST_AFTER_ROTATION": False,
+}
+
+ACCESS_TOKEN_COOKIE_MAX_AGE = int(SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds())
+REFRESH_TOKEN_COOKIE_MAX_AGE = int(SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds())
