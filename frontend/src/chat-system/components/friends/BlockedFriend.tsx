@@ -1,61 +1,22 @@
 import  { Ban, UserCheck }   from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { fetchClient } from '../../utils/fetchClient';
-
-
-interface BlockedFriendType {
-    id: string
-    username: string
-    avatar: string
-}
-
+import { useBlockedFriend } from './hooks/useBlockedFriend';
 
 export  function BlockedFriend() {
-    const   [loading, setLoading] = useState(false);
-    const   [error, setError] = useState(null);
-    const   [blocked, setBlocked] = useState<BlockedFriendType[]>([]);
-
-    const   [status, setStatus] = useState<{type: 'success' | 'error'; message: string} | null>(null);
-
-    
-    useEffect(() => {
-        const   getBlockedRequest = async () => {
-            try {
-                setLoading(false);
-                const result : BlockedFriendType[] = await fetchClient('/friend/rejected', {});
-                setBlocked(result);
-            } catch (error: any) {
-                setError(error);
-                console.log(error);
-            } finally {
-                setLoading(true);
-            }
-        }
-
-        getBlockedRequest();
-    }, [])
-
-    const   handleUnblock = async (receiverName: string) => {
-        try {
-            setStatus(null);
-            const   result = await fetchClient('/friend/request', {
-                method: 'POST',
-                body: JSON.stringify({receiverId: receiverName})
-            });
-            setBlocked(prev => prev.filter(u => u.username !== receiverName));
-            setStatus({type: 'success', message: 'Friend Unblocked successfuly'});
-            console.log(result);
-        } catch (error: any) {
-            setStatus({type: 'error', message: error?.message ?? 'Failed to add friend'})
-            console.log(error);
-        }
-    }
-
+    /**_________ My Custom Hook ________ */
+    const   {
+        handleUnblock,
+        blocked,
+        loading,
+        error,
+        status
+    } = useBlockedFriend();
+    /**___________ Component-Style _______________ */
     if (!loading) {
         return <div className='text-slate-600 flex items-center justify-center'>Loading...</div>
     }
     if(error)
         return <div className='text-red-400 flex items-center justify-center'>{error}</div>
+    /**________________________________________________________________________________________________ */
     return (
         <div className="flex flex-col w-full h-full max-w-7xl mx-auto p-4 md:p-6 lg:p-6">
             <div className="mb-6">

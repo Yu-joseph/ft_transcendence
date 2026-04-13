@@ -1,7 +1,7 @@
 export interface ConversationType {
     id: number
     otherUser: {
-        id: number
+        id: string
         username: string
         email: string
     }
@@ -9,7 +9,7 @@ export interface ConversationType {
         id: number
         created_at: Date
         content: string
-        senderId: number
+        senderId: string
     } | null
     updated_at: Date
 }

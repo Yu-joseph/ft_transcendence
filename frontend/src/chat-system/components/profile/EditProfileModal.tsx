@@ -1,8 +1,7 @@
-import React, { useState, useRef } from 'react';
 import { X, Save, Camera, User, FileText, Mail, LockIcon } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-// import type { UserProfileInfo } from './hooks/useProfileHeader';
+import { useEditeProfileModale } from './hooks/useEditeProfileModal';
 
 interface EditProfileModalProps {
     isOpen: boolean;
@@ -12,71 +11,29 @@ interface EditProfileModalProps {
 }
 
 /**
- * 
  * @param param3 userInfo Data  type of 'UserProfileInfo'
  * @returns 
  */
 
 export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditProfileModalProps) {
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const   navigate = useNavigate();
+    /**_______________ Costume Hook __________________ */
+    const   hook = useEditeProfileModale(initialData, isOpen);
+    if(hook === null)
+        return;
 
-    const [formData, setFormData] = useState({
-        fullname: initialData?.fullname || '' as string,
-        bio: initialData?.bio || '' as string,
-        email: initialData?.email || '' as string
-    });
-
-    type    InputType = 'fullname' | 'email' | 'bio';
-    const   [inputError, setInputError] = useState<{inputType: InputType, errorMessage: string} | null>(null);
-
-
-    const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.avatar ?? null);
-    const   [avatar, setAvatar] = useState<File | null>(null);
-
-    if (!isOpen)
-        return null;
-    // Handle Image Preview
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if(!file) {
-            setAvatar(null);
-            return;
-        }
-        console.log('Changing the avatar........');
-        console.log("file:", file);
-        if(!file?.type.startsWith('image/')) {
-            console.log('Invalid Image');
-            setAvatar(null);
-            return;
-        }
-        if (file) {
-            const url = URL.createObjectURL(file);
-            setPreviewUrl(url);
-            setAvatar(file);
-        }
-    };
-
-    const uploadAvatar = async (file: File) => {
-        const fd = new FormData();
-        console.log('before append:', fd);
-        fd.append('avatar', file);
-        console.log('After append:', fd);
-        try {
-            const res = await fetch('/api/profile/avatar', {
-                method: 'POST',
-                body: fd,
-                credentials: 'include'
-            });
-            if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
-            const data = await res.json();
-            setPreviewUrl(data.url);
-        } catch (err) {
-            console.error(err);
-        }
-    }
-    const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
+    const   {
+        fileInputRef,
+        handleImageChange,
+        // uploadAvatar,
+        previewUrl,
+        setFormData,
+        inputError,
+        // avatar,
+        formData,
+        // setInputError
+    } = hook;
+    /**__________________________________________________________________ */
     return createPortal(
 
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

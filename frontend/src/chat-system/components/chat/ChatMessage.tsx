@@ -5,7 +5,6 @@ import { fetchClient } from '../../utils/fetchClient';
 import type { MessageItem, MessageState } from '../../pages/Chat';
 import { useNavigate } from 'react-router-dom';
 import { FaCheck, FaExclamation } from 'react-icons/fa';
-import { CgSpinner } from 'react-icons/cg';
 import { Clock } from 'lucide-react';
 
 interface UserInfo {
@@ -19,9 +18,6 @@ interface ChatMessageProp {
     friendId: string | null
     messages: MessageItem[]
     convId: number | null
-    // setConvId: React.Dispatch<React.SetStateAction<number | null>>
-    // setFriendId: React.Dispatch<React.SetStateAction<string | null>>
-    // setDeletedConv: React.Dispatch<React.SetStateAction<number | null>>
     isTyping: boolean
 }  
 
@@ -32,14 +28,12 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
     const   currentUserId = user?.id as string;
     const   navigate = useNavigate();
     const   scroolToBottomRef = useRef<HTMLDivElement | null>(null);
-
+    /**__________ HOOKS ____________________ */
     useEffect(() => {
         scroolToBottomRef.current?.scrollIntoView();
     }, [messages, isTyping])
 
     useEffect(() => {
-        console.log("In chat Message, messages is:", messages);
-        console.log('ALL MESAGES>>>>>>>:', messages);
         if(!friendId)
             return;
         const   loadUserInfo = async () => {
@@ -53,24 +47,7 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
         loadUserInfo();
     }, [friendId, user, convId])
 
-    /*********** Botton click************** */
-    // const handleRemoveConversation = async () => {
-    //     try {
-    //         setIsDropDown(!isDropDown);
-    //         const   result = await fetchClient<number>(`/chat/conversations/${convId}`, {
-    //             method: 'DELETE',
-    //         });
-    //         console.log("deleted conversation", result);
-    //         if(result !== convId)
-    //             console.log('Ooops i remove another conversations');
-    //         setDeletedConv(result);
-    //         setConvId(null);
-    //         setFriendId(null);
-    //     } catch (err: any) {
-    //         console.log(err.message);
-    //     }
-    // }
-
+    /**__________ JS Function ___________ */
     const   handleViewProfile = (userId: string | undefined) => {
         console.log("Profile UserId:", userId);
         if(!userId)
@@ -82,23 +59,23 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
             return <FaCheck size={10} className='text-green-400'/>
         return state === 'pending' ? <Clock size={10} className='text-amber-500' /> : <FaExclamation size={10} className='text-red-600' />
     }
-
-    if (!friendId) {
-        return (<div className="flex items-center justify-center w-full h-full px-4 py-6 sm:px-6 lg:px-8">
-                    <div className="max-w-xl w-full text-center">
-                        <div className="inline-block mb-4 p-4 rounded-full bg-slate-500/10 text-3xl sm:text-4xl text-white">
-                         💬
-                        </div> 
-                            <p className="text-lg sm:text-xl md:text-2xl font-semibold text-white leading-snug">
-                                Select a Conversation to start messaging. 
-                            </p> 
-                            <p className="mt-2 text-sm text-slate-400">
-                                Choose a friend from the list on the left to begin. 
-                            </p>
-                    </div> 
-                </div>);
+    /**__________ Component-Style __________________ */
+    if (!friendId)
+        return (
+        <div className="flex items-center justify-center w-full h-full px-4 py-6 sm:px-6 lg:px-8">
+            <div className="max-w-xl w-full text-center">
+                <div className="inline-block mb-4 p-4 rounded-full bg-slate-500/10 text-3xl sm:text-4xl text-white">
+                    💬
+                </div> 
+                    <p className="text-lg sm:text-xl md:text-2xl font-semibold text-white leading-snug">
+                        Select a Conversation to start messaging. 
+                    </p> 
+                    <p className="mt-2 text-sm text-slate-400">
+                        Choose a friend from the list on the left to begin. 
+                    </p>
+            </div> 
+        </div>);
         
-    }
     return (
         <>
             <header className="px-6 py-4 border-b border-slate-700/50 bg-slate-900/60 flex justify-between items-center sticky top-0 z-10">
@@ -138,7 +115,6 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
                                             Remove Conversation
                                     </button>
                                 </li>
-
                             </ul>
                         </div>
                     }
@@ -158,7 +134,7 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
                                     </p>
                                     <div className={`gap-1.5 text-[10px] mt-1 flex ${isMe ? 'text-blue-200 justify-end' : 'text-slate-400 justify-start'} items-center`}>
                                         {(m.status === 'sent' || m.status === null)  && new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
-                                        {m.status && <p className=''>{detectMessageStatIcon(m.status)}</p>} 
+                                        {m.status && <span>{detectMessageStatIcon(m.status)}</span>} 
                                     </div>
                                 </div>
                             </div>

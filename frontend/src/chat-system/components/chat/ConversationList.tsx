@@ -1,103 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { fetchClient } from "../../utils/fetchClient";
-import { chatSocket } from "../../../socket/sock";
+import { useConversationList } from "./hooks/useConversationList";
 
 interface ConversationListProps {
   setConvId: React.Dispatch<React.SetStateAction<number | null>>;
   convId: number | null
   selectFriendId: React.Dispatch<React.SetStateAction<string | null>>
-  // deletedConvId: number | null;
-}
-
-interface   ConversationType {
-    /**
-     * @description return-type of existing Conversation
-    */
-   id: number
-   otherUser: {
-        id: string,
-        username: string,
-        avatar: string | null
-    }
-    lastMessage: {
-        id: number,
-        created_at: Date,
-        content: string,
-        senderId: string
-    } | null
-    updated_at: Date
-}
-
-interface UpdatedConversationEvent {
-  lastMessage: {
-    id: number,
-    created_at: Date,
-    content: string,
-    senderId: string
-  }
-  updated_at: Date
-  convId: bigint
 }
 
 export  function ConversationList({setConvId, convId, selectFriendId}: ConversationListProps ) {
-  const [conversationLists, setConversationList] = useState<ConversationType[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error| null>(null);
-
-  useEffect(() => {
-    const loadConversation = async () => {
-      try {
-        setError(null);
-        setLoading(false);
-        const result : ConversationType[] = await fetchClient('/chat/conversations', {});
-        setConversationList(result);
-        // setReloadConv(false);
-      } catch (error: any) {
-        setError(error);
-        setConversationList([]);
-        console.log(error);
-      } finally {
-        setLoading(true);
-      }
-    };
-    loadConversation();
-  }, [])
-
+  /**______ Costume Hooks _______________ */
   
-  useEffect(() => {
-    
-    const onConversationUpdate = (updatedData: UpdatedConversationEvent) => {
-      console.log("in Conversation Updated event");
-      const convIdNum = Number(updatedData.convId);
-      setConversationList(prev => {
+  const {loading, error, conversationList} = useConversationList();
 
-        const updatedList = prev.map( conv => {
-          if(conv.id != convIdNum)
-            return conv;
-          const newMessage = {
-            id: updatedData.lastMessage.id, content: updatedData.lastMessage.content, created_at: updatedData.lastMessage.created_at, senderId: updatedData.lastMessage.senderId
-          };
-          return {
-            ...conv,
-            lastMessage: newMessage,
-            updated_at: updatedData.updated_at
-          }
-        })
-        return updatedList.sort((a, b) => +new Date(b.updated_at).getTime() - +new Date(a.updated_at).getTime());
-    });
-  };
-    chatSocket.on('conversation:updated', onConversationUpdate);
-
-    return () => {
-      chatSocket.off('conversation:updated', onConversationUpdate);
-    }
-  }, [])
-
-  /****** Updated deleted Conv Id */
-  // useEffect(() => {
-  //   setConversationList(prev => prev.filter(conv => conv.id !== deletedConvId))
-  // }, [deletedConvId])
-
+  /**________ Component-Style __________________ */
   if(!loading)
     return <div className="text-slate-500 flex items-center justify-center h-full">Loading...</div>
   if (error)
@@ -113,11 +27,11 @@ export  function ConversationList({setConvId, convId, selectFriendId}: Conversat
         <div className="flex-1 overflow-y-auto bg-slate-800">
           <ul className="space-y-2 mt-2 flex-1 overflow-y-auto no-scrollbar pr-2">
             {
-              conversationLists.map((conv) => (
+              conversationList.map((conv) => (
                 <li
                   onClick={() => {
                     setConvId(conv.id);
-                    selectFriendId(conv.otherUser.id);
+                    selectFriendId(conv.otherUser.id as string);
                   }}
                   key={conv.id}
                   className={`${convId === conv.id ? 'bg-slate-700/30' : ''} group flex items-center gap-4 p-3 rounded-3xl cursor-pointer hover:bg-slate-700/40 transition-all duration-200 border border-transparent hover:border-slate-600/50`}>

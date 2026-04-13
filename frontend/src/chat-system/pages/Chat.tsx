@@ -4,7 +4,7 @@ import { ChatMessage } from "../components/chat/ChatMessage";
 import { useLocation, type Location } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { fetchClient } from "../utils/fetchClient";
-import { useChatSocket } from "../hooks/useChatSocket";
+import { useChatSocket } from "../components/chat/hooks/useChatSocket";
 import { useAuth } from "../../auth/useAuth";
 
 export type MessageState = 'pending' | 'sent' | 'error';
@@ -37,7 +37,6 @@ export function Chat() {
   const [selectedConvId, setSelectedConvId] = useState<number | null>(null);
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(friendId);
   const [isLoadedFromFriendProfile, setIsLoadedFromFriendProfile] = useState<boolean>(false);
-  // const [deletedConversation, setDeletedConversation] = useState<number | null>(null);
 
   useEffect(() => {
     if(user === null) return ;
