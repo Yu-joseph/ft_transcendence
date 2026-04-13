@@ -56,9 +56,9 @@ WORKDIR /opt
 RUN git clone https://github.com/coreruleset/coreruleset.git
 
 WORKDIR /opt/coreruleset
-RUN cp -r /opt/coreruleset/rules /etc/nginx/modsec/ && \
-    cp /opt/coreruleset/crs-setup.conf.example /etc/nginx/modsec/crs-setup.conf
+RUN cp -r /opt/coreruleset/rules /etc/nginx/modsec/ 
 
+COPY crs-setup.conf /etc/nginx/modsec/crs-setup.conf
 COPY main.conf /etc/nginx/modsec/main.conf
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY conf.conf /etc/nginx/conf.d/default.conf

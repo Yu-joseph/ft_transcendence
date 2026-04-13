@@ -85,6 +85,9 @@ function Login() {
         throw new Error(message);
       }
 
+      // Normal login should not be blocked by the intra-only password gate.
+      localStorage.removeItem("intra_password_required");
+
       // Fetch authenticated profile and push it into global auth context.
       const userResponse = await fetch("/authent/getuser/", {
         method: "GET",
