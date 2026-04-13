@@ -1,9 +1,16 @@
 import { useState, useRef, useEffect } from 'react'
-// import './ChatWindow.css'
+import { useAuth } from '../../auth/useAuth'
 
 type Message = {
   role: string
   text: string
+}
+
+type StreamDraft = {
+  typing: boolean
+  userText: string
+  partialAi: string
+  updatedAt: number
 }
 
 type ChatWindowProps = {
@@ -21,7 +28,32 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
   const hasSentFirst = useRef(initialMessages.length > 0)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const user = useAuth();
+  const streamAbortRef = useRef<AbortController | null>(null)
+  const mountedRef = useRef(true)
 
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      // do not abort on route switch if you want background stream to continue
+    }
+  }, [])
+
+  const appendChunkToLastAi = (chunk: string) => {
+    setMessages((prev) => {
+      const next = [...prev]
+      const last = next.length - 1
+
+      if (last >= 0 && next[last].role === 'ai') {
+        next[last] = { ...next[last], text: next[last].text + chunk }
+      } else {
+        next.push({ role: 'ai', text: chunk })
+      }
+
+      return next
+    })
+  }
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
@@ -34,11 +66,11 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
   const handleSend = async () => {
     if (!input.trim() || loading) return
 
-    let messageText = input
-
-
+    const messageText = input.trim()
     const userMsg = { role: 'user', text: messageText }
-    setMessages(prev => [...prev, userMsg])
+
+    // add user message + empty AI placeholder
+    setMessages((prev) => [...prev, userMsg])
 
     if (!hasSentFirst.current) {
       void generateTitle(messageText)
@@ -49,30 +81,104 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
     setLoading(true)
     setShowThinking(true)
 
+    const controller = new AbortController()
+    streamAbortRef.current = controller
+    writeDraft({
+      typing: true,
+      userText: messageText,
+      partialAi: '',
+      updatedAt: Date.now(),
+    })
     try {
-      const response = await fetch('/chatbot/chat', {
+      const response = await fetch('/chatbot/chat/stream', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: messageText, session_id: sessionId })
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'text/event-stream',
+        },
+        body: JSON.stringify({ message: messageText, session_id: sessionId }),
+        signal: controller.signal,
       })
 
-      const data: { role?: string; content?: string; error?: string } = await response.json()
-
-      if (!response.ok || !data.content) {
-        setMessages(prev => [
-          ...prev,
-          { role: 'ai', text: data.error ?? 'Error connecting to server.' }
-        ])
-      } else {
-        setMessages(prev => [
-          ...prev,
-          { role: 'ai', text: data.content }
-        ])
+      if (!response.ok || !response.body) {
+        throw new Error('Stream request failed')
       }
-    } catch {
-      setMessages(prev => [...prev, { role: 'ai', text: 'Error connecting to server.' }])
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let streamDone = false
+      let firstToken = true
+
+      while (!streamDone) {
+        const { value, done } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+
+        // parse SSE frames separated by blank line
+        const frames = buffer.split(/\r?\n\r?\n/)
+        buffer = frames.pop() ?? ''
+
+        for (const frame of frames) {
+          const lines = frame.split(/\r?\n/)
+
+          for (const line of lines) {
+            if (!line.startsWith('data:')) continue
+
+            const payload = line.slice(5).trimStart()
+
+            if (payload === '[DONE]') {
+              const current = readDraft()
+              if (current) {
+                writeDraft({ ...current, typing: false, updatedAt: Date.now() })
+                // optional: clear finalized draft
+                // writeDraft(null)
+              }
+              streamDone = true
+              break
+            }
+
+            if (firstToken) {
+              setShowThinking(false)
+              firstToken = false
+            }
+            const current = readDraft();
+            writeDraft({
+              typing: true,
+              userText: current?.userText ?? messageText,
+              partialAi: (current?.partialAi ?? '') + payload,
+              updatedAt: Date.now(),
+            })
+            if (mountedRef.current) {
+              appendChunkToLastAi(payload)
+            }
+          }
+
+          if (streamDone) break
+        }
+      }
+    } catch (err) {
+      const aborted = err instanceof DOMException && err.name === 'AbortError'
+
+      if (aborted) {
+        const current = readDraft()
+        if (current) {
+          writeDraft({ ...current, typing: false, updatedAt: Date.now() })
+        }
+        return
+      }
+
+      writeDraft({
+        typing: false,
+        userText: messageText,
+        partialAi: 'Error connecting to server.',
+        updatedAt: Date.now(),
+      })
     } finally {
+      streamAbortRef.current = null
       setLoading(false)
+      setShowThinking(false)
     }
   }
 
@@ -147,9 +253,91 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
     }
   }, [loading])
 
+  const readDraft = (): StreamDraft | null => {
+    if (!streamKey) return null
+    try {
+      const raw = localStorage.getItem(streamKey)
+      if (!raw) return null
+      return JSON.parse(raw) as StreamDraft
+    } catch {
+      return null
+    }
+  }
+
+  const writeDraft = (draft: StreamDraft | null) => {
+    if (!streamKey) return
+    if (!draft) {
+      localStorage.removeItem(streamKey)
+      return
+    }
+    localStorage.setItem(streamKey, JSON.stringify(draft))
+  }
+
+  const streamKey = sessionId ? `chat_stream_${sessionId}` : null
+
+  // hydrate + keep UI synced with localStorage while stream may still be running
+  useEffect(() => {
+    const hydrate = () => {
+      const draft = readDraft()
+      if (!draft) return
+
+      setMessages((prev) => {
+        const next = [...prev]
+
+        if (draft.userText && !next.some((m) => m.role === 'user' && m.text === draft.userText)) {
+          next.push({ role: 'user', text: draft.userText })
+        }
+
+        if (draft.partialAi) {
+          const last = next.length - 1
+          if (last >= 0 && next[last].role === 'ai') {
+            if (next[last].text !== draft.partialAi) {
+              next[last] = { ...next[last], text: draft.partialAi }
+            }
+          } else {
+            next.push({ role: 'ai', text: draft.partialAi })
+          }
+        }
+
+        const changed =
+          next.length !== prev.length ||
+          next.some((m, i) => m.role !== prev[i]?.role || m.text !== prev[i]?.text)
+
+        return changed ? next : prev
+      })
+
+      setLoading(draft.typing)
+      setShowThinking(draft.typing && draft.partialAi.length === 0)
+    }
+
+    hydrate()
+    const id = window.setInterval(hydrate, 250)
+    return () => window.clearInterval(id)
+  }, [sessionId])
+
+  // add refs
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null)
+  const stickToBottomRef = useRef(true)
+
+  // track whether user is near bottom
+  const handleScroll = () => {
+    const el = scrollContainerRef.current
+    if (!el) return
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+    stickToBottomRef.current = distanceFromBottom < 80
+  }
+
+  // only auto-scroll if user is already near bottom
+  useEffect(() => {
+    if (!stickToBottomRef.current) return
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, showThinking])
+
   return (
     <div className="flex flex-1 flex-col bg-slate-900/80 border border-blue-800 rounded-2xl overflow-hidden shadow-2xl">
       <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
         className="flex-1 overflow-y-auto px-10 py-8 flex flex-col gap-5 text-slate-100"
         style={{ scrollbarWidth: 'thin', scrollbarColor: '#1f3b5b transparent' }}
       >
@@ -167,7 +355,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
 
         {messages.map((msg, i) => (
           <div key={i} className="flex flex-col">
-            {msg.role === 'ai' && (
+            {msg.role === 'ai'  && msg.text.trim() !== '' && (
               <div className="flex flex-col gap-2 max-w-160">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-[13px] text-amber-300">
@@ -183,7 +371,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
 
             {msg.role === 'user' && (
               <div className="flex flex-col items-end gap-1.5">
-                <div className="text-[10px] text-slate-400 tracking-widest uppercase">Commander</div>
+                <div className="text-[10px] text-slate-400 tracking-widest uppercase">{user?.username}</div>
                 <div className="bg-slate-800 border border-blue-700 rounded-[14px_14px_2px_14px] px-4 py-3 text-sm leading-6 text-slate-100 max-w-145">
                   {msg.text}
                 </div>
