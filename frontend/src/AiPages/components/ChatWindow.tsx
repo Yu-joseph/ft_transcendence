@@ -28,7 +28,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
   const hasSentFirst = useRef(initialMessages.length > 0)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
-  const user = useAuth();
+  const {user} = useAuth();
   const streamAbortRef = useRef<AbortController | null>(null)
   const mountedRef = useRef(true)
 
