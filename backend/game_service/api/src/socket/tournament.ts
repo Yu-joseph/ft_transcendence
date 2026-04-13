@@ -20,7 +20,7 @@ export function setupTournamentHandlers(io: Server) {
     socket.on(
       'create-tournament',
       async (data: { name: string; username?: string; maxPlayers: number }) => {
-        const player = getOrCreatePlayer(socket);
+        const player = await getOrCreatePlayer(socket);
         if (!player) {
           socket.emit('tournament-error', { message: 'Unauthorized' });
           return;
