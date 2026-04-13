@@ -10,7 +10,7 @@ const searchQueue: string[] = [];
 export const players = new Map<string, Player>();
 export const matches = new Map<string, Match>();
 const disconnectTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
-export { createGameInDB, finalizeGame, updateGameInDB, getRankedUsers };
+export { createGameInDB, finalizeGame, updateGameInDB, getRankedUsers, getUserProfile };
 
 const XP_PER_WIN = 3;
 const XP_PER_LOSS = -2;
@@ -41,6 +41,25 @@ type RankedStats = BaseStats & {
 type LobbyPlayer = Player & {
   status: 'online' | 'playing';
 };
+
+type UserProfile = {
+username: string;
+avatar: string | null;
+};
+
+async function getUserProfile(userId: string): Promise<UserProfile | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { username: true, avatar: true },
+  });
+
+  if (!user) return null;
+
+  return {
+    username: user.username,
+    avatar: user.avatar ?? null,
+  };
+}
 
 function getLobbyPlayersSnapshot(): LobbyPlayer[] {
   return Array.from(players.values()).map((player) => ({
@@ -407,18 +426,20 @@ export function setupSocketHandlers(io: Server) {
   io.on('connection', (socket: Socket) => {
     console.log('User connected:', socket.id);
 
-    socket.on('join-lobby', (data: { username?: string }) => {
+    socket.on('join-lobby', async (data: { username?: string }) => {
       const userId = socket.data.userId as string;
       if (!userId) return;
-
-      const username =
-        (data?.username && data.username.trim()) || 'Guest';
-
+      const profile = await getUserProfile(userId);
+      if (!profile) {
+        socket.emit('join-lobby-failed', { reason: 'User not found' });
+        return;
+      }
       for (const [existingSocketId, existing] of players) {
         if (existing.id === userId) {
           players.delete(existingSocketId);
           existing.socketId = socket.id;
-          existing.username = username; // optional update
+          existing.username = profile.username;
+          existing.avatar = profile.avatar;
           players.set(socket.id, existing);
           emitLobbyPlayersUpdate(io);
           return;
@@ -427,14 +448,15 @@ export function setupSocketHandlers(io: Server) {
 
       const player: Player = {
         id: userId,
-        username,
+        username: profile.username,
+        avatar: profile.avatar,
         socketId: socket.id,
         isReady: false,
       };
 
       players.set(socket.id, player);
       emitLobbyPlayersUpdate(io);
-      console.log(`${data.username} joined the lobby`);
+      console.log(profile.username + ' joined the lobby');
     });
 
     socket.on('send-invite', (targetSocketId: string) => {

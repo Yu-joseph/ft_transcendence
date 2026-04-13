@@ -20,7 +20,7 @@ export function setupTournamentHandlers(io: Server) {
     socket.on(
       'create-tournament',
       async (data: { name: string; username?: string; maxPlayers: number }) => {
-        const player = getOrCreatePlayer(socket, data.username);
+        const player = await getOrCreatePlayer(socket);
         if (!player) {
           socket.emit('tournament-error', { message: 'Unauthorized' });
           return;
@@ -91,10 +91,7 @@ export function setupTournamentHandlers(io: Server) {
 
     socket.on(
       'join-tournament',
-      async (data: {
-        tournamentId: string;
-        username?: string;
-      }) => {
+      async (data: { tournamentId: string }) => {
         const userId = getSocketUserId(socket);
         if (!userId) {
           socket.emit('tournament-error', { message: 'Unauthorized' });
@@ -107,14 +104,31 @@ export function setupTournamentHandlers(io: Server) {
           return;
         }
 
+        const hydratedPlayer = await getOrCreatePlayer(socket);
+        if (!hydratedPlayer) {
+          socket.emit('tournament-error', { message: 'Unauthorized' });
+          return;
+        }
+
         const existing = tournament.players.find((p) => p.id === userId);
         if (existing) {
           existing.socketId = socket.id;
-          existing.username = data.username?.trim() || existing.username;
+          existing.username = hydratedPlayer.username;
+          existing.avatar = hydratedPlayer.avatar;
+
           for (const tm of tournament.bracket) {
-            if (tm.player1?.id === userId) tm.player1.socketId = socket.id;
-            if (tm.player2?.id === userId) tm.player2.socketId = socket.id;
+            if (tm.player1?.id === userId) {
+              tm.player1.socketId = socket.id;
+              tm.player1.username = hydratedPlayer.username;
+              tm.player1.avatar = hydratedPlayer.avatar;
+            }
+            if (tm.player2?.id === userId) {
+              tm.player2.socketId = socket.id;
+              tm.player2.username = hydratedPlayer.username;
+              tm.player2.avatar = hydratedPlayer.avatar;
+            }
           }
+
           emitTournamentUpdate(io, tournament);
           return;
         }
@@ -124,27 +138,17 @@ export function setupTournamentHandlers(io: Server) {
           return;
         }
 
-        const player = getOrCreatePlayer(socket, data.username);
-        if (!player) {
-          socket.emit('tournament-error', { message: 'Unauthorized' });
-          return;
-        }
+        tournament.players.push(hydratedPlayer);
 
-        tournament.players.push(player);
-
-        try {
-          await prisma.tournamentParticipant.create({
-            data: {
-              id: randomUUID(),
-              tournamentId: data.tournamentId,
-              userId,
-              seed: tournament.players.length,
-              eliminated: false,
-            },
-          });
-        } catch (err) {
-          console.error('Failed to add tournament participant:', err);
-        }
+        await prisma.tournamentParticipant.create({
+          data: {
+            id: randomUUID(),
+            tournamentId: data.tournamentId,
+            userId,
+            seed: tournament.players.length,
+            eliminated: false,
+          },
+        });
 
         emitTournamentUpdate(io, tournament);
         io.emit('tournament-available', {
@@ -409,9 +413,15 @@ export function setupTournamentHandlers(io: Server) {
       socket.emit('tournaments-list', list);
     });
 
-    socket.on('reconnect-tournament', (data: { tournamentId?: string }) => {
+    socket.on('reconnect-tournament', async (data: { tournamentId?: string }) => {
       const userId = getSocketUserId(socket);
       if (!userId) {
+        socket.emit('tournament-error', { message: 'Unauthorized' });
+        return;
+      }
+
+      const hydratedPlayer = await getOrCreatePlayer(socket);
+      if (!hydratedPlayer) {
         socket.emit('tournament-error', { message: 'Unauthorized' });
         return;
       }
@@ -421,6 +431,9 @@ export function setupTournamentHandlers(io: Server) {
         if (!player) return false;
 
         player.socketId = socket.id;
+        player.username = hydratedPlayer.username;
+        player.avatar = hydratedPlayer.avatar;
+
         socket.emit('tournament-created', { tournamentId: tournament.id, tournament });
         emitTournamentUpdate(io, tournament);
         return true;
