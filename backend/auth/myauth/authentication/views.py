@@ -2,10 +2,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.conf import settings
 from django.shortcuts import redirect
-from django.conf import settings
-from django.shortcuts import redirect
 from django.contrib.auth.password_validation import validate_password
-from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.hashers import make_password, check_password
 from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator
@@ -14,25 +11,15 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework_simplejwt.exceptions import TokenError
 from .auth_utils import get_user_from_request
-from .models import User
 from .permissions import role_required
 import uuid
 import requests
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
-from rest_framework_simplejwt.exceptions import TokenError
-from .auth_utils import get_user_from_request
 from .models import User
-from .permissions import role_required
-import uuid
-import requests
 import json
 
 FORTY_TWO_AUTHORIZE_URL = 'https://api.intra.42.fr/oauth/authorize'
 FORTY_TWO_TOKEN_URL     = 'https://api.intra.42.fr/oauth/token'
 FORTY_TWO_USER_URL      = 'https://api.intra.42.fr/v2/me'
-
 
 @csrf_exempt
 def login(request):
@@ -345,7 +332,6 @@ def forty_two_login(request):
 @csrf_exempt
 def forty_two_callback(request):
     code = request.GET.get('code')
-
     if not code:
         return JsonResponse({'error': 'No code provided'}, status=400)
 
@@ -356,7 +342,6 @@ def forty_two_callback(request):
         'code':          code,
         'redirect_uri':  settings.FORTY_TWO_REDIRECT_URI,
     })
-
     if token_response.status_code != 200:
         return JsonResponse({'error': 'Failed to get access token'}, status=400)
 
@@ -365,20 +350,20 @@ def forty_two_callback(request):
     user_response = requests.get(FORTY_TWO_USER_URL, headers={
         'Authorization': f'Bearer {access_token}'
     })
-
     if user_response.status_code != 200:
         return JsonResponse({'error': 'Failed to get user info'}, status=400)
 
     user_data = user_response.json()
 
     user = User.objects.filter(username=user_data['login']).first()
-
     if not user:
         user = User.objects.filter(email=user_data.get('email')).first()
 
     if not user:
-        avatar_url = user_data.get('image', {}).get('link') or \
-                    user_data.get('image', {}).get('versions', {}).get('medium', '')
+        avatar_url = (
+            user_data.get('image', {}).get('link') or
+            user_data.get('image', {}).get('versions', {}).get('medium', '')
+        )
         user = User.objects.create(
             id=str(uuid.uuid4()),
             username=user_data['login'],
@@ -387,11 +372,14 @@ def forty_two_callback(request):
             role='user',
             avatar=avatar_url,
         )
+        redirect_url = "/ChangeIntra"
+    else:
+        redirect_url = "/Dashboard"
+
     refresh = RefreshToken.for_user(user)
     access  = refresh.access_token
 
-    response = JsonResponse({'message': 'Login successful'})
-    response = redirect("/ChangeIntra")
+    response = redirect(redirect_url)
     response.set_cookie(key='access_token',  value=str(access),  max_age=600,    httponly=True, secure=False, samesite='Lax', path='/')
     response.set_cookie(key='refresh_token', value=str(refresh), max_age=604800, httponly=True, secure=False, samesite='Lax', path='/')
     return response
