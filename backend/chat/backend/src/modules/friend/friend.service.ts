@@ -31,6 +31,8 @@ export class FriendService {
             }
         });
         if (existing) {
+            if(existing.status === 'PENDING' && existing.requesterId === data.requesterId)
+                throw new AppError(`Friend request to '${data.receiverId}' already sent, wait until accept youre request.`, 400);
             if (existing.status === 'ACCEPTED')
                 throw new AppError('A friend request is already accepted between these users.', 400);
             if(existing.status === 'PENDING') {
@@ -231,9 +233,7 @@ export class FriendService {
     static async getRejectedFriend(userId: string) : Promise<BlockedFriendType[]> {
         const rejected = await prisma.friend.findMany({
             where: {
-                OR: [
-                    { receiverId: userId }, { requesterId: userId }
-                ],
+                receiverId: userId,
                 status: 'REJECTED'
             },
             include: {
@@ -249,8 +249,11 @@ export class FriendService {
         const pendingRequest = await prisma.friend.findMany({
             where: {
                 OR: [
-                    { receiverId: userId }, { requesterId: userId }, {status: 'PENDING'}, {status: 'REJECTED'}
+                    { receiverId: userId }, { requesterId: userId }
                 ],
+                AND: {
+                    OR: [{status: 'PENDING'}, {status: 'REJECTED'}]
+                }
             },
             include: {
                 User_Friend_receiverIdToUser: { select: { id: true, username: true, avatar: true } },

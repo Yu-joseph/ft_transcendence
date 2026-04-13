@@ -10,15 +10,15 @@ import { useAuth } from "../../auth/useAuth";
 export type MessageState = 'pending' | 'sent' | 'error';
 
 export interface MessageItem {
-  id: number;
+  id: number | string;
   content: string;
   User: {
     id: string;
     username: string;
   };
   created_at: string;
-  status: MessageState
-  tempId: string
+  status: MessageState | null
+  tempId: string | null
 }
 export interface MessagesWithConvId {
   convId: number;
@@ -47,10 +47,11 @@ export function Chat() {
     const loadHistoryByConvId = async () => {
       try {
         const result = await fetchClient<MessageItem[] | []>(`/chat/conversations/${selectedConvId}/messages`, {});
+        result.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null; });
         setMessages(result);
       } catch (err: any) {
         console.log(err);
-        // setMessages([]);
+        setMessages([]); // to update to display error loading
       }
     }
     loadHistoryByConvId();
@@ -68,11 +69,12 @@ export function Chat() {
         const result = await fetchClient<MessagesWithConvId>(`/chat/friend/${selectedFriendId}/messages`, {});
         console.log(result);
         setIsLoadedFromFriendProfile(true);
+        result.messages.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null});
         setMessages(result.messages);
         setSelectedConvId(result.convId);
       } catch (err: any) {
         console.log(err);
-        // setMessages([]);
+        setMessages([]); // to update to display error loading
       }
     }
     loadHistoryByFriendId();

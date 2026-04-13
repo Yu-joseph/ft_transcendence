@@ -51,8 +51,10 @@ export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSock
 
         const onReceiveMessage = (newMessage: MessageItem) => {
             console.log('i receive this message:', newMessage);
-            setMessages(prev => [...prev, newMessage]);
-            chatSocket.emit('update:conversation', ROM_ID);
+            newMessage.status = null;
+            // console.log('All Message after receiving new:', m)
+            setMessages(prev => [...prev, newMessage]); // here to filter messages and update status... azka
+            // chatSocket.emit('update:conversation', ROM_ID);
         }
         
         const onDisconnect = () => {

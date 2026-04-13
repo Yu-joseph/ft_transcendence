@@ -1,4 +1,5 @@
 
+import { off } from "node:cluster";
 import { prisma } from "../../lib/prisma.js";
 import { getIo } from "../../socket/index.js";
 import { AppError } from "../../utils/AppError.js";
@@ -128,26 +129,18 @@ export  class MessagesServices {
             ]);
             throw new AppError('You are not friends anymore!', 403);
         }
-        const   saveMessage : MessagesPayload = await  prisma.message.create({
-            data: newMessage,
-            include: {
-                User: {select: {id: true, username: true}}
-            }
-        });
+        const   [saveMessage, updateConv] = await prisma.$transaction([
+            prisma.message.create({ data: newMessage, include: { User: {select: {id: true, username: true}} }}),
+            prisma.conversation.update({
+            where: { id: conversationId }, data: { updated_at: new Date() }})
+        ]);
+
         const   io = getIo();
         console.log(`Sending message to room ${conversationId}`);
-
-        io.to(`ROOM_${conversationId}`).emit('message:new', saveMessage);
-        const   updateConv = await prisma.conversation.update({
-            where: {
-                id: conversationId
-            },
-            data: {
-                updated_at: new Date()
-            }
-        });
-        
-        io.to(convExist.user1Id).to(convExist.user2Id).emit('conversation:updated',
+        io.to(convExist.user1Id === senderId ? convExist.user2Id : convExist.user1Id)
+            .emit('message:new', saveMessage);
+        io.to(convExist.user1Id).to(convExist.user2Id)
+            .emit('conversation:updated',
             {
                 lastMessage: {
                     id: saveMessage.id, created_at: saveMessage.created_at, content: saveMessage.content, senderId: saveMessage.User.id

@@ -1,9 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import  {IoEllipsisHorizontal} from 'react-icons/io5';
 import { useAuth } from "../../../auth/useAuth";
 import { fetchClient } from '../../utils/fetchClient';
-import type { MessageItem } from '../../pages/Chat';
+import type { MessageItem, MessageState } from '../../pages/Chat';
 import { useNavigate } from 'react-router-dom';
+import { FaCheck, FaExclamation } from 'react-icons/fa';
+import { CgSpinner } from 'react-icons/cg';
+import { Clock } from 'lucide-react';
 
 interface UserInfo {
     id: string
@@ -36,6 +39,7 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
 
     useEffect(() => {
         console.log("In chat Message, messages is:", messages);
+        console.log('ALL MESAGES>>>>>>>:', messages);
         if(!friendId)
             return;
         const   loadUserInfo = async () => {
@@ -72,6 +76,11 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
         if(!userId)
             navigate('/');
         navigate(`/Profile/${userId}`);
+    }
+    const   detectMessageStatIcon = (state: MessageState) => {
+        if(state === 'sent')
+            return <FaCheck size={10} className='text-green-400'/>
+        return state === 'pending' ? <Clock size={10} className='text-amber-500' /> : <FaExclamation size={10} className='text-red-600' />
     }
 
     if (!friendId) {
@@ -147,9 +156,9 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
                                     <p className='text-sm leading-relaxed'>
                                     {m.content}
                                     </p>
-                                    <div className={`gap-1.5 text-[10px] mt-1 flex ${isMe ? 'text-blue-200 justify-end' : 'text-slate-400 justify-start'}`}>
-                                        {new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
-                                        <p>{m.tempId}</p>
+                                    <div className={`gap-1.5 text-[10px] mt-1 flex ${isMe ? 'text-blue-200 justify-end' : 'text-slate-400 justify-start'} items-center`}>
+                                        {(m.status === 'sent' || m.status === null)  && new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+                                        {m.status && <p className=''>{detectMessageStatIcon(m.status)}</p>} 
                                     </div>
                                 </div>
                             </div>

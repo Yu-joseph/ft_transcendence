@@ -40,15 +40,59 @@ export  function    ChatInput({setMessages, convId}: ChatInputPorps) {
             tempId: String(Date.now()),
             status: 'pending'
         }
+        setMessages(prev => [...prev, {
+            id: messageToSend.tempId,
+            content: messageToSend.content,
+            User: {id: user.id, username: user.username},
+            created_at: new Date().toLocaleTimeString(),
+            status: 'pending',
+            tempId: messageToSend.tempId
+        }]); // here render new message for the sender before sending http-req
         try {
-            const   result = await fetchClient<MessageItem>(`/chat/conversations/${convId}/message`, {
-                method: 'POST',
-                body: JSON.stringify(messageToSend)
-            });
-            console.log('message sended:', result);
+            setTimeout(async () => {
+                const   response = await fetch((import.meta.env.VITE_CHAT_API as string ?? 'http://10.30.234.188:8080/api') + `/chat/conversations/${convId}/message`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(messageToSend)
+                });
+                const result = await response.json();
+                if(!response.ok){
+                    console.log("Falliled to send message:", messageToSend.content);
+                    console.log('Message Error:', result.message);
+                    setMessages(prev => prev.map(m => { // i update the new message to it's correspond status and id and created_at feom server
+                        if(m.tempId !== result.data.tempId)
+                            return m;
+                        return {
+                            ...m,
+                            id: messageToSend.tempId,
+                            created_at: result.data.created_at ?? '',
+                            status: 'error'
+                        };
+                    }));
+                    setInput('');
+                    return ;
+                }
+                console.log('message sended===>:', result);
+                setMessages(prev => prev.map(m => { // i update the new message to it's correspond status and id and created_at feom server
+                    if(m.tempId !== result.data.tempId)
+                        return m;
+                    return {
+                        ...m,
+                        id: result.data.id,
+                        created_at: result.data.created_at,
+                        status: result.data.status ?? 'sent'
+                    }
+                })
+        );
+                
+            }, 2000);
+
         } catch (err:any) {
             console.log(err);
-            // setMessages([]);
+            setMessages(prev => prev.map(m => m.tempId === messageToSend.tempId ? {...m, status: 'error'} : m ));
         }
         setInput('');
     }
@@ -59,6 +103,7 @@ export  function    ChatInput({setMessages, convId}: ChatInputPorps) {
         const   messageValue: string = e.target.value;
         setInput(messageValue);
         if(!isTyping && messageValue.length > 0) {
+            // console.log('Typing start from me');
             chatSocket.emit('typing:start', {room_id: ROOM_ID, userId: user.id, convId: convId} as JoinChatInf)
             setIsTyping(true);
         }
