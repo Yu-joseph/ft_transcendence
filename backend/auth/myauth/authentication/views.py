@@ -377,12 +377,15 @@ def forty_two_callback(request):
         user = User.objects.filter(email=user_data.get('email')).first()
 
     if not user:
+        avatar_url = user_data.get('image', {}).get('link') or \
+                    user_data.get('image', {}).get('versions', {}).get('medium', '')
         user = User.objects.create(
             id=str(uuid.uuid4()),
             username=user_data['login'],
             email=user_data.get('email', ''),
             fullname=f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip(),
             role='user',
+            avatar=avatar_url,
         )
     refresh = RefreshToken.for_user(user)
     access  = refresh.access_token
