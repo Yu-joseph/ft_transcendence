@@ -3,19 +3,23 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import Bar from '../components/Bar'
 import BottomNav from '../components/BottomNav'
 import TournamentLoadingPage from '../components/TournamentLoadingPage'
+import Bracket from './components/Bracket'
+import MatchInviteModal from './components/MatchInviteModal'
+import WaitingLobby from './components/WaitingLobby'
+import WinnerBanner from './components/WinnerBanner'
 import { gameSocket } from '../socket/sock'
-import { GiPodiumWinner } from "react-icons/gi";
 import { useAuth } from '../auth/useAuth'
 
 
-interface Player {
+export interface Player {
   id: string
   username: string
+  avatar: string | null
   socketId: string
   isReady: boolean
 }
 
-interface TournamentMatch {
+export interface TournamentMatch {
   roundNumber: number
   matchIndex: number
   matchId: string | null
@@ -26,7 +30,7 @@ interface TournamentMatch {
   requestedBy: string | null
 }
 
-interface TournamentState {
+export interface TournamentState {
   id: string
   name: string
   creatorId: string
@@ -37,127 +41,11 @@ interface TournamentState {
   winner: string | null
 }
 
-interface TournamentMatchInvite {
+export interface TournamentMatchInvite {
   tournamentId: string
   roundNumber: number
   matchIndex: number
   opponentName: string
-}
-
-function MatchCard({ match, userId, onPlay,}: { match: TournamentMatch ; userId: string ;onPlay: () => void }) 
-{
-  const isInMatch = match.player1?.id === userId || match.player2?.id === userId
-  const canPlay = match.status === 'ready' && isInMatch
-  const hasRequested = match.requestedBy === userId
-
-  const p1Name = match.player1?.username ?? 'plyaer1'
-  const p2Name = match.player2?.username ?? 'player2'
-/// ststaus to css class to set color for each status
-  const cardClass = {
-    pending: 'border-slate-600 bg-slate-800/60',
-    ready: 'border-amber-500 bg-amber-900/20',
-    playing: 'border-cyan-500 bg-cyan-900/20',
-    finished: 'border-slate-600 bg-slate-800/40 opacity-70',
-  }[match.status]
-
-  const winnerName = match.winnerId
-    ? match.player1?.id === match.winnerId
-      ? match.player1?.username
-      : match.player2?.username
-    : null
-
-  return (
-    <div className={`rounded-xl border px-4 py-3 w-44 ${cardClass} flex flex-col gap-2 shadow-lg`}>
-      <div className="flex flex-col gap-1">
-        <span
-          className={`text-sm font-semibold truncate ${
-            match.winnerId === match.player1?.id ? 'text-amber-400' : 'text-white'
-          }`}
-        >
-          {p1Name}
-        </span>
-        <div className="border-t border-slate-600/60" />
-        <span
-          className={`text-sm font-semibold truncate ${
-            match.winnerId === match.player2?.id ? 'text-amber-400' : 'text-white'
-          }`}
-        >
-          {p2Name}
-        </span>
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-gray-400 capitalize">{match.status}</span>
-        {canPlay && (
-          <button
-            onClick={onPlay}
-            disabled={hasRequested}
-            className={`text-xs px-3 py-1 rounded-lg font-semibold transition ${
-              hasRequested
-                ? 'bg-slate-600 text-gray-400 cursor-default'
-                : 'bg-amber-500 hover:bg-amber-400 text-white'
-            }`}
-          >
-            {hasRequested ? 'Waiting…' : 'Play'}
-          </button>
-        )}
-        {match.status === 'finished' && winnerName && (
-          <span className="text-xs text-amber-400 truncate"> {winnerName}</span>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function Bracket({ tournament, userId, }: {tournament: TournamentState ;userId: string }) 
-{
-  const rounds = Array.from(new Set(tournament.bracket.map(m => m.roundNumber))).sort((a, b) => a - b,)
-  const totalRounds = rounds.length;
-
-  const handlePlay = (match: TournamentMatch) => {
-    gameSocket.emit('request-tournament-match', {
-      tournamentId: tournament.id,
-      roundNumber: match.roundNumber,
-      matchIndex: match.matchIndex,
-    })
-  }
-
-  const roundLabel = (r: number) =>
-    r === totalRounds ? 'Final' : r === totalRounds - 1 ? 'Semi-Final' : `Round ${r}`
-
-  return (
-    <div className="overflow-x-auto pb-2">
-      <div className="flex gap-10 min-w-fit py-2">
-        {rounds.map(round => {
-          const roundMatches = tournament.bracket
-            .filter(m => m.roundNumber === round)
-            .sort((a, b) => a.matchIndex - b.matchIndex)
-          const isCurrent = round === tournament.currentRound
-
-          return (
-            <div key={round} className="flex flex-col items-center gap-4">
-              <span
-                className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${
-                  isCurrent ? 'bg-amber-500 text-white' : 'bg-slate-700 text-gray-400'
-                }`}
-              >
-                {roundLabel(round)}
-              </span>
-              <div className="flex flex-col gap-6">
-                {roundMatches.map(match => (
-                  <MatchCard
-                    key={`${match.roundNumber}-${match.matchIndex}`}
-                    match={match}
-                    userId={userId}
-                    onPlay={() => handlePlay(match)}
-                  />
-                ))}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
 }
 
 function Tournament() 
@@ -418,62 +306,21 @@ function Tournament()
 
         {/* Waiting lobby */}
         {activeTournament.status === 'waiting' && (
-          <div className="bg-slate-800 border border-blue-700 rounded-xl p-6 max-w-md">
-            <h2 className="text-lg font-semibold text-white mb-4">Waiting for players…</h2>
-            <ul className="space-y-2 mb-6">
-              {activeTournament.players.map((p, i) => (
-                <li key={p.id} className="flex items-center gap-3 text-white">
-                  <span className="w-6 h-6 flex items-center justify-center rounded-full bg-blue-800 text-xs font-bold text-amber-400">
-                    {i + 1}
-                  </span>
-                  {p.username}
-                  {p.id === activeTournament.creatorId && (
-                    <span className="text-xs text-amber-500 ml-1">(host)</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-            {isCreator ? (
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={handleStart}
-                  disabled={activeTournament.players.length < 3}
-                  className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-semibold disabled:opacity-40 transition"
-                >
-                  Start Tournament
-                </button>
-                <button
-                  onClick={handleLeaveTournament}
-                  className="px-6 py-2 rounded-xl border border-red-500 text-red-300 hover:bg-red-900/30 transition"
-                >
-                  Leave Tournament
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-wrap items-center gap-3">
-                <p className="text-gray-400 text-sm">Waiting for the host to start…</p>
-                <button
-                  onClick={handleLeaveTournament}
-                  className="px-4 py-2 rounded-xl border border-red-500 text-red-300 text-sm font-medium hover:bg-red-900/30 transition"
-                >
-                  Leave Tournament
-                </button>
-              </div>
-            )}
-          </div>
+          <WaitingLobby
+            players={activeTournament.players}
+            creatorId={activeTournament.creatorId}
+            isCreator={isCreator}
+            canStart={activeTournament.players.length >= 3}
+            onStart={handleStart}
+            onLeave={handleLeaveTournament}
+          />
         )}
 
         {/* Bracket */}
         {(activeTournament.status === 'in-progress' || activeTournament.status === 'finished') && (
           <div className="bg-slate-800 border border-blue-700 rounded-xl p-6">
             {activeTournament.status === 'finished' && winnerPlayer && (
-              <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-700">
-                <span className="text-3xl"><GiPodiumWinner /></span>
-                <div>
-                  <span className="text-xl font-bold text-amber-400">{winnerPlayer.username} wins!</span>
-                  <p className="text-sm text-gray-400 mt-1">Redirecting to Dashboard…</p>
-                </div>
-              </div>
+              <WinnerBanner winner={winnerPlayer} />
             )}
             <h2 className="text-lg font-semibold text-white mb-5">Bracket</h2>
             <Bracket tournament={activeTournament} userId={currentUserId} />
@@ -482,28 +329,11 @@ function Tournament()
       </main>
       <BottomNav />
       {pendingMatchInvite && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-            <h3 className="text-white text-lg font-semibold mb-2">Match Invite</h3>
-            <p className="text-slate-300 mb-5">
-              <span className="text-amber-400 font-semibold">{pendingMatchInvite.opponentName}</span> wants to start this match.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={handleAcceptMatchInvite}
-                className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-800 transition"
-              >
-                Accept
-              </button>
-              <button
-                onClick={handleDeclineMatchInvite}
-                className="flex-1 px-4 py-2 rounded-lg bg-amber-600 text-white hover:bg-amber-800 transition"
-              >
-                Decline
-              </button>
-            </div>
-          </div>
-        </div>
+        <MatchInviteModal
+          opponentName={pendingMatchInvite.opponentName}
+          onAccept={handleAcceptMatchInvite}
+          onDecline={handleDeclineMatchInvite}
+        />
       )}
     </div>
   )
