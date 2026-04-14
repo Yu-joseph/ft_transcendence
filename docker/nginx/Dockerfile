@@ -58,6 +58,12 @@ RUN git clone https://github.com/coreruleset/coreruleset.git
 WORKDIR /opt/coreruleset
 RUN cp -r /opt/coreruleset/rules /etc/nginx/modsec/ 
 
+RUN mkdir -p /etc/nginx/certs && \
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/nginx/certs/nginx.key \
+    -out /etc/nginx/certs/nginx.crt \
+    -subj "/CN=localhost"
+
 COPY crs-setup.conf /etc/nginx/modsec/crs-setup.conf
 COPY main.conf /etc/nginx/modsec/main.conf
 COPY nginx.conf /etc/nginx/nginx.conf
