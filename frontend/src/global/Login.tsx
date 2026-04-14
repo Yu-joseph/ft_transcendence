@@ -1,6 +1,6 @@
 // import { SignedIn, SignedOut, SignInButton } from "@clerk/clerk-react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import { PasswordField } from "../components/PasswordField";
 // import {  } from "re";
