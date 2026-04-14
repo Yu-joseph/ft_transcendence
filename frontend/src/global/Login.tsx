@@ -1,8 +1,9 @@
 // import { SignedIn, SignedOut, SignInButton } from "@clerk/clerk-react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "../auth/useAuth";
 import { PasswordField } from "../components/PasswordField";
+// import {  } from "re";
 
 function Login() {
   const [emailOrUsername, setEmailOrUsername] = useState("");
@@ -20,6 +21,8 @@ function Login() {
   const [signupLoading, setSignupLoading] = useState(false);
   const intraLoginUrl = "/authent/42/login/";
   const { user, loading: authLoading, setUser } = useAuth();
+  // const ref = useRef(null);
+  // const [flagArrow, setFlagArrow] = useState<boolean>(false);
   const navigate = useNavigate();
 
   
@@ -294,11 +297,11 @@ function Login() {
 
       {showSignup && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center px-4 py-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
           onClick={() => setShowSignup(false)}
         >
           <div
-            className="w-full max-w-md rounded-xl bg-slate-950/90 border border-amber-400/30 shadow-2xl shadow-amber-900/30 p-5"
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl bg-slate-950/90 border border-amber-400/30 shadow-2xl shadow-amber-900/30 p-5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
