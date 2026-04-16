@@ -173,7 +173,7 @@ app.get("/api/users/:id/status", async (req, res) => {
     const ranked = rankedUsers.find((u) => u.id === userId);
 
     const isPlaying = isPlayerInActiveMatch(userId);
-    const isOnline = Array.from(players.values()).some((p) => p.id === userId);
+    const isOnline = players.has(userId);
 
     const status = isPlaying
       ? "playing"

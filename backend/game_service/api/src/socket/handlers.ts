@@ -4,11 +4,13 @@ import prisma from '../lib/prisma';
 import { advanceTournamentBracket } from './tournament';
 import { getUserIdFromToken } from '../auth/identity';
 
-
 // In-memory storage
-const searchQueue: string[] = [];
-export const players = new Map<string, Player>();
+export const players = new Map<string, Player>(); // key = userId
 export const matches = new Map<string, Match>();
+
+const userSockets = new Map<string, Set<string>>(); // userId -> socketIds
+const socketToUser = new Map<string, string>(); // socketId -> userId
+
 const disconnectTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 export { createGameInDB, finalizeGame, updateGameInDB, getRankedUsers, getUserProfile };
 
@@ -19,6 +21,11 @@ const TOURNAMENT_SECOND_POINTS = 10;
 const TURN_TIMEOUT_MS = 5000;
 const turnTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
+const INVITE_TTL_MS = 15000;
+const pendingInvites = new Map<
+  string,
+  { fromUserId: string; toUserId: string; createdAt: number }
+>();
 
 type BaseStats = {
   id: string;
@@ -37,15 +44,60 @@ type RankedStats = BaseStats & {
   rank: number;
 };
 
-
 type LobbyPlayer = Player & {
   status: 'online' | 'playing';
 };
 
 type UserProfile = {
-username: string;
-avatar: string | null;
+  username: string;
+  avatar: string | null;
 };
+
+export function getUserRoom(userId: string): string {
+  return 'user:' + userId;
+}
+
+function trackSocketForUser(socket: Socket, userId: string) {
+  socketToUser.set(socket.id, userId);
+  const sockets = userSockets.get(userId) ?? new Set<string>();
+  sockets.add(socket.id);
+  userSockets.set(userId, sockets);
+  socket.join(getUserRoom(userId));
+}
+
+function untrackSocket(socketId: string): { userId: string | null; hasOtherSockets: boolean } {
+  const userId = socketToUser.get(socketId) ?? null;
+  if (!userId) return { userId: null, hasOtherSockets: false };
+
+  socketToUser.delete(socketId);
+  const sockets = userSockets.get(userId);
+  if (!sockets) return { userId, hasOtherSockets: false };
+
+  sockets.delete(socketId);
+  if (sockets.size === 0) {
+    userSockets.delete(userId);
+    return { userId, hasOtherSockets: false };
+  }
+
+  return { userId, hasOtherSockets: true };
+}
+
+function cleanupExpiredInvites() {
+  const now = Date.now();
+  for (const [inviteId, invite] of pendingInvites) {
+    if (now - invite.createdAt > INVITE_TTL_MS) {
+      pendingInvites.delete(inviteId);
+    }
+  }
+}
+
+function removePendingInvitesForUser(userId: string) {
+  for (const [inviteId, invite] of pendingInvites) {
+    if (invite.fromUserId === userId || invite.toUserId === userId) {
+      pendingInvites.delete(inviteId);
+    }
+  }
+}
 
 async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const user = await prisma.user.findUnique({
@@ -140,8 +192,9 @@ async function applyMove(
   } else {
     match.currentTurn = match.players.find((p) => p.id !== playerId)?.id ?? null;
   }
-    for (const p of match.players) {
-    io.to(p.socketId).emit('match-update', match);
+
+  for (const p of match.players) {
+    io.to(getUserRoom(p.id)).emit('match-update', match);
   }
 
   try {
@@ -193,17 +246,20 @@ export function startTurnTimerForMatch(io: Server, matchId: string) {
 function computeBaseXp(wins: number, losses: number): number {
   return wins * XP_PER_WIN + losses * XP_PER_LOSS;
 }
+
 function addPoints(map: Map<string, number>, userId: string, points: number) {
   map.set(userId, (map.get(userId) ?? 0) + points);
 }
+
 function nextPowerOf2(n: number): number {
   let p = 1;
   while (p < Math.max(1, n)) p *= 2;
   return p;
 }
+
 async function getTournamentBonusByUser(): Promise<Map<string, number>> {
   const finishedTournaments = await prisma.tournament.findMany({
-    where: { status: "finished" },
+    where: { status: 'finished' },
     select: {
       winnerId: true,
       TournamentParticipant: {
@@ -222,10 +278,7 @@ async function getTournamentBonusByUser(): Promise<Map<string, number>> {
       addPoints(bonusByUser, tournament.winnerId, TOURNAMENT_WIN_POINTS);
     }
 
-    //second place 
-
     const totalRounds = Math.log2(nextPowerOf2(participants.length));
-
     const secondPlace = participants.find(
       (p) => p.eliminated_in_round === totalRounds && p.userId !== tournament.winnerId,
     );
@@ -270,7 +323,7 @@ async function getRankedUsers(): Promise<RankedStats[]> {
  * Save a new match to DB when it starts.
  */
 async function createGameInDB(match: Match) {
-  const boardStrings = match.board.map(cell => cell ?? '');
+  const boardStrings = match.board.map((cell) => cell ?? '');
   await prisma.game.create({
     data: {
       id: match.id,
@@ -280,7 +333,7 @@ async function createGameInDB(match: Match) {
       playerXId: match.players[0].id,
       playerOId: match.players[1].id,
       tournamentId: match.tournamentId ?? null,
-      created_at: new Date(), // fixed field name
+      created_at: new Date(),
     },
   });
   console.log(`Game created in DB: ${match.id}`);
@@ -290,7 +343,7 @@ async function createGameInDB(match: Match) {
  * Update the board in DB after every move.
  */
 async function updateGameInDB(match: Match) {
-  const boardStrings = match.board.map(cell => cell ?? '');
+  const boardStrings = match.board.map((cell) => cell ?? '');
   await prisma.game.upsert({
     where: { id: match.id },
     update: {
@@ -318,10 +371,9 @@ async function finalizeGame(match: Match) {
   const playerOId = match.players[1].id;
 
   const winnerId = match.winner ?? null;
-  const result =
-    winnerId === playerXId ? 'X_WIN' : 'O_WIN';
+  const result = winnerId === playerXId ? 'X_WIN' : 'O_WIN';
 
-  const boardStrings = match.board.map(cell => cell ?? '');
+  const boardStrings = match.board.map((cell) => cell ?? '');
 
   await prisma.game.upsert({
     where: { id: match.id },
@@ -344,22 +396,22 @@ async function finalizeGame(match: Match) {
     },
   });
 
-  // Tournament games do not affect wins/losses
   if (match.tournamentId) {
     console.log(`Tournament game finished without W/L update: ${match.id}`);
     return;
   }
 
- if (winnerId)
- {
-   const loserId = winnerId === playerXId ? playerOId : playerXId;
-   await prisma.$transaction([
-     prisma.user.update({ where: { id: winnerId }, data: { wins: { increment: 1 } } }),
-     prisma.user.update({ where: { id: loserId }, data: { losses: { increment: 1 } } }),
-   ]);
- 
-   console.log(`Game finished: ${result} | ${match.players[0].username} vs ${match.players[1].username}`);
- }
+  if (winnerId) {
+    const loserId = winnerId === playerXId ? playerOId : playerXId;
+    await prisma.$transaction([
+      prisma.user.update({ where: { id: winnerId }, data: { wins: { increment: 1 } } }),
+      prisma.user.update({ where: { id: loserId }, data: { losses: { increment: 1 } } }),
+    ]);
+
+    console.log(
+      `Game finished: ${result} | ${match.players[0].username} vs ${match.players[1].username}`,
+    );
+  }
 }
 
 /**
@@ -369,20 +421,31 @@ async function forfeitMatch(io: Server, matchId: string, leaverId: string) {
   const match = matches.get(matchId);
   if (!match || match.status === 'finished') return;
 
-  const opponent = match.players.find(p => p.id !== leaverId);
-  if (!opponent) return;
+  const opponent = match.players.find((p) => p.id !== leaverId);
+  const leaver = match.players.find((p) => p.id === leaverId);
+  if (!opponent || !leaver) return;
 
   match.status = 'finished';
   match.winner = opponent.id;
 
-  // Notify the opponent
-  io.to(opponent.socketId).emit('match-update', match);
-  io.to(opponent.socketId).emit('opponent-forfeited', {
+  // Send fresh match state to both players (all tabs)
+  for (const p of match.players) {
+    io.to(getUserRoom(p.id)).emit('match-update', match);
+  }
+
+  // Winner side tabs
+  io.to(getUserRoom(opponent.id)).emit('opponent-forfeited', {
+    matchId,
+    winner: opponent.username,
+    leaver: leaver.username,
+  });
+
+  // Leaver side tabs (this is the missing piece)
+  io.to(getUserRoom(leaver.id)).emit('you-forfeited', {
     matchId,
     winner: opponent.username,
   });
 
-  // Persist to DB
   try {
     clearTurnTimer(matchId);
     await finalizeGame(match);
@@ -397,94 +460,130 @@ async function forfeitMatch(io: Server, matchId: string, leaverId: string) {
 
   console.log(`Match ${matchId} forfeited by ${leaverId}, ${opponent.username} wins`);
 }
+
 export function isPlayerInActiveMatch(userId: string): boolean {
   for (const match of matches.values()) {
     if (match.status === 'playing' && match.players.some((p) => p.id === userId)) {
       return true;
     }
   }
-
   return false;
 }
 
 export function setupSocketHandlers(io: Server) {
   io.use(async (socket, next) => {
     try {
-      const token = readCookie(socket.handshake.headers.cookie, "access_token");
-      if (!token) return next(new Error("unauthorized"));
+      const token = readCookie(socket.handshake.headers.cookie, 'access_token');
+      if (!token) return next(new Error('unauthorized'));
 
       const userId = await getUserIdFromToken(token);
-      if (!userId) return next(new Error("unauthorized"));
+      if (!userId) return next(new Error('unauthorized'));
 
       socket.data.userId = userId;
       next();
     } catch {
-      next(new Error("auth service unavailable"));
+      next(new Error('auth service unavailable'));
     }
   });
 
   io.on('connection', (socket: Socket) => {
     console.log('User connected:', socket.id);
 
-    socket.on('join-lobby', async (data: { username?: string }) => {
-      const userId = socket.data.userId as string;
+    const authedUserId = socket.data.userId as string | undefined;
+    if (!authedUserId) {
+      socket.disconnect(true);
+      return;
+    }
+    trackSocketForUser(socket, authedUserId);
+
+    socket.on('join-lobby', async () => {
+      const userId = socket.data.userId as string | undefined;
       if (!userId) return;
+
       const profile = await getUserProfile(userId);
       if (!profile) {
         socket.emit('join-lobby-failed', { reason: 'User not found' });
         return;
       }
-      for (const [existingSocketId, existing] of players) {
-        if (existing.id === userId) {
-          players.delete(existingSocketId);
-          existing.socketId = socket.id;
-          existing.username = profile.username;
-          existing.avatar = profile.avatar;
-          players.set(socket.id, existing);
-          emitLobbyPlayersUpdate(io);
-          return;
-        }
+
+      const existing = players.get(userId);
+      if (existing) {
+        existing.username = profile.username;
+        existing.avatar = profile.avatar;
+        existing.socketId = socket.id;
+        players.set(userId, existing);
+      } else {
+        players.set(userId, {
+          id: userId,
+          username: profile.username,
+          avatar: profile.avatar,
+          socketId: socket.id,
+          isReady: false,
+        });
       }
 
-      const player: Player = {
-        id: userId,
-        username: profile.username,
-        avatar: profile.avatar,
-        socketId: socket.id,
-        isReady: false,
-      };
-
-      players.set(socket.id, player);
       emitLobbyPlayersUpdate(io);
       console.log(profile.username + ' joined the lobby');
     });
 
-    socket.on('send-invite', (targetSocketId: string) => {
-      const sender = players.get(socket.id);
-      const target = players.get(targetSocketId);
+    socket.on('send-invite', (data: { targetUserId: string }) => {
+      const senderUserId = socket.data.userId as string | undefined;
+      if (!senderUserId) return;
+
+      const sender = players.get(senderUserId);
+      const target = players.get(data.targetUserId);
       if (!sender || !target) return;
-      if (targetSocketId === socket.id) return;
+      if (sender.id === target.id) return;
       if (isPlayerInActiveMatch(target.id)) return;
 
-      io.to(targetSocketId).emit('receive-invite', {
-        from: sender,
-        inviteId: `invite-${Date.now()}`,
+      cleanupExpiredInvites();
+
+      const inviteId = 'invite-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+      pendingInvites.set(inviteId, {
+        fromUserId: sender.id,
+        toUserId: target.id,
+        createdAt: Date.now(),
       });
-      console.log(`${sender.username} invited ${target.username}`);
+
+      io.to(getUserRoom(target.id)).emit('receive-invite', {
+        inviteId,
+        from: {
+          id: sender.id,
+          username: sender.username,
+          avatar: sender.avatar,
+        },
+      });
+
+      console.log(sender.username + ' invited ' + target.username);
     });
 
-    socket.on('accept-invite', async (data: { inviteId: string; fromSocketId: string }) => {
-      const player1 = players.get(data.fromSocketId);
-      const player2 = players.get(socket.id);
-      if (!player1 || !player2) return;
-      if (isPlayerInActiveMatch(player1.id) || isPlayerInActiveMatch(player2.id)) return;
+    socket.on('accept-invite', async (data: { inviteId: string }) => {
+      const userId = socket.data.userId as string | undefined;
+      if (!userId) return;
 
-      [data.fromSocketId, socket.id].forEach(id => {
-        const index = searchQueue.indexOf(id);
-        if (index > -1) searchQueue.splice(index, 1);
-      });
+      cleanupExpiredInvites();
 
-      const matchId = `match-${Date.now()}`;
+      const invite = pendingInvites.get(data.inviteId);
+      if (!invite || invite.toUserId !== userId) {
+        socket.emit('accept-invite-failed', { reason: 'Invite expired or invalid' });
+        return;
+      }
+
+      const player1 = players.get(invite.fromUserId);
+      const player2 = players.get(invite.toUserId);
+      if (!player1 || !player2) {
+        pendingInvites.delete(data.inviteId);
+        return;
+      }
+
+      if (isPlayerInActiveMatch(player1.id) || isPlayerInActiveMatch(player2.id)) {
+        pendingInvites.delete(data.inviteId);
+        return;
+      }
+
+      pendingInvites.delete(data.inviteId);
+
+      const matchId = 'match-' + Date.now();
       const match: Match = {
         id: matchId,
         players: [player1, player2],
@@ -498,25 +597,43 @@ export function setupSocketHandlers(io: Server) {
       startTurnTimerForMatch(io, matchId);
       emitLobbyPlayersUpdate(io);
 
-      // Save to DB immediately
       try {
         await createGameInDB(match);
       } catch (err) {
         console.error('Failed to create game in DB:', err);
       }
 
-      io.to(data.fromSocketId).emit('match-found', { matchId, match, symbol: 'X' });
-      io.to(socket.id).emit('match-found', { matchId, match, symbol: 'O' });
+      io.to(getUserRoom(player1.id)).emit('match-found', { matchId, match, symbol: 'X' });
+      io.to(getUserRoom(player2.id)).emit('match-found', { matchId, match, symbol: 'O' });
+      io.to(getUserRoom(player2.id)).emit('invite-resolved', {
+        inviteId: data.inviteId,
+        status: 'accepted',
+      });
 
-      console.log(`Match created via invite: ${player1.username} vs ${player2.username}`);
+      console.log('Match created via invite: ' + player1.username + ' vs ' + player2.username);
     });
 
-    socket.on('decline-invite', (data: { inviteId: string; fromSocketId: string }) => {
-      const decliner = players.get(socket.id);
-      io.to(data.fromSocketId).emit('invite-declined', {
+    socket.on('decline-invite', (data: { inviteId: string }) => {
+      const userId = socket.data.userId as string | undefined;
+      if (!userId) return;
+
+      cleanupExpiredInvites();
+
+      const invite = pendingInvites.get(data.inviteId);
+      if (!invite || invite.toUserId !== userId) return;
+
+      pendingInvites.delete(data.inviteId);
+
+      const decliner = players.get(userId);
+      io.to(getUserRoom(invite.fromUserId)).emit('invite-declined', {
         by: decliner?.username || 'Unknown',
       });
-      console.log(`${decliner?.username} declined invite`);
+      io.to(getUserRoom(invite.toUserId)).emit('invite-resolved', {
+        inviteId: data.inviteId,
+        status: 'declined',
+      });
+
+      console.log((decliner?.username || 'Unknown') + ' declined invite');
     });
 
     socket.on('make-move', async (data: { matchId: string; oldindex: number; newindex: number }) => {
@@ -566,8 +683,9 @@ export function setupSocketHandlers(io: Server) {
       bindPlayerToSocket(player, socket.id);
       emitLobbyPlayersUpdate(io);
       const symbol = match.players[0].id === userId ? 'X' : 'O';
-      socket.emit('match-found', { matchId: data.matchId, match, symbol });
+      io.to(getUserRoom(userId)).emit('match-found', { matchId: data.matchId, match, symbol });
     });
+
     socket.on('leave-match', async (data: { matchId: string }) => {
       const userId = socket.data.userId as string | undefined;
       if (!userId) return;
@@ -579,25 +697,34 @@ export function setupSocketHandlers(io: Server) {
       }
       await forfeitMatch(io, data.matchId, userId);
     });
-    socket.on('disconnect', () => {
-      const player = players.get(socket.id);
 
-      const queueIndex = searchQueue.indexOf(socket.id);
-      if (queueIndex > -1) searchQueue.splice(queueIndex, 1);
+    socket.on('disconnect', () => {
+      const { userId, hasOtherSockets } = untrackSocket(socket.id);
+      if (!userId) return;
+
+      if (hasOtherSockets) {
+        const remainingSocketId = userSockets.get(userId)?.values().next().value as string | undefined;
+        const player = players.get(userId);
+        if (player && remainingSocketId) {
+          player.socketId = remainingSocketId;
+          players.set(userId, player);
+        }
+        return;
+      }
+
+      const player = players.get(userId);
 
       if (player) {
         const existingTimeout = disconnectTimeouts.get(player.id);
         if (existingTimeout) clearTimeout(existingTimeout);
 
         for (const [matchId, match] of matches) {
-          if (match.status === 'playing' && match.players.some(p => p.id === player.id)) {
+          if (match.status === 'playing' && match.players.some((p) => p.id === player.id)) {
             const timeout = setTimeout(() => {
               disconnectTimeouts.delete(player.id);
 
-              const reconnectedElsewhere = Array.from(players.entries()).some(
-                ([sid, p]) => sid !== socket.id && p.id === player.id
-              );
-              if (!reconnectedElsewhere) {
+              const stillConnected = (userSockets.get(player.id)?.size ?? 0) > 0;
+              if (!stillConnected) {
                 void forfeitMatch(io, matchId, player.id);
               }
             }, RECONNECT_GRACE_MS);
@@ -608,9 +735,10 @@ export function setupSocketHandlers(io: Server) {
         }
       }
 
-      players.delete(socket.id);
+      removePendingInvitesForUser(userId);
+      players.delete(userId);
       emitLobbyPlayersUpdate(io);
-      console.log('User disconnected:', player?.username || socket.id);
+      console.log('User disconnected:', player?.username || userId);
     });
   });
 }
@@ -632,19 +760,14 @@ function checkWinner(board: (string | null)[]): string | null {
 const RECONNECT_GRACE_MS = 15000;
 
 function bindPlayerToSocket(player: Player, socketId: string) {
-  for (const [existingSocketId, existing] of players) {
-    if (existing.id === player.id && existingSocketId !== socketId) {
-      players.delete(existingSocketId);
-    }
-  }
   player.socketId = socketId;
-  players.set(socketId, player);
+  players.set(player.id, player);
 }
 
 function readCookie(cookieHeader: string | undefined, name: string): string | null {
   if (!cookieHeader) return null;
-  const parts = cookieHeader.split(";").map((p) => p.trim());
-  const hit = parts.find((p) => p.startsWith(name + "="));
+  const parts = cookieHeader.split(';').map((p) => p.trim());
+  const hit = parts.find((p) => p.startsWith(name + '='));
   return hit ? decodeURIComponent(hit.slice(name.length + 1)) : null;
 }
 

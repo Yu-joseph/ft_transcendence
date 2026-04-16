@@ -134,6 +134,12 @@ function Game() {
       setopLeave(true);
       setTimeout(() => navigate(backTo), 4000);
     };
+    const handleYouForfeited = () => {
+      setShowLeaveConfirm(false);
+      navigate(backTo);
+    };
+
+    gameSocket.on("you-forfeited", handleYouForfeited);
 
     const handleTournamentFinished = () => {
       // whole tournament is over — always go back to Dashboard, not Tournament page
@@ -149,6 +155,7 @@ function Game() {
       gameSocket.off("match-update", applyIncomingMatch);
       gameSocket.off("opponent-forfeited", handleOpponentForfeited);
       gameSocket.off("tournament-finished", handleTournamentFinished);
+      gameSocket.off("you-forfeited", handleYouForfeited);
     };
   }, [backTo, matchId, navigate]);
 

@@ -12,6 +12,7 @@ import {
 import { getOrCreatePlayer, getSocketUserId } from './tournamentPlayers';
 import { tournaments } from './tournamentStore';
 import { isPlayerInActiveMatch } from './handlers';
+import { getUserRoom } from './handlers';
 
 export { advanceTournamentBracket } from './tournamentEngine';
 
@@ -252,7 +253,7 @@ export function setupTournamentHandlers(io: Server) {
 
         tm.requestedBy = caller.id;
 
-        io.to(opponent.socketId).emit('tournament-match-confirm', {
+        io.to(getUserRoom(opponent.id)).emit('tournament-match-confirm', {
           tournamentId: tournament.id,
           roundNumber: tm.roundNumber,
           matchIndex: tm.matchIndex,
@@ -379,7 +380,7 @@ export function setupTournamentHandlers(io: Server) {
         }
 
         tournament.players.forEach((p) => {
-          io.to(p.socketId).emit('tournament-cancelled', {
+          io.to(getUserRoom(p.id)).emit('tournament-cancelled', {
             tournamentId: data.tournamentId,
             reason: 'Creator left',
           });

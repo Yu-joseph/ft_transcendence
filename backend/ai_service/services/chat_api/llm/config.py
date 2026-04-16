@@ -19,7 +19,7 @@ class Config:
             default_headers={
                 "HTTP-Referer": "https://yourapp.com",
                 "X-Title": "LLM Studio",
-            }
+            },
         )
 
         self.system_message = SystemMessage(
@@ -36,14 +36,13 @@ class Config:
         )
 
     @staticmethod
-    def handle_error(e):
-        logging.error(f"LLM Error: {str(e)}")
-        error_str = str(e).lower()
-        if "timed out" in error_str:
+    def handle_error(e: Exception) -> str:
+        logging.error(f"LLM Error: {e}")
+        msg = str(e).lower()
+        if "timed out" in msg:
             return "The AI is taking too long to respond. Please try again."
-        elif "rate limit" in error_str:
+        elif "rate limit" in msg:
             return "Too many requests. Please wait a moment and try again."
-        elif "quota" in error_str or "exhausted" in error_str:
+        elif "quota" in msg or "exhausted" in msg:
             return "API quota exceeded. Please try again later."
-        else:
-            return f"Error: {str(e)}"
+        return f"Error: {e}"

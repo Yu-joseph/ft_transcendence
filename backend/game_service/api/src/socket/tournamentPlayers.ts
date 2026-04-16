@@ -11,30 +11,17 @@ export function getSocketUserId(socket: Socket): string | null {
 export async function getOrCreatePlayer(socket: Socket): Promise<Player | null> {
   const userId = getSocketUserId(socket);
   if (!userId) return null;
+
   const profile = await getUserProfile(userId);
+  if (!profile) return null;
 
-  if (!profile) {
-        return null;
-      }
-
-  const current = players.get(socket.id);
-  if (current) {
-    current.id = userId;
-    current.username = profile?.username;
-    current.avatar = profile?.avatar;
-    current.socketId = socket.id;
-    return current;
-  }
-
-  const existing = Array.from(players.entries()).find(([, p]) => p.id === userId);
+  const existing = players.get(userId);
   if (existing) {
-    const [oldSocketId, p] = existing;
-    players.delete(oldSocketId);
-    p.socketId = socket.id;
-    p.username = profile.username;
-    p.avatar = profile.avatar;
-    players.set(socket.id, p);
-    return p;
+    existing.username = profile.username;
+    existing.avatar = profile.avatar;
+    existing.socketId = socket.id;
+    players.set(userId, existing);
+    return existing;
   }
 
   const created: Player = {
@@ -44,6 +31,6 @@ export async function getOrCreatePlayer(socket: Socket): Promise<Player | null> 
     socketId: socket.id,
     isReady: false,
   };
-  players.set(socket.id, created);
+  players.set(userId, created);
   return created;
 }

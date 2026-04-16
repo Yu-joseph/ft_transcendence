@@ -8,6 +8,7 @@ type Player = {
   id: string;
   username: string;
   socketId: string;
+  avatar: string | null;
   status?: "online" | "playing";
 };
 
@@ -36,13 +37,13 @@ export default function PlayerList() {
     navigate(`/profile/${userId}`);
   };
 
-  const handleSendInvite = (targetSocketId: string, username: string) => {
-    gameSocket.emit("send-invite", targetSocketId);
-    setSentToast(`Invite sent to ${username}!`);
+  const handleSendInvite = (targetUserId: string, username: string) => {
+    gameSocket.emit('send-invite', { targetUserId });
+    setSentToast('Invite sent to ' + username + '!');
     setTimeout(() => setSentToast(null), 3000);
   };
 
-  const otherPlayers = players.filter((p) => p.socketId !== gameSocket.id);
+  const otherPlayers = players.filter((p) => p.id !== user?.id);
 
   return (
     <>
@@ -61,7 +62,7 @@ export default function PlayerList() {
 
               return (
                 <li
-                  key={p.socketId}
+                  key={p.id}
                   className="flex items-center justify-between bg-slate-700 rounded-lg px-4 py-2"
                 >
                   <span className="text-white inline-flex items-center gap-2 cursor-pointer group" onClick={() => openProfile(p.id)} >
@@ -79,7 +80,7 @@ export default function PlayerList() {
                   </span>
 
                   <button
-                    onClick={() => handleSendInvite(p.socketId, p.username)}
+                    onClick={() => handleSendInvite(p.id, p.username)}
                     disabled={isPlaying}
                     className={`px-3 py-1 text-sm rounded-lg text-white transition ${
                       isPlaying
