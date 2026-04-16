@@ -121,13 +121,17 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
     <div className="fixed top-4 right-4 z-[60] w-72 max-w-[calc(100vw-2rem)] space-y-3">
       {pendingInvite && (
         <div className="bg-slate-800 rounded-xl p-4 shadow-lg border border-slate-700">
-          <h3 className="text-white text-base font-semibold mb-2">Game Invite</h3>
-          <p className="text-slate-300 text-sm mb-4">
-            <span className="text-emerald-400 font-semibold">
+          <div className="flex flex-col justify-center items-center gap-1">
+            <h3 className="text-white text-base font-semibold mb-2">Game Invite</h3>
+            <img src={pendingInvite.from.avatar} className="w-10 h-10 object-cover rounded-full" alt="" /> 
+            <p className="text-emerald-400 font-semibold">
               {pendingInvite.from.username}
-            </span>{" "}
-            wants to play with you!
-          </p>
+            </p>
+            <p className="text-slate-300 text-sm mb-4">
+              wants to play with you!
+            </p>
+
+          </div>
           <div className="flex gap-2">
             <button
               onClick={handleAcceptInvite}
