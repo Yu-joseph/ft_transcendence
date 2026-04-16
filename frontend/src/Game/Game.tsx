@@ -13,6 +13,7 @@ const TURN_TIMEOUT_MS = 5000;
 interface Player {
   id: string;
   username: string;
+  avatar?: string | null;
   socketId: string;
   isReady: boolean;
 }
@@ -29,6 +30,8 @@ interface Match {
 function Game() {
   const { user: authUser } = useAuth();
   const authUserId = authUser?.id;
+  const playerDisplayName = authUser?.fullName ?? authUser?.username ?? "You";
+  const playerAvatarUrl = authUser?.avatar ?? undefined;
   const navigate = useNavigate();
   const { matchId } = useParams<{ matchId: string }>();
   const location = useLocation();
@@ -368,6 +371,8 @@ function Game() {
                 const isActivePlayer = isTurnActive && currentTurn === player.id;
                 const isMe = player.id === authUser?.id;
                 const symbolLabel = idx === 0 ? "X" : "O";
+                const avatarUrl = player.avatar ?? undefined;
+                const playerInitial = player.username?.trim().charAt(0).toUpperCase() || "P";
 
                 return (
                   <div
@@ -376,9 +381,22 @@ function Game() {
                       ${isActivePlayer ? "border-emerald-400 bg-emerald-500/10" : "border-slate-700 bg-slate-800/50"}`}
                   >
                     <div className="flex items-center justify-between text-slate-200 text-sm">
-                      <span>
-                        {player.username}
-                        {isMe ? " (You)" : ""}
+                      <span className="flex items-center gap-2 min-w-0">
+                        {avatarUrl ? (
+                          <img
+                            src={avatarUrl}
+                            alt={player.username}
+                            className="h-8 w-8 rounded-full object-cover border border-amber-400/60"
+                          />
+                        ) : (
+                          <span className="h-8 w-8 rounded-full bg-slate-700 text-amber-300 flex items-center justify-center border border-slate-600 text-xs font-semibold">
+                            {playerInitial}
+                          </span>
+                        )}
+                        <span className="truncate">
+                          {player.username}
+                          {isMe ? " (You)" : ""}
+                        </span>
                       </span>
                       <span className="text-xs text-slate-400">{symbolLabel}</span>
                     </div>
@@ -475,7 +493,9 @@ function Game() {
           <WinModal
             show={openmentLeaver}
             isWinner={true}
-            winnerName={authUser?.fullName ?? authUser?.username ?? "You"}
+            winnerName={playerDisplayName}
+            playerName={playerDisplayName}
+            playerAvatarUrl={playerAvatarUrl}
             message="Your opponent left the match."
             redirectTo={backTo}
           />
@@ -486,6 +506,8 @@ function Game() {
               show={showWinModal}
               isWinner={!!winner && players.find(p => p.id === authUser?.id)?.username === winner}
               winnerName={winner ?? ""}
+              playerName={playerDisplayName}
+              playerAvatarUrl={playerAvatarUrl}
               redirectTo={backTo}
             />
           )}
