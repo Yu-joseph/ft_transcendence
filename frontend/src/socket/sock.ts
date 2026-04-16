@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 
 const HOST = window.location.hostname; 
 
-const CHAT_URL = `http://${HOST}:3000`;
+const CHAT_URL = `https://${HOST}:8443`;
 const GAME_URL = `http://${HOST}:1339`;
 
 

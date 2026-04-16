@@ -9,15 +9,14 @@ let io: Server;
 export const initSocket = (server: HTTPServer) => {
     io = new Server(server, {
         cors: {
-            origin: 'https://localhost:8443',
+            origin: ['https://localhost:8443'],
             credentials: true
         }
     })
     io.use(socketAuthenticate);
     io.on('connection', (socket) => {
-        console.log('User SOkcet:', (socket as any).user);
-        console.log(`A user ${(socket as any).user.user_id} connected, socketId: ${socket.id}`);
-
+        socket.join((socket as any).user.user_id); // for conversation Update list, so i emit the event for the sender and receiver
+        console.log('I join my Private Room:', (socket as any).user.user_id);
         const   onJoinChannel = async (data: JoinChatInf) => {
             if(data.userId !== (socket as any).user.user_id){
                 console.log('++++++++++++++++++  DIFF USERES +++++++++++++++++++++');
@@ -49,8 +48,6 @@ export const initSocket = (server: HTTPServer) => {
             socket.to(data.room_id).emit('typing:start', );
         }
 
-
-        
         
         socket.on('leave:conversation', (room_id) => {
             console.log(`User ${(socket as any).user.user_id} leave conversation`);

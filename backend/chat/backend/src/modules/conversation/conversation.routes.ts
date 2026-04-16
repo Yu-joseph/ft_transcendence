@@ -2,7 +2,6 @@ import { Router } from "express";
 import { authenticated } from "../../middlewares/auth.middleware.js";
 import { ConversationController } from "./conversation.controller.js";
 import { MessagesController } from "../message/message.controller.js";
-// import { requireAuth } from "@clerk/express";
 
 const   routes = Router();
 /**
