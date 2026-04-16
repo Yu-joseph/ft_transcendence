@@ -60,7 +60,7 @@ export  function    useFriendList() {
             return;
         try {
             console.log('::::');
-            setLoadingConv(false);
+            // setLoadingConv(false);
             setGoChat(null);
             const   result = await fetchClient('/chat/conversations', {
                 method: 'POST',
@@ -72,7 +72,7 @@ export  function    useFriendList() {
         } catch (error:any) {
             console.log('errr:', error);
         } finally {
-            setLoadingConv(true);
+            // setLoadingConv(true);
         }
     }
 

@@ -106,6 +106,10 @@ export function useProfileHeader({userId, user, setIsOwnProfile} : UseUserProfil
     const handleSaveProfile = async (updatedData: any) => {
         console.log('This is the Updated Info:', updatedData);
         try {
+            if(updatedData.bio !== '' && updatedData.bio.length > 50) {
+                console.log('Bio is Too long');
+                return ;
+            }
             const   result = await fetch('/authent/update_users/', {
                 method: 'PATCH',
                 credentials: 'include',
