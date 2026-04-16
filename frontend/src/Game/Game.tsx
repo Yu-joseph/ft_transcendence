@@ -351,20 +351,6 @@ function Game() {
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-center gap-3 mt-2">
-            <span className="text-white text-sm">
-              {authUser?.fullName ?? authUser?.username ?? authUser?.email ?? "Player"}
-              {mySymbol && <span className="ml-2 text-emerald-400">({mySymbol})</span>}
-            </span>
-          </div>
-
-          {/* Show players in match */}
-          {players.length === 2 && (
-            <div className="text-slate-400 text-sm">
-              {players[0].username} (X) vs {players[1].username} (O)
-            </div>
-          )}
-
           {players.length > 0 && (
             <div className="grid grid-cols-2 gap-4 mt-4 w-full max-w-md">
               {players.map((player, idx) => {
@@ -377,29 +363,29 @@ function Game() {
                 return (
                   <div
                     key={player.id}
-                    className={`rounded-xl px-4 py-3 border
+                    className={`rounded-xl px-4 py-3 border flex flex-col justify-center items-center
                       ${isActivePlayer ? "border-emerald-400 bg-emerald-500/10" : "border-slate-700 bg-slate-800/50"}`}
                   >
-                    <div className="flex items-center justify-between text-slate-200 text-sm">
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt={player.username}
+                          className="h-10 w-10 rounded-full object-cover border border-amber-400/60"
+                        />
+                      ) : (
+                        <span className="h-8 w-8 rounded-full bg-slate-700 text-amber-300 flex items-center justify-center border border-slate-600 text-xs font-semibold">
+                          {playerInitial}
+                        </span>
+                      )}
+                    <div className="flex items-center text-slate-200 text-sm">
                       <span className="flex items-center gap-2 min-w-0">
-                        {avatarUrl ? (
-                          <img
-                            src={avatarUrl}
-                            alt={player.username}
-                            className="h-8 w-8 rounded-full object-cover border border-amber-400/60"
-                          />
-                        ) : (
-                          <span className="h-8 w-8 rounded-full bg-slate-700 text-amber-300 flex items-center justify-center border border-slate-600 text-xs font-semibold">
-                            {playerInitial}
-                          </span>
-                        )}
                         <span className="truncate">
                           {player.username}
                           {isMe ? " (You)" : ""}
                         </span>
                       </span>
-                      <span className="text-xs text-slate-400">{symbolLabel}</span>
                     </div>
+                      <span className="text-md text-emerald-300">{symbolLabel}</span>
                     <div className={`text-2xl font-semibold ${isActivePlayer ? "text-emerald-300" : "text-slate-400"}`}>
                       {isActivePlayer ? `${turnSecondsLeft}s` : "Paused"}
                     </div>
