@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import  {chatSocket}  from    '../../socket/sock';
-import type { MessageItem } from '../pages/Chat';
-import  {useAuth}   from    '../../auth/useAuth';
+import  {chatSocket}  from    '../../../../socket/sock';
+import type { MessageItem } from '../../../pages/Chat';
+import  {useAuth}   from    '../../../../auth/useAuth';
 
 interface   UseChatSocketProps {
     convId: number | null
@@ -25,10 +25,7 @@ export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSock
         console.log('ConversationId in socket effect:', convId);
         const   initSocket = async () => {
             if (!chatSocket.connected){
-                // console.log('Front sockewt not conneced');
                 chatSocket.connect();
-                // console.log('Front is conneced');
-
             }
         }
         initSocket();
@@ -51,7 +48,10 @@ export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSock
 
         const onReceiveMessage = (newMessage: MessageItem) => {
             console.log('i receive this message:', newMessage);
-            setMessages(prev => [...prev, newMessage])
+            newMessage.status = null;
+            // console.log('All Message after receiving new:', m)
+            setMessages(prev => [...prev, newMessage]); // here to filter messages and update status... azka
+            // chatSocket.emit('update:conversation', ROM_ID);
         }
         
         const onDisconnect = () => {

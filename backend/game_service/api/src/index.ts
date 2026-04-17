@@ -17,7 +17,11 @@ const app = express();
 const PORT = 3000;
 
 const corsOptions = {
-  origin: ["http://localhost:5173", "http://localhost:8080"],
+  origin: [
+    "http://localhost:8080",
+    "http://localhost:5173",
+    "https://localhost:8443",
+  ],
   methods: ["GET", "POST"],
   credentials: true,
 };

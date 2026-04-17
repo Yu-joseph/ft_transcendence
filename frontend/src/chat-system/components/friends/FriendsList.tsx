@@ -1,81 +1,21 @@
 import { MessageCircle, UserX, Users } from "lucide-react";
-import { useState, useEffect } from "react";
-import { fetchClient } from "../../utils/fetchClient";
 import { Navigate } from "react-router-dom";
-
-export interface FriendsListType {
-    id: string
-    username: string
-    status: string
-    avatar: string
-    // created_at: Date
-}
-
-type ActiveTabeType = 'All' | 'Online' | 'Offline';
+import { useFriendList } from "./hooks/useFriendList";
 
 export function FriendsList() {
-    const   [friendList, setFriendList] = useState<FriendsListType[]>([]);
-    const   [error, setError] = useState(null);
-    const   [loading, setLoading] = useState(false);
-    const   [activeTab, setActivetab] = useState<ActiveTabeType>('All');
-    const   [loadingConv, setLoadingConv] = useState(false);
-    const   [goChat, setGoChat] = useState<string | null>(null);
-    
-    useEffect(() => {
-        const   fetchUserList = async () => {
-            try {
-                setError(null);
-                setLoading(false);
-                const   result  = await fetchClient<FriendsListType[]>('/friend', {});
-                setFriendList(result);
-                console.log("Friend list:", friendList);
-            } catch (err: any) {
-                setError(err);
-                console.log(err);
-            }
-            finally{
-                setLoading(true);
-            }
-        }
-        fetchUserList();
-    }, [])
-    
-    /************************************** */
-    const   handleRemoveFriend = async (friendId: string) => {
-        try {
-            const   result = await fetchClient(`/friend/${friendId}`, { method: 'DELETE' });
-            setFriendList(prev => prev.filter(fr => fr.id !== friendId));
-            console.log(result);
+    /**__________ Costum Hook _____________ */
+    const   {
+        handleRemoveFriend,
+        handleStartConversation,
+        setActivetab,
+        goChat,
+        activeTab,
+        fiteredFriend,
+        loading,
+        error
+    } = useFriendList();
 
-        } catch (error: any) {
-            console.log(error);
-        }
-    }
-/**-------------------------------------------------------- */
-    const   handleStartConversation = async (userId: string) => {
-        try {
-            console.log('::::');
-            setLoadingConv(false);
-            setGoChat(null);
-            const   result = await fetchClient('/chat/conversations', {
-                method: 'POST',
-                body: JSON.stringify({friendId: userId})
-            });
-            console.log("Result of start Conversation:",result);
-            setGoChat(userId);
-
-        } catch (error:any) {
-            console.log('errr:', error);
-        } finally {
-            setLoadingConv(true);
-        }
-    }
-
-    const fiteredFriend = friendList.filter((friend) => {
-        if (activeTab === 'All') return true;
-        return activeTab === friend.status;
-    });
-
+    /**_________ Component-Style ___________ */
     if(!loading)
         return <div className="text-white flex items-center justify-center h-full">loading...</div>
 

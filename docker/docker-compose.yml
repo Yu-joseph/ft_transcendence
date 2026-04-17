@@ -46,8 +46,8 @@ services:
       - app-network
     environment:
       - VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
-      - VITE_API_URL=http://localhost:5173
-      - VITE_CHAT_API=http://localhost:8080/api
+      - VITE_API_URL=http://localhost:8080/
+      - VITE_CHAT_API=https://localhost:8443/api
     build: ../frontend
     volumes:
       - ../frontend:/app/
@@ -58,6 +58,7 @@ services:
     container_name: nginx
     ports:
       - "8080:80"
+      - "8443:443"
     networks:
       - app-network
     restart: always
@@ -79,14 +80,14 @@ services:
     environment:
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
       SECRET_KEY: ${DJANGO_SECRET_KEY}
+    ports:
+      - "1339:3000"
     # env_file:
     #   - .env
     depends_on:
       - db
       - auth
       - frontend
-    ports:
-      - "1339:3000"
   
   game-api:
     build: ../backend/ai_service/services/game_api
@@ -130,8 +131,8 @@ services:
     environment:
       SECRET_KEY: 'django-insecure-4vkpyy2bkd3(%hi=nhqdr(yx5j71%*zf!o!ej2kfnivhbno!%n'
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
-    # volumes:
-    #   - ../backend/chat/backend:/app
+    volumes:
+      - ../backend/chat/backend:/app
     networks:
       - app-network
 
@@ -170,4 +171,9 @@ networks:
   app-network:
 
 
+
+
+
+  
  
+    

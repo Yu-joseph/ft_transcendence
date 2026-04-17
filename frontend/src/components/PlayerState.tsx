@@ -20,11 +20,12 @@ export default function PlayerState() {
       try {
         setLoading(true);
         setError(null);
-        const response  = await fetch(`http://${window.location.hostname}:1339/api/me/stats`, {
-          credentials: 'include',
+        const response = await fetch("/game-api/api/me/stats", {
+          credentials: "include",
         });
-        if (!response.ok) 
+        if (!response.ok) {
           throw new Error("User not found");
+        }
         const data = (await response.json()) as PlayerStats;
         setStats(data);
       } catch {

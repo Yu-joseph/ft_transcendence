@@ -30,6 +30,7 @@ export type RequestType = 'incoming' | 'outgoing';
 
 export  interface PendingFriendType {
     friendRequestId: bigint
+    status: string
     userInfo: {
         id: string
         username: string
