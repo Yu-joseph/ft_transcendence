@@ -56,7 +56,7 @@ export function ProfileHeader({ userGameStat, isOwnProfile, setIsOwnProfile, set
 
     return (
         <div className="bg-slate-800/40 border border-white/10 backdrop-blur-lg rounded-3xl p-6 md:p-8
-        flex flex-col md:flex-row items-center gap-6 relative overflow-hidden shadow-xl">
+            flex flex-col md:flex-row items-center gap-6 relative overflow-hidden shadow-xl">
 
             <div className="absolute top-0 right-0 bg-blue-500/10 h-64 w-64 rounded-full blur-3xl -z-10"></div>
             

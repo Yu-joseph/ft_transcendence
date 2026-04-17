@@ -49,7 +49,7 @@ export  const   useChatInput = ({convId, setMessages}: ChatInputPorps) => {
         }]); // here render new message for the sender before sending http-req
         try {
             setTimeout(async () => {
-                const   response = await fetch((import.meta.env.VITE_CHAT_API as string ?? 'http://10.30.234.188:8080/api') + `/chat/conversations/${convId}/message`, {
+                const   response = await fetch((import.meta.env.VITE_CHAT_API as string ?? 'http://localhost:80/api') + `/chat/conversations/${convId}/message`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
@@ -97,7 +97,6 @@ export  const   useChatInput = ({convId, setMessages}: ChatInputPorps) => {
         if(user === null)
             return ;
         const   ROOM_ID: string = `ROOM_${convId}`;
-        console.log('RRRRRROOOOOOOOOMMMMM', ROOM_ID);
         const   messageValue: string = e.target.value;
         setInput(messageValue);
         if(!isTyping && messageValue.length > 0) {

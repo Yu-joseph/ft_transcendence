@@ -25,9 +25,9 @@ export class FriendService {
         const existing = await prisma.friend.findFirst({
             where: {
                 OR: [
-                    { requesterId: data.requesterId, receiverId: frId.id },
-                    { requesterId: frId.id, receiverId: data.requesterId }
-                ]
+                        { requesterId: data.requesterId, receiverId: frId.id },
+                        { requesterId: frId.id, receiverId: data.requesterId }
+                    ]
             }
         });
         if (existing) {

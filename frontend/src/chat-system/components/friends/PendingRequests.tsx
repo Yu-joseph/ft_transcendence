@@ -1,5 +1,6 @@
 import  { Check, UserSearch, X }    from    'lucide-react';
 import { usePendingRequest } from './hooks/usePendingRequest';
+import { ErrorMessage, type TypeOfError } from '../shared/ErrorMessage';
 
 export  function    PendingRequests() {
     /**________ Costum Hook __________ */
@@ -12,14 +13,10 @@ export  function    PendingRequests() {
         error
     } = usePendingRequest();
     /**_______________ Component-Style ___________________ */
-    if(!loading)
-        return <div className='text-white flex items-center justify-center h-full'>Loading...</div>
-    if (error)
-        return <div className='text-red-600 flex items-center justify-center h-full'>error!!???</div>
-
+    const   type: TypeOfError = 'pending requests';
     return (
         <div className="flex flex-col w-full">
-            <div className='mb-6'>
+            <div className='mb-6 ml-2'>
                 <h1 className='text-3xl font-bold flex items-center gap-3 text-white'>
                     <UserSearch className='text-emerald-400' size={32}/>
                     Pending Requests
@@ -27,8 +24,28 @@ export  function    PendingRequests() {
                 <p className='mt-1 text-slate-400'>Manage your incoming and outgoing friend requests.</p>
             </div>
             {/* / ******************************************************* */ }
-            <div className='flex flex-col gap-4'>
-                {pendingFriend
+            <div className='flex flex-col gap-4'>length
+                {
+                    loading && (
+                        [1,2,3,4,5].map(i => (
+                        <div key={i}
+                            className='flex items-center justify-between bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 animate-pulse'
+                        >
+                            <div className='flex items-center gap-4'>
+                                <div className='w-12 h-12 rounded-full bg-slate-700/50 flex items-center justify-center'></div>
+                                <div className='flex flex-col'>
+                                    <span className='rounded-2xl bg-slate-700/40 h-6 w-20'></span>
+                                    <span className='rounded-2xl bg-slate-700/30 mt-2 h-3'></span>
+                                </div>
+                            </div>
+                            <div className='bg-slate-700/40 w-20 h-7 rounded-full'></div>
+                    </div>)))
+                }
+                {
+                    !loading && error && (<ErrorMessage message={error ?? null} typeOfError={type} />)
+                }
+                { !loading && !error &&
+                pendingFriend
                     .filter(p => !(p.status === 'REJECTED' && p.type === 'incoming'))
                     .map((penFr) => (
                     <div key={penFr.friendRequestId}

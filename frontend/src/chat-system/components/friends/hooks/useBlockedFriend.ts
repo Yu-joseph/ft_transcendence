@@ -18,17 +18,17 @@ export  function    useBlockedFriend() {
     useEffect(() => {
         const   getBlockedRequest = async () => {
             try {
-                setLoading(false);
+                setError(null);
+                setLoading(true);
                 const result : BlockedFriendType[] = await fetchClient('/friend/rejected', {});
                 setBlocked(result);
             } catch (error: any) {
                 setError(error);
                 console.log(error);
             } finally {
-                setLoading(true);
+                setLoading(false);
             }
         }
-
         getBlockedRequest();
     }, [])
 
@@ -47,7 +47,6 @@ export  function    useBlockedFriend() {
             console.log(error);
         }
     }
-
     /**_________________ */
     return {
         handleUnblock,

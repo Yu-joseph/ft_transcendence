@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchClient } from "../../../utils/fetchClient";
 import { useAuth } from "../../../../auth/useAuth";
-// import  { useAuth 
+
 export interface FriendsListType {
     id: string
     username: string
@@ -26,7 +26,7 @@ export  function    useFriendList() {
         const   fetchUserList = async () => {
             try {
                 setError(null);
-                setLoading(false);
+                setLoading(true);
                 const   result  = await fetchClient<FriendsListType[]>('/friend', {});
                 setFriendList(result);
                 console.log("Friend list:", friendList);
@@ -35,7 +35,7 @@ export  function    useFriendList() {
                 console.log(err);
             }
             finally{
-                setLoading(true);
+                setLoading(false);
             }
         }
         fetchUserList();

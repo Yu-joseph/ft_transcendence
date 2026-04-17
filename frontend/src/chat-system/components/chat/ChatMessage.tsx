@@ -6,6 +6,7 @@ import type { MessageItem, MessageState } from '../../pages/Chat';
 import { useNavigate } from 'react-router-dom';
 import { FaCheck, FaExclamation } from 'react-icons/fa';
 import { Clock } from 'lucide-react';
+import { ErrorMessage, type TypeOfError } from '../shared/ErrorMessage';
 
 interface UserInfo {
     id: string
@@ -22,34 +23,44 @@ interface ChatMessageProp {
 }  
 
 export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessageProp) {
-    const   [isDropDown, setIsDropDown] = useState<boolean>(false);
+    const   [loading, setLoading] = useState<boolean>(false);
+    const   [error, setError] = useState<string | null>(null);
     const   [friendInfo, setFriendInfo] = useState<UserInfo | null>(null);
     const   { user } = useAuth();
     const   currentUserId = user?.id as string;
     const   navigate = useNavigate();
     const   scroolToBottomRef = useRef<HTMLDivElement | null>(null);
     /**__________ HOOKS ____________________ */
-    useEffect(() => {
+    useEffect(() => { // for auto-scrolling to the last message
         scroolToBottomRef.current?.scrollIntoView();
     }, [messages, isTyping])
 
     useEffect(() => {
-        if(!friendId)
+        if(friendId === null)
             return;
-        const   loadUserInfo = async () => {
-            try {
-                const   result = await fetchClient<UserInfo>(`/friend/${friendId}`, {});
-                setFriendInfo(result);
-            } catch (err: any) {
-                console.log(err);
-            }
-        }
         loadUserInfo();
     }, [friendId, user, convId])
-
+    
     /**__________ JS Function ___________ */
+    
+    const   loadUserInfo = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const   result = await fetchClient<UserInfo>(`/friend/${friendId}`, {});
+            setFriendInfo(result);
+        } catch (err: any) {
+            console.log(err);
+            setFriendInfo(null);
+            setError(err.message || 'Failed to load user info');
+            navigate('/');
+        } finally {
+            setLoading(false);
+        }
+    }
+    
     const   handleViewProfile = (userId: string | undefined) => {
-        console.log("Profile UserId:", userId);
+        // console.log("Profile UserId:", userId);
         if(!userId)
             navigate('/');
         navigate(`/Profile/${userId}`);
@@ -60,7 +71,45 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
         return state === 'pending' ? <Clock size={10} className='text-amber-500' /> : <FaExclamation size={10} className='text-red-600' />
     }
     /**__________ Component-Style __________________ */
-    if (!friendId)
+
+    if (loading && friendId !== null) {
+        return (
+            <div className="flex-1 flex flex-col animate-pulse">
+                <header className="px-6 py-4 border-b border-slate-700/50 bg-slate-900/60 flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-slate-700"></div>
+                    <div className="h-4 w-32 bg-slate-700 rounded"></div>
+                </header>
+                <div className="flex-1 p-4 space-y-4 bg-slate-900/60">
+                    {[1, 2, 3,4 , 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(i => (
+                        <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                            <div className="w-1/2 h-12 bg-slate-800 rounded-2xl animate-pulse"></div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+    if (error) {
+        const type: TypeOfError = 'messages';
+        return <ErrorMessage message={error} typeOfError={type} />
+        // (
+        //     <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+        //         <div className="bg-red-500/10 p-4 rounded-full mb-4">
+        //             <FaExclamation className="text-red-500 text-3xl" />
+        //         </div>
+        //         <h3 className="text-white font-bold text-lg mb-2">Oops! Something went wrong</h3>
+        //         <p className="text-slate-400 mb-6">{error}</p>
+        //         <button 
+        //             onClick={() => window.location.reload()} 
+        //             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+        //         >
+        //             Try Again
+        //         </button>
+        //     </div>
+        // );
+    }
+
+    if (friendId === null)
         return (
         <div className="flex items-center justify-center w-full h-full px-4 py-6 sm:px-6 lg:px-8">
             <div className="max-w-xl w-full text-center">
@@ -75,11 +124,11 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
                     </p>
             </div> 
         </div>);
-        
+    /**_____________________________________________________________________________ */
     return (
         <>
             <header className="px-6 py-4 border-b border-slate-700/50 bg-slate-900/60 flex justify-between items-center sticky top-0 z-10">
-                <div className="flex items-center gap-4 cursor-pointer"
+                <div className="w-full flex items-center gap-4 cursor-pointer"
                     onClick={() => handleViewProfile(friendInfo?.id)}
                 >
                     <div className="relative">
@@ -94,30 +143,6 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
                         </h3>
                         <p className="text-xs text-green-400 font-medium">{friendInfo && friendInfo.status}</p>
                     </div>
-                </div>
-                <div className="relative">
-                    <button
-                        onClick={() => setIsDropDown(!isDropDown)}
-                        className='w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer'>
-                        <IoEllipsisHorizontal size={20}/>
-                    </button>
-                    {
-                        isDropDown &&
-                        <div
-                            className='absolute right-0 mt-2 w-56 bg-slate-800 border border-slate-700/50 rounded-xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-200'
-                        >
-                            <ul className='flex flex-col'>
-                                <li>
-                                    <button
-                                        onClick={() => {}}
-                                        className='w-full text-left px-4 py-2.5 text-sm font-medium text-red-500 hover:text-red-400 hover:bg-slate-700/50 transition-colors'
-                                        >
-                                            Remove Conversation
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                    }
                 </div>
             </header>
 
@@ -146,9 +171,9 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
                         <div className="flex justify-start">
                             <div className='bg-slate-700 text-slate-300 px-3 py-2 rounded-xl text-sm italic animate-pulse'>
                             <div className="flex gap-1">
-                                <span className="w-2 h-2 bg-slate-400 rounded-full animate-pulse"></span>
+                                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
                                 <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-150"></span>
-                                <span className="w-2 h-2 bg-slate-400 rounded-full animate-spin delay-300"></span>
+                                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-300"></span>
                             </div>
                             </div>
                         </div>
