@@ -6,12 +6,12 @@ import { Server } from "socket.io";
 import prisma from "./lib/prisma";
 import {
   setupSocketHandlers,
-  getRankedUsers,
-  isPlayerInActiveMatch,
-  players,
 } from "./socket/handlers";
-import { setupTournamentHandlers } from "./socket/tournament";
+import { setupTournamentHandlers } from "./socket/tournament/tournament";
 import { getUserIdFromToken } from "./auth/identity";
+import { getRankedUsers } from "./socket/onevone/leaderboardService";
+import { isPlayerInActiveMatch } from "./socket/onevone/lobbyPresence";
+import { players } from "./socket/onevone/onevoneState";
 
 const app = express();
 const PORT = 3000;
@@ -19,6 +19,7 @@ const PORT = 3000;
 const corsOptions = {
   origin: [
     "http://localhost:8080",
+    "http://localhost:5173",
     "https://localhost:8443",
   ],
   methods: ["GET", "POST"],

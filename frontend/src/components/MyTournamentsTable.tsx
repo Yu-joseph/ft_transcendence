@@ -31,7 +31,7 @@ export default function MyTournamentsTable() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`http://${window.location.hostname}:1339/api/me/tournaments`, {
+        const response = await fetch("/game-api/api/me/tournaments", {
           credentials: "include",
         });
 

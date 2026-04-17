@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io';
-import { Player } from '../types/game';
-import { players } from './handlers';
-import { getUserProfile } from './handlers';
+import { Player } from '../../types/game';
+import { getUserProfile } from '../onevone/lobbyProfile';
+import { players } from '../onevone/onevoneState';
 
 export function getSocketUserId(socket: Socket): string | null {
   const userId = socket.data.userId as string | undefined;

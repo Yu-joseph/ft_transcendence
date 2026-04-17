@@ -40,7 +40,7 @@ export default function TournamentList() {
   useEffect(() => {
     const fetchMyTournaments = async () => {
       try {
-        const response = await fetch(`http://${window.location.hostname}:1339/api/me/tournaments`, {
+        const response = await fetch("/game-api/api/me/tournaments", {
           credentials: "include",
         });
         if (!response.ok)

@@ -21,7 +21,7 @@ export default function Leaderboard() {
       try {
         setLoading(true)
         setError(null)
-        const response = await fetch(`http://${window.location.hostname}:1339/api/leaderboard`)
+        const response = await fetch("/game-api/api/leaderboard")
         if (!response.ok) 
             throw new Error(`Failed to load leaderboard (${response.status})`)
         const data = (await response.json()) as LeaderboardPlayer[]
