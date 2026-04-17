@@ -1,60 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { fetchClient } from "../../utils/fetchClient";
+import { useConversationList } from "./hooks/useConversationList";
 
 interface ConversationListProps {
   setConvId: React.Dispatch<React.SetStateAction<number | null>>;
   convId: number | null
   selectFriendId: React.Dispatch<React.SetStateAction<string | null>>
-  deletedConvId: number | null;
 }
 
-interface   ConversationType {
-    /**
-     * @description return-type of existing Conversation
-    */
-   id: number
-   otherUser: {
-        id: string,
-        username: string,
-        avatar: string | null
-    }
-    lastMessage: {
-        id: number,
-        created_at: Date,
-        content: string,
-        senderId: string
-    } | null
-    updated_at: Date
-}
+export  function ConversationList({setConvId, convId, selectFriendId}: ConversationListProps ) {
+  /**______ Costume Hooks _______________ */
+  
+  const {loading, error, conversationList} = useConversationList();
 
-export  function ConversationList({setConvId, convId, selectFriendId, deletedConvId}: ConversationListProps ) {
-  const [conversationLists, setConversationList] = useState<ConversationType[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error| null>(null);
-
-  useEffect(() => {
-    const loadConversation = async () => {
-      try {
-        setError(null);
-        setLoading(false);
-        const result : ConversationType[] = await fetchClient('/chat/conversations', {});
-        setConversationList(result);
-      } catch (error: any) {
-        setError(error);
-        setConversationList([]);
-        console.log(error);
-      } finally {
-        setLoading(true);
-      }
-    };
-    loadConversation();
-  }, [])
-
-  /****** Updated deleted Conv Id */
-  useEffect(() => {
-    setConversationList(prev => prev.filter(conv => conv.id !== deletedConvId))
-  }, [deletedConvId])
-
+  /**________ Component-Style __________________ */
   if(!loading)
     return <div className="text-slate-500 flex items-center justify-center h-full">Loading...</div>
   if (error)
@@ -70,11 +27,11 @@ export  function ConversationList({setConvId, convId, selectFriendId, deletedCon
         <div className="flex-1 overflow-y-auto bg-slate-800">
           <ul className="space-y-2 mt-2 flex-1 overflow-y-auto no-scrollbar pr-2">
             {
-              conversationLists.map((conv) => (
+              conversationList.map((conv) => (
                 <li
                   onClick={() => {
                     setConvId(conv.id);
-                    selectFriendId(conv.otherUser.id);
+                    selectFriendId(conv.otherUser.id as string);
                   }}
                   key={conv.id}
                   className={`${convId === conv.id ? 'bg-slate-700/30' : ''} group flex items-center gap-4 p-3 rounded-3xl cursor-pointer hover:bg-slate-700/40 transition-all duration-200 border border-transparent hover:border-slate-600/50`}>

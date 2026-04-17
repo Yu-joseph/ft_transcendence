@@ -1,79 +1,17 @@
 import  { Check, UserSearch, X }    from    'lucide-react';
-import { useEffect, useState } from 'react';
-import { fetchClient } from '../../utils/fetchClient';
-
-type RequestType = 'incoming' | 'outgoing';
-
-interface PendingFriendType {
-    friendRequestId: number
-    userInfo: {
-        id: string
-        username: string
-        avatar: string | null
-    }
-    type: RequestType
-}
-
+import { usePendingRequest } from './hooks/usePendingRequest';
 
 export  function    PendingRequests() {
-    const   [pendingFriend, setPendingFriend] = useState<PendingFriendType[]>([]);
-    const   [loading, setLoading] = useState(false);
-    const   [error, setError] = useState(null);
-
-    useEffect(() => {
-
-        const   getPendingRequests = async () => {
-            try {
-                setError(null);
-                setLoading(false);
-                const   result: PendingFriendType[] = await fetchClient('/friend/pending', {});
-                setPendingFriend(result);
-                console.log("Result pending:", result);
-                
-            } catch (error: any) {
-                setError(error);
-                console.log('error herer:', error);
-            } finally {
-                setLoading(true);
-            }
-        }
-        getPendingRequests();
-    }, [])
-
-/** Button handler */
-    const   handleCancel = async (reqId: number) => {
-        console.log("That is the cancled request:", reqId);
-        try {
-            const   result = await fetchClient(`/friend/${reqId}/cancel`, { method: 'DELETE' });
-            console.log(result);
-            setPendingFriend(prev => prev.filter(fr => fr.friendRequestId !== reqId));
-            console.log('Friend request canceled successfully');
-        } catch (error: any) {
-            console.log(error);
-        }
-    }
-/***************************************** */
-    const   handleAccept = async (frReqId: number) => {
-        try {
-            const   result = await fetchClient(`/friend/${frReqId}/accept`, { method: 'PUT' });
-            setPendingFriend(prev => prev.filter(fr => fr.friendRequestId !== frReqId));
-            console.log('request accepted:', result);
-        } catch (error : any) {
-            console.log(error);
-        }
-    }
-    /***************************************** */
-    const   handleReject = async (frReqId: number) => {
-        try {
-            // const   token = await getToken();
-            const   result = await fetchClient(`/friend/${frReqId}/reject`, { method: 'PUT' });
-            setPendingFriend(prev => prev.filter(fr => fr.friendRequestId !== frReqId));
-            console.log('request accepted:', result);
-            
-        } catch (error : any) {
-            console.log(error);
-        }
-    }
+    /**________ Costum Hook __________ */
+    const   {
+        handleAccept,
+        handleCancel,
+        handleReject,
+        pendingFriend,
+        loading,
+        error
+    } = usePendingRequest();
+    /**_______________ Component-Style ___________________ */
     if(!loading)
         return <div className='text-white flex items-center justify-center h-full'>Loading...</div>
     if (error)
@@ -88,8 +26,11 @@ export  function    PendingRequests() {
                 </h1>
                 <p className='mt-1 text-slate-400'>Manage your incoming and outgoing friend requests.</p>
             </div>
+            {/* / ******************************************************* */ }
             <div className='flex flex-col gap-4'>
-                {pendingFriend.map((penFr) => (
+                {pendingFriend
+                    .filter(p => !(p.status === 'REJECTED' && p.type === 'incoming'))
+                    .map((penFr) => (
                     <div key={penFr.friendRequestId}
                         className='flex items-center justify-between bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 transition-all hover:bg-slate-800/60'
                     >

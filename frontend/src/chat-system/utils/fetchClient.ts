@@ -1,4 +1,4 @@
-const   BASE_URL = import.meta.env.VITE_CHAT_API ?? 'http://10.30.234.188:8080/api';
+const   BASE_URL = import.meta.env.VITE_CHAT_API ?? 'https://localhost:8443/api';
 
 export async function    fetchClient<T>(endpoint: string, option: RequestInit = {}) : Promise<T> {
     const   headers = {
