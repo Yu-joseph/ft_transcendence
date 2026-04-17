@@ -1,9 +1,12 @@
 import { Server } from 'socket.io';
-import prisma from '../lib/prisma';
-import { Match, Tournament, TournamentMatch } from '../types/game';
-import { createGameInDB, emitLobbyPlayersUpdate, getUserRoom, matches, startTurnTimerForMatch } from './handlers';
+import prisma from '../../lib/prisma';
+import { Match, Tournament, TournamentMatch } from '../../types/game';
 import { getMatchesForRound, nextPowerOf2, propagateWinner } from './tournamentBracket';
 import { tournaments } from './tournamentStore';
+import { emitLobbyPlayersUpdate, getUserRoom } from '../onevone/lobbyPresence';
+import { matches } from '../onevone/onevoneState';
+import { startTurnTimerForMatch } from '../onevone/gameTimers';
+import { createGameInDB } from '../onevone/gamePersistence';
 
 export function emitTournamentUpdate(io: Server, tournament: Tournament) {
   tournament.players.forEach((p) => {

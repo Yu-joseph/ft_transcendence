@@ -1,4 +1,4 @@
-import { Player, Tournament, TournamentMatch } from '../types/game';
+import { Player, Tournament, TournamentMatch } from '../../types/game';
 
 export function nextPowerOf2(n: number): number {
   let p = 1;
