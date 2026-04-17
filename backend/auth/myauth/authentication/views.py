@@ -11,16 +11,15 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework_simplejwt.exceptions import TokenError
 from .auth_utils import get_user_from_request
-from .models import User
 from .permissions import role_required
 import uuid
 import requests
+from .models import User
 import json
 
 FORTY_TWO_AUTHORIZE_URL = 'https://api.intra.42.fr/oauth/authorize'
 FORTY_TWO_TOKEN_URL     = 'https://api.intra.42.fr/oauth/token'
 FORTY_TWO_USER_URL      = 'https://api.intra.42.fr/v2/me'
-
 
 @csrf_exempt
 def login(request):
@@ -66,8 +65,8 @@ def login(request):
     access  = refresh.access_token
 
     response = JsonResponse({"message": "Login successful"})
-    response.set_cookie(key="access_token",  value=str(access),  max_age=60000000,    httponly=True, secure=False, samesite="Lax", path="/")
-    response.set_cookie(key="refresh_token", value=str(refresh), max_age=60480000000, httponly=True, secure=False, samesite="Lax", path="/")
+    response.set_cookie(key="access_token",  value=str(access),  max_age=settings.ACCESS_TOKEN_COOKIE_MAX_AGE,    httponly=True, secure=False, samesite="Lax", path="/")
+    response.set_cookie(key="refresh_token", value=str(refresh), max_age=settings.REFRESH_TOKEN_COOKIE_MAX_AGE, httponly=True, secure=False, samesite="Lax", path="/")
     return response
 
 
@@ -220,7 +219,6 @@ def update_users(request):
         email    = body.get("email")
         bio      = body.get("bio")
         fullname = body.get("fullname")
-        # avatar   = request.FILES.get("avatar")             
     except json.JSONDecodeError:
         return JsonResponse({"error": "invalid JSON"}, status=400)
 
@@ -252,15 +250,16 @@ def update_users(request):
 
     return JsonResponse({"message" : "profile updated"} , status=200)
 
+
 @csrf_exempt
 def changing_password(request):
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
-    
+
     tmp_user = get_user_from_request(request)
     if not tmp_user:
         return JsonResponse({"error": "Not authenticated"}, status=401)
-    
+
     try:
         body            = json.loads(request.body)
         curr_pass       = body.get("current_pass")
@@ -268,25 +267,25 @@ def changing_password(request):
         retype_new_pass = body.get("retype_new_pass")
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
-    
+
     if not curr_pass or not new_pass or not retype_new_pass:
         return JsonResponse({"error": "All fields are required"}, status=400)
-    
+
     if not check_password(curr_pass, tmp_user.password):
         return JsonResponse({"error": "Incorrect current password"}, status=400)
-    
+
     if new_pass != retype_new_pass:
         return JsonResponse({"error": "New passwords do not match"}, status=400)
-    
+
     try:
-        validate_password(new_pass, tmp_user)
+        validate_password(new_pass, user=tmp_user)
     except ValidationError as e:
         return JsonResponse({"error": e.messages}, status=400)
-    
+
     tmp_user.password = make_password(new_pass)
     tmp_user.save()
-    
     return JsonResponse({"message": "Password updated"}, status=200)
+
 
 @csrf_exempt
 def logout(request):
@@ -333,7 +332,6 @@ def forty_two_login(request):
 @csrf_exempt
 def forty_two_callback(request):
     code = request.GET.get('code')
-
     if not code:
         return JsonResponse({'error': 'No code provided'}, status=400)
 
@@ -344,7 +342,6 @@ def forty_two_callback(request):
         'code':          code,
         'redirect_uri':  settings.FORTY_TWO_REDIRECT_URI,
     })
-
     if token_response.status_code != 200:
         return JsonResponse({'error': 'Failed to get access token'}, status=400)
 
@@ -353,34 +350,63 @@ def forty_two_callback(request):
     user_response = requests.get(FORTY_TWO_USER_URL, headers={
         'Authorization': f'Bearer {access_token}'
     })
-
     if user_response.status_code != 200:
         return JsonResponse({'error': 'Failed to get user info'}, status=400)
 
     user_data = user_response.json()
 
     user = User.objects.filter(username=user_data['login']).first()
-
     if not user:
         user = User.objects.filter(email=user_data.get('email')).first()
 
     if not user:
+        avatar_url = (
+            user_data.get('image', {}).get('link') or
+            user_data.get('image', {}).get('versions', {}).get('medium', '')
+        )
         user = User.objects.create(
             id=str(uuid.uuid4()),
             username=user_data['login'],
             email=user_data.get('email', ''),
             fullname=f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip(),
-            password=make_password(None),
             role='user',
+            avatar=avatar_url,
         )
+        redirect_url = "/ChangeIntra"
+    else:
+        redirect_url = "/Dashboard"
+
     refresh = RefreshToken.for_user(user)
     access  = refresh.access_token
 
-    response = JsonResponse({'message': 'Login successful'})
+    response = redirect(redirect_url)
     response.set_cookie(key='access_token',  value=str(access),  max_age=600,    httponly=True, secure=False, samesite='Lax', path='/')
     response.set_cookie(key='refresh_token', value=str(refresh), max_age=604800, httponly=True, secure=False, samesite='Lax', path='/')
     return response
 
+@csrf_exempt
+def password_42(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    
+    tmp_user = get_user_from_request(request)
+    if not tmp_user:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    try:
+        body     = json.loads(request.body)
+        password    = body.get("password")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "invalid JSON"}, status=400)
+    
+    try:
+        validate_password(password, user=tmp_user)
+    except ValidationError as e:
+        return JsonResponse({"error": e.messages}, status=400)
+
+    tmp_user.password = make_password(password)
+    tmp_user.save()
+    return JsonResponse({"message": "password added"}, status=201)
 
 @csrf_exempt
 def get_user(request):

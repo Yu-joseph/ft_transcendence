@@ -1,8 +1,4 @@
-
-import { Swords, Ticket, Trophy } from "lucide-react";
 import type { UserStatGame } from "../../pages/Profile";
-import { GiJoystick } from "react-icons/gi";
-import { HiUserGroup } from "react-icons/hi";
 
 interface UserStatCardProps {
     isOwnProfile: boolean

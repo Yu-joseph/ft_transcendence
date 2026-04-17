@@ -1,8 +1,7 @@
-import React, { useState, useRef } from 'react';
 import { X, Save, Camera, User, FileText, Mail, LockIcon } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-// import type { UserProfileInfo } from './hooks/useProfileHeader';
+import { useEditeProfileModale } from './hooks/useEditeProfileModal';
 
 interface EditProfileModalProps {
     isOpen: boolean;
@@ -12,71 +11,29 @@ interface EditProfileModalProps {
 }
 
 /**
- * 
  * @param param3 userInfo Data  type of 'UserProfileInfo'
  * @returns 
  */
 
 export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditProfileModalProps) {
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    // const   [username, setUsername] = useState<string>('');
-    // const   [email, setEmail] = useState<string>('');
-    // const   [bio, setBio] = useState<string>('');
-
-
     const   navigate = useNavigate();
+    /**_______________ Costume Hook __________________ */
+    const   hook = useEditeProfileModale(initialData, isOpen);
+    if(hook === null)
+        return;
 
-    const [formData, setFormData] = useState({
-        fullname: initialData?.fullname || '' as string,
-        bio: initialData?.bio || '' as string,
-        email: initialData?.email || '' as string
-    });
-
-    // const   [avatar, setAvatar] = useState({avatar:})
-
-    const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.avatar ?? null);
-
-    if (!isOpen)
-        return null;
-    // Handle Image Preview
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        console.log("file:", file);
-        if(!file?.type.startsWith('image/')) {
-            console.log('Invalid Image');
-            return;
-        }
-        if (file) {
-            const url = URL.createObjectURL(file);
-            setPreviewUrl(url);
-            // setFormData({ ...formData, avatar: file }); 
-        }
-    };
-
-
-
-
-
-    const uploadAvatar = async (file: File) => {
-        const fd = new FormData();
-        console.log('before append:', fd);
-        fd.append('avatar', file);
-        console.log('After append:', fd);
-        try {
-            const res = await fetch('/api/profile/avatar', {
-                method: 'POST',
-                body: fd,
-                credentials: 'include'
-            });
-            if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
-            const data = await res.json();
-            setPreviewUrl(data.url);
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
+    const   {
+        fileInputRef,
+        handleImageChange,
+        // uploadAvatar,
+        previewUrl,
+        setFormData,
+        inputError,
+        // avatar,
+        formData,
+        // setInputError
+    } = hook;
+    /**__________________________________________________________________ */
     return createPortal(
 
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -99,7 +56,9 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
                                     <Camera className="text-white w-8 h-8" />
                                 </div>
                             </div>
-                            <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
+                            <input
+                                type="file"
+                                ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
                         </div>
                         <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold text-center">Click to change photo</p>
                     </div>
@@ -111,10 +70,20 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
                         <input 
                             type="text"
                             value={formData.fullname}
-                            onChange={(e) => setFormData({...formData, fullname: e.target.value})}
+                            onChange={(e) => {
+                                    const   fullname: string = e.target.value.trim();
+                                    // if(fullname === '' || fullname.length < 3 || fullname.length > 255) {
+                                    //     setInputError({inputType: 'fullname', errorMessage: 'Full-name must be greather than 3 and less that 255 characters.'})
+                                    //     // return;
+                                    // }
+                                    setFormData({...formData, fullname: fullname});
+                                }
+                            } 
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-colors"
                             placeholder="Enter your full name"
                             />
+                        {inputError?.inputType === 'fullname' && <div className=''>{inputError.errorMessage}</div>} 
+                        
                     </div>
                     <div className='space-y-2'>
                         <label className='text-sm font-medium text-slate-400 flex items-center gap-2'>
@@ -123,10 +92,19 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
                         <input
                             type="email"
                             value={formData.email}
-                            onChange={(e) => setFormData({...formData, email: e.target.value})}
+                            onChange={(e) => {
+                                    const   email: string = e.target.value.trim();
+                                    // if(!validateEmail(email)) {
+                                    //     setInputError({inputType: 'email', errorMessage: 'Invalid email address.'})
+                                    //     // return;
+                                    // }
+                                    setFormData({...formData, email: email});
+                                }
+                            }
                             placeholder='Enter your email'
                             className='w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-colors'
                         />
+                        {inputError?.inputType === 'email' && <div className=''>{inputError.errorMessage}</div>}
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-400 flex items-center gap-2">
@@ -134,10 +112,20 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
                         </label>
                         <textarea 
                             value={formData.bio}
-                            onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                            onChange={(e) => {
+                                    const   bio: string = e.target.value.trim();
+                                    // if(bio === '' || bio.length > 255) {
+                                    //     setInputError({inputType: 'bio', errorMessage: 'Bio too long.'})
+                                    //     // return;
+                                    // }
+                                    setFormData({...formData, bio: bio});
+                                }
+
+                            }
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-colors h-32 resize-none"
                             placeholder="Tell us about yourself..."
                             />
+                        {inputError?.inputType === 'email' && <div className=''>{inputError.errorMessage}</div>}
                     </div>
                 </div>
                 <button

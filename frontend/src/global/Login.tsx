@@ -2,11 +2,11 @@
 import { Navigate, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "../auth/useAuth";
+import { PasswordField } from "../components/PasswordField";
 
 function Login() {
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
@@ -15,11 +15,10 @@ function Login() {
   const [signupFullname, setSignupFullname] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupPasswordConfirm, setSignupPasswordConfirm] = useState("");
-  const [showSignupPassword, setShowSignupPassword] = useState(false);
-  const [showSignupPasswordConfirm, setShowSignupPasswordConfirm] = useState(false);
   const [signupError, setSignupError] = useState<string | null>(null);
   const [signupSuccess, setSignupSuccess] = useState<string | null>(null);
   const [signupLoading, setSignupLoading] = useState(false);
+  const intraLoginUrl = "/authent/42/login/";
   const { user, loading: authLoading, setUser } = useAuth();
   const navigate = useNavigate();
 
@@ -85,6 +84,9 @@ function Login() {
         const message = typeof data?.error === "string" ? data.error : "Login failed. Please try again.";
         throw new Error(message);
       }
+
+      // Normal login should not be blocked by the intra-only password gate.
+      localStorage.removeItem("intra_password_required");
 
       // Fetch authenticated profile and push it into global auth context.
       const userResponse = await fetch("/authent/getuser/", {
@@ -186,6 +188,9 @@ function Login() {
     e.preventDefault();
     void submitSignup();
   };
+  const signupPasswordMismatch =
+    signupPasswordConfirm.length > 0 && signupPassword !== signupPasswordConfirm;
+
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-blue-950 to-slate-900 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -221,34 +226,21 @@ function Login() {
                 id="emailOrUsername"
                 value={emailOrUsername}
                 onChange={(e) => setEmailOrUsername(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg bg-slate-800 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full px-3 py-2 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
                 placeholder="Enter email or username"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium text-amber-200">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showLoginPassword ? "text" : "password"}
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 pr-14 rounded-lg bg-slate-800 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                  placeholder="Enter password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowLoginPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-amber-300 hover:text-amber-200"
-                >
-                  {showLoginPassword ? "Hide" : "Show"}
-                </button>
-              </div>
+              <PasswordField
+                id="password"
+                label="Password"
+                value={password}
+                onValueChange={setPassword}
+                placeholder="Enter password"
+                autoComplete="current-password"
+              />
             </div>
 
             {error && (
@@ -265,6 +257,22 @@ function Login() {
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
+
+            <div className="flex items-center gap-3">
+              <span className="h-px flex-1 bg-amber-400/20" aria-hidden />
+              <span className="text-[0.65rem] uppercase tracking-[0.35em] text-amber-200/70">or</span>
+              <span className="h-px flex-1 bg-amber-400/20" aria-hidden />
+            </div>
+
+            <a
+              href={intraLoginUrl}
+              className="w-full inline-flex items-center justify-center gap-3 rounded-lg border border-amber-400/40 bg-amber-500/5 px-4 py-2.5 text-amber-100 font-semibold hover:bg-amber-500/15 transition"
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-400/15 text-amber-200 text-sm font-semibold">
+                42
+              </span>
+              Sign in with Intra
+            </a>
 
             <p className="text-sm text-slate-300 text-center">
               Don't have an account?{" "}
@@ -351,51 +359,27 @@ function Login() {
               </div>
 
               <div>
-                <label htmlFor="signupPassword" className="block mb-1 text-sm font-medium text-amber-300">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showSignupPassword ? "text" : "password"}
-                    id="signupPassword"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    className="w-full px-3 py-2 pr-14 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    placeholder="Choose password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowSignupPassword((prev) => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-amber-300 hover:text-amber-200"
-                  >
-                    {showSignupPassword ? "Hide" : "Show"}
-                  </button>
-                </div>
+                <PasswordField
+                  id="signupPassword"
+                  label="Password"
+                  value={signupPassword}
+                  onValueChange={setSignupPassword}
+                  placeholder="Choose password"
+                  autoComplete="new-password"
+                  showStrength
+                />
               </div>
 
               <div>
-                <label htmlFor="signupPasswordConfirm" className="block mb-1 text-sm font-medium text-amber-300">
-                  Confirm password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showSignupPasswordConfirm ? "text" : "password"}
-                    id="signupPasswordConfirm"
-                    value={signupPasswordConfirm}
-                    onChange={(e) => setSignupPasswordConfirm(e.target.value)}
-                    className="w-full px-3 py-2 pr-14 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    placeholder="Re-enter password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowSignupPasswordConfirm((prev) => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-amber-300 hover:text-amber-200"
-                  >
-                    {showSignupPasswordConfirm ? "Hide" : "Show"}
-                  </button>
-                </div>
+                <PasswordField
+                  id="signupPasswordConfirm"
+                  label="Confirm password"
+                  value={signupPasswordConfirm}
+                  onValueChange={setSignupPasswordConfirm}
+                  placeholder="Re-enter password"
+                  autoComplete="new-password"
+                  error={signupPasswordMismatch ? "Passwords do not match." : undefined}
+                />
               </div>
 
               {signupError && (

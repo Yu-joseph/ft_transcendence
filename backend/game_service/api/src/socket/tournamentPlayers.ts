@@ -1,22 +1,27 @@
 import { Socket } from 'socket.io';
 import { Player } from '../types/game';
 import { players } from './handlers';
+import { getUserProfile } from './handlers';
 
 export function getSocketUserId(socket: Socket): string | null {
   const userId = socket.data.userId as string | undefined;
   return userId ?? null;
 }
 
-export function getOrCreatePlayer(socket: Socket, username?: string): Player | null {
+export async function getOrCreatePlayer(socket: Socket): Promise<Player | null> {
   const userId = getSocketUserId(socket);
   if (!userId) return null;
+  const profile = await getUserProfile(userId);
 
-  const cleanUsername = username?.trim() || 'Guest';
+  if (!profile) {
+        return null;
+      }
 
   const current = players.get(socket.id);
   if (current) {
     current.id = userId;
-    current.username = cleanUsername;
+    current.username = profile?.username;
+    current.avatar = profile?.avatar;
     current.socketId = socket.id;
     return current;
   }
@@ -26,14 +31,16 @@ export function getOrCreatePlayer(socket: Socket, username?: string): Player | n
     const [oldSocketId, p] = existing;
     players.delete(oldSocketId);
     p.socketId = socket.id;
-    p.username = cleanUsername;
+    p.username = profile.username;
+    p.avatar = profile.avatar;
     players.set(socket.id, p);
     return p;
   }
 
   const created: Player = {
     id: userId,
-    username: cleanUsername,
+    username: profile.username,
+    avatar: profile.avatar,
     socketId: socket.id,
     isReady: false,
   };

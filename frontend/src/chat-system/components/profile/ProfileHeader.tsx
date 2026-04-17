@@ -34,8 +34,6 @@ export function ProfileHeader({ userGameStat, isOwnProfile, setIsOwnProfile, set
         setUserId(userInfo?.id ?? null);
     }, [userInfo, setUserId])
 
-    console.log("paramsId:", params.id, user);
-
     const friendButtonConfig = {
         not: {
             label: 'Add Friend', icon: <UserPlus className="w-4 h-4" />, classname: 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white hover:border-transparent', disabled: false,
@@ -50,10 +48,9 @@ export function ProfileHeader({ userGameStat, isOwnProfile, setIsOwnProfile, set
             onClick: () => handleRemoveFriend(userInfo?.id as string)
         }
     }
-
     const currentFriendButtonConf = friendButtonConfig[userInfo?.isFriend ?? 'not'];
     const joinedDate: string = userInfo?.created_at ? new Date(userInfo.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Recently'
-
+    /**_____________________ Component-Style _____________________ */
     if (gotToChat)
         return <Navigate state={{ selectedFriendId: gotToChat }} to={'/Chat'} />
 
@@ -152,6 +149,7 @@ export function ProfileHeader({ userGameStat, isOwnProfile, setIsOwnProfile, set
                     </div>
                 )}
             </div>
+             {/* Edit profile component */}
             <EditProfileModal
                 isOpen={isEditing} 
                 onClose={() => setIsEditing(false)} 

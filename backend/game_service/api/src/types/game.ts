@@ -1,6 +1,7 @@
 export interface Player {
   id: string;
   username: string;
+  avatar: string | null;
   socketId: string;
   isReady: boolean;
 }
