@@ -88,10 +88,10 @@ export default function WinModal({
           </>
         )}
 
-        <div className="flex items-center justify-center gap-2 mb-2">
+        {/* <div className="flex items-center justify-center gap-2 mb-2">
           <GiPodiumWinner className="text-amber-400 text-xl" />
           <span className="text-amber-400 font-semibold">{winnerName}</span>
-        </div>
+        </div> */}
 
         <p className="text-slate-400 text-sm mt-3">Redirecting{redirectTo === '/Tournament' ? ' to Tournament…' : ' to Dashboard…'}</p>
       </div>
