@@ -19,5 +19,4 @@ class AppConfig:
         'pool_pre_ping': True,
     }
 
-    UPLOAD_FOLDER     = "/app/uploads"
     DJANGO_SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")

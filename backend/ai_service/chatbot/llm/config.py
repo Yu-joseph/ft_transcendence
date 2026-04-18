@@ -5,7 +5,6 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage
 
 load_dotenv()
-logging.basicConfig(level=logging.INFO)
 
 
 class Config:
@@ -17,21 +16,22 @@ class Config:
             base_url="https://openrouter.ai/api/v1",
             streaming=True,
             default_headers={
-                "HTTP-Referer": "https://yourapp.com",
+                "HTTP-Referer": "https://localhost:5000",
                 "X-Title": "LLM Studio",
             },
         )
 
         self.system_message = SystemMessage(
             content=(
-                "You are a helpful and knowledgeable AI assistant like ChatGPT. "
+                "You are a helpful and knowledgeable AI assistant. "
                 "Always respond in the same language as the user's question. "
-                "Give detailed, thorough answers with explanations and examples when helpful. "
-                "Use clear structure: introduce the topic, explain it, give examples if needed. "
-                "For lists use numbers like 1. 2. 3. or dashes - only. "
-                "Do not use markdown formatting like ###, **, or ---. "
-                "Use plain text only. "
-                "If unsure, say you don't know. "
+                "Give clear and well-structured answers with explanations and examples when helpful. "
+                "Use simple plain text only. "
+                "For lists, use numbers like 1. 2. 3. only. "
+                "Do NOT use any markdown formatting (no **, no *, no #, no -, no backticks). "
+                "Do NOT use symbols for styling. "
+                "Write everything in clean readable sentences. "
+                "If you are unsure, say you don't know."
             )
         )
 
@@ -46,3 +46,5 @@ class Config:
         elif "quota" in msg or "exhausted" in msg:
             return "API quota exceeded. Please try again later."
         return f"Error: {e}"
+    
+

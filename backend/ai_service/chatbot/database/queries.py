@@ -1,6 +1,6 @@
 from datetime import datetime
 from extensions import db
-from database.models import ChatSession, Message, Image
+from database.models import ChatSession, Message
 
 
 # messages
@@ -99,45 +99,3 @@ def update_session_title(session_id: str, title: str):
         db.session.rollback()
         print(f"[DB ERROR] update_session_title: {e}")
 
-
-
-
-# images
-
-def save_image(prompt: str, filename: str, url: str,
-               model_used: str = None, session_id: str = None, user_id: str = None):
-    try:
-        db.session.add(Image(
-            prompt=prompt,
-            filename=filename,
-            url=url,
-            model_used=model_used,
-            session_id=session_id,
-            user_id=user_id,
-        ))
-        db.session.commit()
-        print(f"[DB] Image saved: {filename}")
-    except Exception as e:
-        db.session.rollback()
-        print(f"[DB ERROR] save_image: {e}")
-
-
-def get_images(user_id: str = None, session_id: str = None) -> list:
-    try:
-        query = Image.query.order_by(Image.created_at.desc())
-        if user_id:
-            query = query.filter_by(user_id=user_id)
-        elif session_id:
-            query = query.filter_by(session_id=session_id)
-        return [
-            {
-                'url':        img.url,
-                'prompt':     img.prompt,
-                'model':      img.model_used,
-                'created_at': img.created_at.isoformat(),
-            }
-            for img in query.all()
-        ]
-    except Exception as e:
-        print(f"[DB ERROR] get_images: {e}")
-        return []

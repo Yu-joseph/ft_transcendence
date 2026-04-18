@@ -2,15 +2,12 @@ import os
 import time
 import uuid
 
-from flask import Flask , jsonify , request
+from flask import Flask 
 from flask_cors import CORS
 from config import AppConfig
 from extensions import db
-from api import chat_bp, session_bp, image_bp
+from api import chat_bp, session_bp
 
-
-
-UPLOAD_FOLDER = "/app/uploads"
 
 
 def _init_db(app: Flask):
@@ -28,20 +25,14 @@ def _init_db(app: Flask):
 
 
 def create_app() -> Flask:
-    app = Flask(
-        __name__,
-        template_folder="/app/templates",
-        static_folder="/app/static",
-    )
+    app = Flask(__name__ )
     app.config.from_object(AppConfig)
     CORS(app)
 
     db.init_app(app)
     _init_db(app)
 
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-    for bp in (chat_bp, session_bp, image_bp ):
+    for bp in (chat_bp, session_bp ):
         app.register_blueprint(bp)
     return app
 

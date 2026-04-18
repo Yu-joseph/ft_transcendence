@@ -1,14 +1,14 @@
 from langchain_core.messages import HumanMessage, AIMessage
 from llm.config import Config
-from llm.image import ImageGenerator
 
+
+        
 
 class ChatBot:
     def __init__(self):
         self.config = Config()
         self.llm    = self.config.llm
         self.history = [self.config.system_message]
-        self.image_gen = ImageGenerator()
 
     def ask_stream(self, message: str):
         try:
@@ -20,7 +20,7 @@ class ChatBot:
                     yield chunk.content.replace('\n', '<br>')
             self.history.append(AIMessage(content=full_response))
         except Exception as e:
-            self.history = [self.config.system_message]
+            self.reset()
             yield Config.handle_error(e)
 
     def reset(self):
@@ -34,8 +34,6 @@ class ChatBot:
             elif m["role"] == "assistant":
                 self.history.append(AIMessage(content=m["content"]))
 
-    def generate_image(self, prompt: str, session_id=None, user_id=None) -> str:
-        return self.image_gen.generate(prompt, session_id=session_id, user_id=user_id)
 
     def generate_title(self, message: str) -> str:
         try:
@@ -48,7 +46,7 @@ class ChatBot:
             return "New Chat"
 
 
-# Per-user bot registry
+# per-user bot register
 
 _bots: dict = {}
 

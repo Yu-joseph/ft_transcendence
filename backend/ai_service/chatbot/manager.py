@@ -4,6 +4,7 @@ from database.queries import save_message, get_messages
 from llm.bot import get_bot, ChatBot
 
 
+
 class ChatManager:
     def __init__(self):
         self.chat_history = []
@@ -14,7 +15,7 @@ class ChatManager:
         self.user_id = user_id
 
     def _bot(self) -> ChatBot:
-        return get_bot(self.user_id or 'anonymous')
+        return get_bot(self.user_id)
 
     @staticmethod
     def _clean(text: str) -> str:
@@ -24,16 +25,6 @@ class ChatManager:
         self.chat_history.append({"role": role, "content": content})
         save_message(self.session_id, role, content, user_id=self.user_id)
 
-    def chat(self, message: str) -> dict:
-        if not message:
-            return {"error": "empty message"}
-        self._save("user", message)
-        try:
-            response = self._clean("".join(self._bot().ask_stream(message)))
-        except Exception as e:
-            response = str(e)
-        self._save("assistant", response)
-        return {"role": "assistant", "content": response}
 
     def chat_stream(self, message: str):
         self._save("user", message)
@@ -62,11 +53,6 @@ class ChatManager:
     def clear(self):
         self.chat_history.clear()
         self._bot().reset()
-
-    def generate_image(self, prompt: str) -> str:
-        return self._bot().generate_image(
-            prompt, session_id=self.session_id, user_id=self.user_id
-        )
 
     def generate_title(self, message: str) -> str:
         return self._bot().generate_title(message)

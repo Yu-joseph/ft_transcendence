@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 import os
-from q_learning import get_state, get_available_actions, get_difficulty_action
+from q_learning import  get_difficulty_action
+from utils import get_state, get_available_actions
 
 app = Flask(__name__)
 

@@ -16,7 +16,7 @@ def get_chat():
 
 
 @chat_bp.post('/chat/stream')
-def api_chat_stream():
+def chat_stream():
     data       = request.get_json()
     message    = data.get('message', '').strip()
     session_id = data.get('session_id')
@@ -38,20 +38,20 @@ def api_chat_stream():
 
 
 @chat_bp.get('/history')
-def api_history():
+def history():
     chat = get_chat()
     return jsonify(chat.chat_history)
 
 
 @chat_bp.post('/clear')
-def api_clear():
+def clear():
     chat = get_chat()
     chat.clear()
     return jsonify({'status': 'cleared'})
 
 
 @chat_bp.post('/generate-title')
-def api_generate_title():
+def generate_title():
     data       = request.get_json()
     message    = data.get('message', '')
     session_id = data.get('session_id')

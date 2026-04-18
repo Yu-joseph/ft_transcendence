@@ -10,10 +10,14 @@ session_bp = Blueprint('session', __name__, url_prefix='/api')
 
 
 @session_bp.post('/new-session')
-def api_new_session():
+def new_session():
     chat       = get_chat()
     session_id = chat.new_session()
     user_id    = get_user_id()
+
+    if not user_id:
+        print("************************---------------------**************-\n\n\n\n\n" , flush=True)
+        return jsonify ({'error' : 'Unauthorized'})
 
     db.session.add(ChatSession(session_id=session_id, user_id=user_id))
     db.session.commit()
@@ -22,7 +26,7 @@ def api_new_session():
 
 
 @session_bp.post('/set-session')
-def api_set_session():
+def set_session():
     data       = request.get_json()
     session_id = data.get('session_id')
 
@@ -44,5 +48,5 @@ def api_set_session():
 
 
 @session_bp.get('/sessions')
-def api_sessions():
+def sessions():
     return jsonify(get_sessions(user_id=get_user_id()))
