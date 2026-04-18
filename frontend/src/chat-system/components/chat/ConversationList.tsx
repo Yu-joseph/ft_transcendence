@@ -5,11 +5,12 @@ interface ConversationListProps {
   setConvId: React.Dispatch<React.SetStateAction<number | null>>;
   convId: number | null
   selectFriendId: React.Dispatch<React.SetStateAction<string | null>>
+  friendId: string|null
 }
 
-export  function ConversationList({setConvId, convId, selectFriendId}: ConversationListProps ) {
+export  function ConversationList({setConvId, convId, selectFriendId, friendId}: ConversationListProps ) {
   /**______ Costume Hooks _______________ */
-  const {loading, error, conversationList} = useConversationList(selectFriendId);
+  const {loading, error, conversationList} = useConversationList(friendId);
 
   /**________ Component-Style __________________ */
     if (!loading) {

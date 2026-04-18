@@ -14,7 +14,7 @@ interface UpdatedConversationEvent {
   convId: bigint
 }
 
-export  function useConversationList(selectedFriendId:  React.Dispatch<React.SetStateAction<string | null>>){
+export  function useConversationList(friendId: string | null){
     const   [conversationList, setConversationList] = useState<ConversationType[]>([]);
     const   [error, setError] = useState<Error | null>(null);
     const   [loading, setLoading] = useState<boolean>(false);
@@ -36,7 +36,7 @@ export  function useConversationList(selectedFriendId:  React.Dispatch<React.Set
             }
         };
         loadConversation();
-    }, [selectedFriendId])
+    }, [friendId])
 
     /**__________ Socket Event For Updating Conversation List Order ________ */
 
