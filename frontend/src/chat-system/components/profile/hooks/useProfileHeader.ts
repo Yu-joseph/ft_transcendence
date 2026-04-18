@@ -1,4 +1,4 @@
-import  { useEffect, useState } from "react";
+import  { useState } from "react";
 import  { fetchClient } from "../../../utils/fetchClient";
 import  type { AuthUser } from "../../../../auth/auth-context";
 
@@ -18,34 +18,14 @@ export interface UserProfileInfo {
 }
 
 interface UseUserProfileProps {
-    userId: string | null
     user: AuthUser | null
-    setIsOwnProfile: React.Dispatch<React.SetStateAction<boolean>>
+    setUserInfo: React.Dispatch<React.SetStateAction<UserProfileInfo|null>>
+    userInfo: UserProfileInfo | null
 }
 
-export function useProfileHeader({userId, user, setIsOwnProfile} : UseUserProfileProps) {
-    const [userInfo, setUserInfo] = useState<UserProfileInfo | null>(null);
+export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfileProps) {
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [gotToChat, setGoToChat] = useState<string | null>(null);
-
-    useEffect(() => {
-        if(!userId || !user?.id)
-            return ;
-        setIsOwnProfile(false);
-        console.log("TRhe ID in PARAM:", userId);
-        const loadUserInfo = async () => {
-            try {
-                console.log("TRhe ID in PARAM:", userId);
-                const result = await fetchClient<UserProfileInfo>(`/profile/${userId}`); /** */
-                setIsOwnProfile(result.id === user?.id);
-                setUserInfo(result)
-                console.log("UserInfo result:", result);
-            } catch (err) {
-                console.log('Error in profile header:', err);
-            }
-        }
-        loadUserInfo();
-    }, [user, userId])
 
     /** *** Botton Click******/
     const handleAddToFriend = async (username: string) => {
@@ -142,7 +122,6 @@ export function useProfileHeader({userId, user, setIsOwnProfile} : UseUserProfil
         handleSaveProfile,
         gotToChat,
         isEditing,
-        userInfo,
         setIsEditing
     };
 }
