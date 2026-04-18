@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { Server, Socket } from 'socket.io';
-import prisma from '../lib/prisma';
-import { Match, Tournament } from '../types/game';
+import prisma from '../../lib/prisma';
+import { Match, Tournament } from '../../types/game';
 import { generateBracket, propagateWinner } from './tournamentBracket';
 import {
   actuallyStartMatch,
@@ -11,7 +11,7 @@ import {
 } from './tournamentEngine';
 import { getOrCreatePlayer, getSocketUserId } from './tournamentPlayers';
 import { tournaments } from './tournamentStore';
-import { isPlayerInActiveMatch } from './handlers';
+import { getUserRoom, isPlayerInActiveMatch } from '../onevone/lobbyPresence';
 
 export { advanceTournamentBracket } from './tournamentEngine';
 
@@ -252,7 +252,7 @@ export function setupTournamentHandlers(io: Server) {
 
         tm.requestedBy = caller.id;
 
-        io.to(opponent.socketId).emit('tournament-match-confirm', {
+        io.to(getUserRoom(opponent.id)).emit('tournament-match-confirm', {
           tournamentId: tournament.id,
           roundNumber: tm.roundNumber,
           matchIndex: tm.matchIndex,
@@ -379,7 +379,7 @@ export function setupTournamentHandlers(io: Server) {
         }
 
         tournament.players.forEach((p) => {
-          io.to(p.socketId).emit('tournament-cancelled', {
+          io.to(getUserRoom(p.id)).emit('tournament-cancelled', {
             tournamentId: data.tournamentId,
             reason: 'Creator left',
           });

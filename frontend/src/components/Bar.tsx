@@ -9,24 +9,6 @@ function Bar() {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  // Normalize avatar URL to hit the auth service media endpoint via nginx (/authent/ -> auth:8000)
-  const normalizeAvatarUrl = (url?: string) => {
-    if (!url) 
-      return undefined;
-    const lowerUrl = url.toLowerCase();
-    if (lowerUrl.startsWith("http://") || lowerUrl.startsWith("https://")) 
-      return url; // already absolute
-
-    const base = "/authent";
-    // Ensure we always request /media/<file>
-    const withMediaPrefix = url.startsWith("/media/")
-      ? url
-      : url.startsWith("media/")
-        ? `/${url}`
-        : `/media/${url}`;
-
-    return `${base}${withMediaPrefix}`;
-  };
 
   const handleLogout = async () => {
     try {
@@ -73,7 +55,7 @@ function Bar() {
 
   const displayName = user?.username ?? "Player";
   const displayInitial = displayName.trim().charAt(0).toUpperCase() || "P";
-  const avatarUrl = user?.avatar ? normalizeAvatarUrl(user.avatar) : undefined;
+  const avatarUrl = user?.avatar ?? undefined;
 
   return (
     <header className="z-50 w-full bg-slate-900 border-b border-blue-800 shadow-lg">

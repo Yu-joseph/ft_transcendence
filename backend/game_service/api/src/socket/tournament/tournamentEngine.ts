@@ -1,13 +1,16 @@
 import { Server } from 'socket.io';
-import prisma from '../lib/prisma';
-import { Match, Tournament, TournamentMatch } from '../types/game';
-import { createGameInDB, emitLobbyPlayersUpdate, matches, startTurnTimerForMatch } from './handlers';
+import prisma from '../../lib/prisma';
+import { Match, Tournament, TournamentMatch } from '../../types/game';
 import { getMatchesForRound, nextPowerOf2, propagateWinner } from './tournamentBracket';
 import { tournaments } from './tournamentStore';
+import { emitLobbyPlayersUpdate, getUserRoom } from '../onevone/lobbyPresence';
+import { matches } from '../onevone/onevoneState';
+import { startTurnTimerForMatch } from '../onevone/gameTimers';
+import { createGameInDB } from '../onevone/gamePersistence';
 
 export function emitTournamentUpdate(io: Server, tournament: Tournament) {
   tournament.players.forEach((p) => {
-    io.to(p.socketId).emit('tournament-update', {
+    io.to(getUserRoom(p.id)).emit('tournament-update', {
       id: tournament.id,
       name: tournament.name,
       creatorId: tournament.creatorId,
@@ -63,8 +66,8 @@ export function actuallyStartMatch(io: Server, tournament: Tournament, tm: Tourn
     console.error('Failed to create tournament game in DB:', err),
   );
 
-  io.to(tm.player1.socketId).emit('match-found', { matchId, match, symbol: 'X' });
-  io.to(tm.player2.socketId).emit('match-found', { matchId, match, symbol: 'O' });
+  io.to(getUserRoom(tm.player1.id)).emit('match-found', { matchId, match, symbol: 'X' });
+  io.to(getUserRoom(tm.player2.id)).emit('match-found', { matchId, match, symbol: 'O' });
 
   console.log(
     `Tournament match started: ${tm.player1.username} vs ${tm.player2.username} (Round ${tm.roundNumber})`,
@@ -119,7 +122,7 @@ function handleBracketMatchFinish(io: Server, tournament: Tournament, bracketMat
       console.log(`Tournament "${tournament.name}" won by ${winnerPlayer?.username}`);
 
       tournament.players.forEach((p) => {
-        io.to(p.socketId).emit('tournament-finished', {
+        io.to(getUserRoom(p.id)).emit('tournament-finished', {
           tournamentId: tournament.id,
           winner: winnerPlayer,
           bracket: tournament.bracket,

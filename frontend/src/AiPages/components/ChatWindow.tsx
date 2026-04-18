@@ -199,7 +199,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
       const res = await fetch('/chatbot/generate-title', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
+        body: JSON.stringify({ message, session_id: sessionId })
       })
 
       const data: { title?: string } = await res.json()

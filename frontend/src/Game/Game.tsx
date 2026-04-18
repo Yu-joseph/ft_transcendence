@@ -13,6 +13,7 @@ const TURN_TIMEOUT_MS = 5000;
 interface Player {
   id: string;
   username: string;
+  avatar?: string | null;
   socketId: string;
   isReady: boolean;
 }
@@ -29,6 +30,8 @@ interface Match {
 function Game() {
   const { user: authUser } = useAuth();
   const authUserId = authUser?.id;
+  const playerDisplayName = authUser?.fullName ?? authUser?.username ?? "You";
+  const playerAvatarUrl = authUser?.avatar ?? undefined;
   const navigate = useNavigate();
   const { matchId } = useParams<{ matchId: string }>();
   const location = useLocation();
@@ -134,6 +137,12 @@ function Game() {
       setopLeave(true);
       setTimeout(() => navigate(backTo), 4000);
     };
+    const handleYouForfeited = () => {
+      setShowLeaveConfirm(false);
+      navigate(backTo);
+    };
+
+    gameSocket.on("you-forfeited", handleYouForfeited);
 
     const handleTournamentFinished = () => {
       // whole tournament is over — always go back to Dashboard, not Tournament page
@@ -149,6 +158,7 @@ function Game() {
       gameSocket.off("match-update", applyIncomingMatch);
       gameSocket.off("opponent-forfeited", handleOpponentForfeited);
       gameSocket.off("tournament-finished", handleTournamentFinished);
+      gameSocket.off("you-forfeited", handleYouForfeited);
     };
   }, [backTo, matchId, navigate]);
 
@@ -341,40 +351,41 @@ function Game() {
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-center gap-3 mt-2">
-            <span className="text-white text-sm">
-              {authUser?.fullName ?? authUser?.username ?? authUser?.email ?? "Player"}
-              {mySymbol && <span className="ml-2 text-emerald-400">({mySymbol})</span>}
-            </span>
-          </div>
-
-          {/* Show players in match */}
-          {players.length === 2 && (
-            <div className="text-slate-400 text-sm">
-              {players[0].username} (X) vs {players[1].username} (O)
-            </div>
-          )}
-
           {players.length > 0 && (
             <div className="grid grid-cols-2 gap-4 mt-4 w-full max-w-md">
               {players.map((player, idx) => {
                 const isActivePlayer = isTurnActive && currentTurn === player.id;
                 const isMe = player.id === authUser?.id;
                 const symbolLabel = idx === 0 ? "X" : "O";
+                const avatarUrl = player.avatar ?? undefined;
+                const playerInitial = player.username?.trim().charAt(0).toUpperCase() || "P";
 
                 return (
                   <div
                     key={player.id}
-                    className={`rounded-xl px-4 py-3 border
+                    className={`rounded-xl px-4 py-3 border flex flex-col justify-center items-center
                       ${isActivePlayer ? "border-emerald-400 bg-emerald-500/10" : "border-slate-700 bg-slate-800/50"}`}
                   >
-                    <div className="flex items-center justify-between text-slate-200 text-sm">
-                      <span>
-                        {player.username}
-                        {isMe ? " (You)" : ""}
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt={player.username}
+                          className="h-10 w-10 rounded-full object-cover border border-amber-400/60"
+                        />
+                      ) : (
+                        <span className="h-8 w-8 rounded-full bg-slate-700 text-amber-300 flex items-center justify-center border border-slate-600 text-xs font-semibold">
+                          {playerInitial}
+                        </span>
+                      )}
+                    <div className="flex items-center text-slate-200 text-sm">
+                      <span className="flex items-center gap-2 min-w-0">
+                        <span className="truncate">
+                          {player.username}
+                          {isMe ? " (You)" : ""}
+                        </span>
                       </span>
-                      <span className="text-xs text-slate-400">{symbolLabel}</span>
                     </div>
+                      <span className="text-md text-emerald-300">{symbolLabel}</span>
                     <div className={`text-2xl font-semibold ${isActivePlayer ? "text-emerald-300" : "text-slate-400"}`}>
                       {isActivePlayer ? `${turnSecondsLeft}s` : "Paused"}
                     </div>
@@ -468,7 +479,9 @@ function Game() {
           <WinModal
             show={openmentLeaver}
             isWinner={true}
-            winnerName={authUser?.fullName ?? authUser?.username ?? "You"}
+            winnerName={playerDisplayName}
+            playerName={playerDisplayName}
+            playerAvatarUrl={playerAvatarUrl}
             message="Your opponent left the match."
             redirectTo={backTo}
           />
@@ -479,6 +492,8 @@ function Game() {
               show={showWinModal}
               isWinner={!!winner && players.find(p => p.id === authUser?.id)?.username === winner}
               winnerName={winner ?? ""}
+              playerName={playerDisplayName}
+              playerAvatarUrl={playerAvatarUrl}
               redirectTo={backTo}
             />
           )}

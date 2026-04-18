@@ -1,6 +1,6 @@
 import json
 import random
-
+from train import check_winner
 with open("q_table.json", "r") as f:
     q_table = json.load(f)
 
@@ -65,3 +65,50 @@ def get_best_action(state, actions):
     return best
 
 
+
+def get_winning_move(board, actions, player):
+    for action in actions:
+        temp_board = board.copy()
+        if action["type"] == "place":
+            temp_board[action["to"]] = player
+        else:
+            temp_board[action["from"]] = ""
+            temp_board[action["to"]] = player
+
+        if check_winner(temp_board , player):
+            return action
+        
+    return None
+
+
+def get_difficulty_action(state, actions, difficulty , board , player):
+
+    win = get_winning_move(board ,actions , player)
+    if win:
+        return win
+    
+
+    if difficulty == "hard":
+        return get_best_action(state, actions)
+    
+    elif difficulty == "medium":
+        b = random.random()
+        print("-------------------------- medium  ------------------------------------------- \n\n\n\n")
+        print(f"a  ==   {b}" , flush=True )
+        if b < 0.7:
+            return get_best_action(state, actions)
+        else:
+            return random.choice(actions)
+    
+    elif difficulty == "easy":
+        a = random.random()
+        print("-------------------------- easy  ------------------------------------------- \n\n\n\n")
+        print(f"a  ==   {a}" , flush=True )
+
+        if  a < 0.4:
+            return get_best_action(state, actions)
+        else:
+            return random.choice(actions)
+    
+    else:
+        return get_best_action(state, actions)

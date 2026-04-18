@@ -1,6 +1,10 @@
 import { io } from "socket.io-client";
-// connects to the Socket.IO server running on port 3000
-export const socket = io(`http://${window.location.hostname}:1339`, {
-  autoConnect: false, // We manually connect in 
+
+const HOST = window.location.hostname;
+const EDGE = "https://" + HOST + ":8443";
+
+export const socket = io(EDGE, {
+  autoConnect: false,
   withCredentials: true,
+  path: "/game-socket",
 });
