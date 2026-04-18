@@ -212,7 +212,6 @@ export class FriendService {
             }
         });
 
-        console.log("User InfoInfoo:->", Info);
         const friendship = await prisma.friend.findMany({
             where: {
                 OR: [
@@ -222,8 +221,8 @@ export class FriendService {
                 status: 'ACCEPTED'
             },
             include: {
-                User_Friend_receiverIdToUser: { select: { id: true, username: true, email: true, created_at: true } },
-                User_Friend_requesterIdToUser: { select: { id: true, username: true, email: true, created_at: true } }
+                User_Friend_receiverIdToUser: { select: { id: true, username: true, avatar: true, created_at: true } },
+                User_Friend_requesterIdToUser: { select: { id: true, username: true, avatar: true, created_at: true } }
             }
         });
         /** filter to return just the friend excluding currentUser */

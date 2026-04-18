@@ -49,6 +49,7 @@ export function Chat() {
         result.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null; });
         setMessages(result);
       } catch (err: any) {
+        setSelectedFriendId(null);
         console.log(err);
         setMessages([]); // to update to display error loading
       }
@@ -73,6 +74,7 @@ export function Chat() {
         setSelectedConvId(result.convId);
       } catch (err: any) {
         console.log(err);
+        setSelectedFriendId(null);
         setMessages([]); // to update to display error loading
       }
     }
@@ -87,7 +89,7 @@ export function Chat() {
       <ConversationList setConvId={setSelectedConvId} convId={selectedConvId} selectFriendId={setSelectedFriendId} />
       <section className="flex-1 flex flex-col bg-slate-800 border border-blue-700 rounded-2xl shadow-xl overflow-hidden hover:border-amber-500 hover:scale-101 transition-all duration-300">
         <ChatMessage messages={messages} friendId={selectedFriendId} convId={selectedConvId} isTyping={isTyping} />
-        <ChatInput setMessages={setMessages} convId={selectedConvId} />
+        <ChatInput setMessages={setMessages} convId={selectedConvId} setSelectedFriendId={setSelectedFriendId} />
       </section>
     </main>
   );

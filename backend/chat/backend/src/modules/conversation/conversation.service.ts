@@ -16,7 +16,6 @@ export  class   ConversationService {
                 id: userId
             }
         });
-        console.log(exist);
         if(!exist)
             throw new AppError('Unauthorized', 401);
         const   conversations = await prisma.conversation.findMany({

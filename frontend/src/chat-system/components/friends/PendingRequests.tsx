@@ -54,7 +54,11 @@ export  function    PendingRequests() {
                         <div className='flex items-center gap-4'>
                             <div className='w-12 h-12 rounded-full bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center
                             text-white font-bold text-xl shadow-inner'>
-                                {penFr.userInfo.username.charAt(0).toLocaleLowerCase()}
+                            <img
+                                src={`${penFr.userInfo.avatar}`}
+                                alt="User Avatar"
+                                className="w-full h-full object-cover rounded-full flex items-center justify-center"
+                            />
                             </div>
                             <div className='flex flex-col'>
                                 <span className='text-white font-medium text-lg'>{penFr.userInfo.username}</span>

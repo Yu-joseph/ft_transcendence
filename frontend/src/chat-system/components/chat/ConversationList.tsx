@@ -9,7 +9,7 @@ interface ConversationListProps {
 
 export  function ConversationList({setConvId, convId, selectFriendId}: ConversationListProps ) {
   /**______ Costume Hooks _______________ */
-  const {loading, error, conversationList} = useConversationList();
+  const {loading, error, conversationList} = useConversationList(selectFriendId);
 
   /**________ Component-Style __________________ */
     if (!loading) {
@@ -72,7 +72,11 @@ export  function ConversationList({setConvId, convId, selectFriendId}: Conversat
                   className={`${convId === conv.id ? 'bg-slate-700/30' : ''} group flex items-center gap-4 p-3 rounded-3xl cursor-pointer hover:bg-slate-700/40 transition-all duration-200 border border-transparent hover:border-slate-600/50`}>
                     <div className="relative shrink-0">
                       <div className="w-12 h-12 rounded-full bg-linear-to-br from-indigo-50 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                        {conv.otherUser.username.charAt(0).toUpperCase()}
+                        <img
+                            src={`${conv.otherUser.avatar}`}
+                            alt="User Avatar"
+                            className="w-full h-full object-cover rounded-full flex items-center justify-center"
+                        />
                       </div>
                       <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-800"></div>
                     </div>

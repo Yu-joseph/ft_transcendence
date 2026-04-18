@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import React, { useRef, useState } from "react"
 import { useAuth } from "../../../../auth/useAuth";
 import { chatSocket } from '../../../../socket/sock';
 import type { JoinChatInf } from "./useChatSocket";
@@ -8,6 +8,7 @@ import type { MessageItem, MessageState } from "../../../pages/Chat";
 export interface ChatInputPorps {
     convId: number | null
     setMessages: React.Dispatch<React.SetStateAction<MessageItem[]>>
+    setSelectedFriendId: React.Dispatch<React.SetStateAction<string|null>>
 }
 
 interface MessageToSendType {
@@ -16,7 +17,7 @@ interface MessageToSendType {
     status: MessageState
 }
 
-export  const   useChatInput = ({convId, setMessages}: ChatInputPorps) => {
+export  const   useChatInput = ({convId, setMessages, setSelectedFriendId}: ChatInputPorps) => {
 
     const   [input, setInput] = useState<string>('');
     const   [isTyping, setIsTyping] = useState<boolean>(false);
@@ -71,6 +72,7 @@ export  const   useChatInput = ({convId, setMessages}: ChatInputPorps) => {
                             status: 'error'
                         };
                     }));
+                    setSelectedFriendId(null);
                     setInput('');
                     return ;
                 }
@@ -87,6 +89,7 @@ export  const   useChatInput = ({convId, setMessages}: ChatInputPorps) => {
             }, 2000);
         } catch (err:any) {
             console.log(err);
+            setSelectedFriendId(null);
             setMessages(prev => prev.map(m => m.tempId === messageToSend.tempId ? {...m, status: 'error'} : m ));
         }
         setInput('');

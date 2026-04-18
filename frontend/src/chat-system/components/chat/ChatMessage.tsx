@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import  {IoEllipsisHorizontal} from 'react-icons/io5';
 import { useAuth } from "../../../auth/useAuth";
 import { fetchClient } from '../../utils/fetchClient';
 import type { MessageItem, MessageState } from '../../pages/Chat';
@@ -60,7 +59,6 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
     }
     
     const   handleViewProfile = (userId: string | undefined) => {
-        // console.log("Profile UserId:", userId);
         if(!userId)
             navigate('/');
         navigate(`/Profile/${userId}`);
@@ -92,21 +90,6 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
     if (error) {
         const type: TypeOfError = 'messages';
         return <ErrorMessage message={error} typeOfError={type} />
-        // (
-        //     <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-        //         <div className="bg-red-500/10 p-4 rounded-full mb-4">
-        //             <FaExclamation className="text-red-500 text-3xl" />
-        //         </div>
-        //         <h3 className="text-white font-bold text-lg mb-2">Oops! Something went wrong</h3>
-        //         <p className="text-slate-400 mb-6">{error}</p>
-        //         <button 
-        //             onClick={() => window.location.reload()} 
-        //             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
-        //         >
-        //             Try Again
-        //         </button>
-        //     </div>
-        // );
     }
 
     if (friendId === null)
@@ -133,7 +116,12 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
                 >
                     <div className="relative">
                         <div className="w-10 h-10 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex justify-center items-center text-white font-bold shadow-md">
-                            {friendInfo && friendInfo.username.charAt(0).toLocaleUpperCase()}
+                            <img
+                                src={`${friendInfo?.avatar}`}
+                                alt="User Avatar"
+                                className="w-full h-full object-cover rounded-full flex items-center justify-center"
+                            />
+                            {/* {friendInfo && friendInfo.username.charAt(0).toLocaleUpperCase()} */}
                         </div>
                         <div className="absolute bottom-0 right-0 bg-green-500 w-3 h-3 rounded-full border-2 border-slate-900"></div>
                     </div>

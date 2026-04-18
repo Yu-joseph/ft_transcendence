@@ -49,7 +49,12 @@ export  function BlockedFriend() {
                     <div key={user.id} className='flex items-center justify-between bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4'>
                         <div className='flex items-center gap-4'>
                             <div className='bg-slate-700 w-12 h-12 rounded-full flex items-center justify-center text-slate-400 font-bold text-xl'>
-                                {user.username.charAt(0).toUpperCase()}
+                                <img
+                                    src={`${user.avatar}`}
+                                    alt="User Avatar"
+                                    className="w-full h-full object-cover rounded-full flex items-center justify-center"
+                                />
+                                {/* {user.username.charAt(0).toUpperCase()} */}
                             </div>
                             <span className='text-slate-300 font-medium text-lg'>{user.username}</span>
                         </div>
