@@ -1,22 +1,18 @@
-Flask
-Flask-Cors
-Flask-Limiter
+flask
+flask-cors
 flask-sqlalchemy
+psycopg2-binary
+requests
+python-dotenv
 
-langchain
 langchain-core
-langchain-community
-langchain-google-genai
 langchain-openai
 langchain-groq
-
-google-generativeai
-openai
+langchain-google-genai
 huggingface_hub
-
-python-dotenv
 Pillow
-psycopg2-binary
+
+PyJWT
 
 
-
+gunicorn
