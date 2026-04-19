@@ -20,7 +20,7 @@ export default function PlayerState() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch("/game-api/api/me/stats", {
+        const response = await fetch("/ai_game/api/me/stats", {
           credentials: "include",
         });
         if (!response.ok) {
