@@ -107,6 +107,8 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
                 updatedData.email = userInfo?.email;
             if(updatedData.fullname.trim() === '')
                 updatedData.fullname = userInfo?.fullname;
+            if(updatedData.bio.trim() === '')
+                updatedData.bio = userInfo?.bio;
             setUserInfo(prev => prev ? { ...prev, ...updatedData } : null);
             setIsEditing(false);
         } catch (error) {

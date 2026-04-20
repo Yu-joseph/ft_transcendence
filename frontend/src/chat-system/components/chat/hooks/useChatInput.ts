@@ -19,6 +19,9 @@ interface MessageToSendType {
 
 export  const   useChatInput = ({convId, setMessages, setSelectedFriendId}: ChatInputPorps) => {
 
+    const   MAX_LENGHT = 10;
+
+    const   [messageErrors, setMessageErrors] = useState<Record<string, string> | null>(null);
     const   [input, setInput] = useState<string>('');
     const   [isTyping, setIsTyping] = useState<boolean>(false);
     const   typingTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -27,13 +30,28 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId}: Chat
 
     const   handleSendMessage = async (event: React.SyntheticEvent) => {
         if(user === null || convId === null)
+        {
+            window.location.reload();
             return;
+        }
         event.preventDefault();
         const   message: string = input.trim();
         if(message === '') {
+            setMessageErrors({'error': 'message cannot be empty'});
             console.log('message cannot be empty');
             setInput('');
             return ;
+        }
+        if(/[<>]/.test(message)) {
+            setMessageErrors({'error': `HTML tags not allowed`});
+            console.log('Message too long');
+            return;
+        }
+        if(message.length > MAX_LENGHT)
+        {
+            setMessageErrors({'error': `message too long (max: ${MAX_LENGHT} character)`});
+            console.log(`message too long (max: ${MAX_LENGHT} character)`);
+            return;
         }
         const   messageToSend: MessageToSendType = {
             content: message,
@@ -99,9 +117,9 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId}: Chat
     const   handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if(user === null)
             return ;
-        const   ROOM_ID: string = `ROOM_${convId}`;
         const   messageValue: string = e.target.value;
         setInput(messageValue);
+        const   ROOM_ID: string = `ROOM_${convId}`;
         if(!isTyping && messageValue.length > 0) {
             console.log('Typing start from me');
             chatSocket.emit('typing:start', {room_id: ROOM_ID, userId: user.id, convId: convId} as JoinChatInf)
@@ -117,7 +135,8 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId}: Chat
     return {
         handleChange,
         handleSendMessage,
-        input
+        input,
+        messageErrors
     };
 
 }
