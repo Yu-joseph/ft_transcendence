@@ -33,7 +33,6 @@ export  function    ChatInput({setMessages, convId, setSelectedFriendId}: ChatIn
                     <IoSend size={18} className='translate-x-1'/>
                 </button>
             </form>
-
         </footer>
     );
 }
