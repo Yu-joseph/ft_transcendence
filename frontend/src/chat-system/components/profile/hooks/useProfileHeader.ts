@@ -86,22 +86,20 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
     const handleSaveProfile = async (updatedData: any) => {
         console.log('This is the Updated Info:', updatedData);
         try {
-            // if(updatedData.bio !== '' && updatedData.bio.length > 50) {
-            //     console.log('Bio is Too long');
-            //     return ;
-            // }
+            console.log('Handle Save profile data:', updatedData);
+            const   {avatar, ...dataToSend} = updatedData;
             const   result = await fetch('/authent/update_users/', {
                 method: 'PATCH',
                 credentials: 'include',
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(updatedData)
+                body: JSON.stringify(dataToSend)
             });
             if (!result.ok) {
                 throw new Error('Error updating information');
             }
-            console.log('Result of the updated:', result);
+            // console.log('Result of the updated:', result);
             console.log("Prev user info:", userInfo);
             if(updatedData.email.trim() === '')
                 updatedData.email = userInfo?.email;
@@ -109,6 +107,9 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
                 updatedData.fullname = userInfo?.fullname;
             if(updatedData.bio.trim() === '')
                 updatedData.bio = userInfo?.bio;
+
+            console.log('AVATAR URL IN HANDLESAVE PROFILE:', avatar);
+
             setUserInfo(prev => prev ? { ...prev, ...updatedData } : null);
             setIsEditing(false);
         } catch (error) {

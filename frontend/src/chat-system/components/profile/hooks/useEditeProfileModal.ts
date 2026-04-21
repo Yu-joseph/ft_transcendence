@@ -1,14 +1,18 @@
 import { useRef, useState } from "react";
+import type { UserProfileInfo } from "./useProfileHeader";
 
-export  function    useEditeProfileModale(initialData: any, isOpen: boolean) {
+export  function    useEditeProfileModale(initialData: UserProfileInfo, isOpen: boolean) {
 
-    const [errors, setErrors] = useState<Record<string, string> | null>(null);
-   const fileInputRef = useRef<HTMLInputElement>(null);
+    const   [errors, setErrors] = useState<Record<string, string> | null>(null);
+   const    fileInputRef = useRef<HTMLInputElement>(null);
+   const    [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.avatar ?? null);
+   const    [avatar, setAvatar] = useState<File | null>(null);
 
     const [formData, setFormData] = useState({
         fullname: initialData?.fullname || '' as string,
         bio: initialData?.bio || '' as string,
-        email: initialData?.email || '' as string
+        email: initialData?.email || '' as string,
+        avatar: initialData?.avatar || '' as string
     });
 
     const validateForm = () => {
@@ -46,8 +50,6 @@ export  function    useEditeProfileModale(initialData: any, isOpen: boolean) {
         return Object.keys(newErrors).length === 0;
     };
 
-    const   [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.avatar ?? null);
-    const   [avatar, setAvatar] = useState<File | null>(null);
 
     if (!isOpen)
         return null;
@@ -58,10 +60,9 @@ export  function    useEditeProfileModale(initialData: any, isOpen: boolean) {
             setAvatar(null);
             return;
         }
-        console.log('Changing the avatar........');
-        console.log("file:", file);
         if(!file?.type.startsWith('image/')) {
             console.log('Invalid Image');
+            setErrors({...errors, avatar: 'Invalid Image type.'}); // *****
             setAvatar(null);
             return;
         }
@@ -73,19 +74,25 @@ export  function    useEditeProfileModale(initialData: any, isOpen: boolean) {
     };
 
     const uploadAvatar = async (file: File) => {
+        if(!file)
+            return ;
         const fd = new FormData();
         console.log('before append:', fd);
         fd.append('avatar', file);
         console.log('After append:', fd);
         try {
-            const res = await fetch('/api/profile/avatar', {
+            const res = await fetch('/authent/update_avatar/', {
                 method: 'POST',
                 body: fd,
                 credentials: 'include'
             });
             if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
             const data = await res.json();
+            console.log('response of upload avatar:', data);
             setPreviewUrl(data.url);
+            setFormData({...formData, avatar: data.url as string});
+            console.log('AVATAR URL IN UPLOAD:', data.url);
+            return data.url;
         } catch (err) {
             console.error(err);
         }

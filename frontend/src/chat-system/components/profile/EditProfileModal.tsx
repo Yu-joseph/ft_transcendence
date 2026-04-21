@@ -2,6 +2,7 @@ import { X, Save, Camera, User, FileText, Mail, LockIcon } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useEditeProfileModale } from './hooks/useEditeProfileModal';
+import type { UserProfileInfo } from './hooks/useProfileHeader';
 interface EditProfileModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -17,27 +18,33 @@ interface EditProfileModalProps {
 export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditProfileModalProps) {
     const   navigate = useNavigate();
     /**_______________ Costume Hook __________________ */
-    const   hook = useEditeProfileModale(initialData, isOpen);
+    const   hook = useEditeProfileModale(initialData as UserProfileInfo, isOpen);
     if(hook === null)
         return;
 
     const   {
         fileInputRef,
         handleImageChange,
-        // uploadAvatar,
+        uploadAvatar,
         previewUrl,
         setFormData,
-        // avatar,
+        avatar,
         formData,
         validateForm,
         errors,
         setErrors
-        // setInputError
     } = hook;
 
-    const   handleSaveInfo = () => {
+    const handleSaveInfo = async () => {
         if(validateForm()) {
-            onSave(formData)
+            const finalData = { ...formData };
+            if(avatar) {
+                const newAvatarUrl = await uploadAvatar(avatar);
+                if (newAvatarUrl) {
+                    finalData.avatar = newAvatarUrl;
+                }
+            }
+            onSave(finalData);
         }
     }
 

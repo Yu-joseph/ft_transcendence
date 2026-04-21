@@ -133,6 +133,8 @@ services:
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
     volumes:
       - ../backend/chat/backend:/app
+      - /app/node_modules 
+
     networks:
       - app-network
 
