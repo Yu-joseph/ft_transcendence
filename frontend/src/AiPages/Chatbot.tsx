@@ -61,7 +61,11 @@ function Chatbot() {
 
     const init = async () => {
       try {
-        const res = await fetch('/chatbot/sessions');
+        const res = await fetch('/chatbot/sessions',{
+          method: 'GET',
+          credentials: 'include',
+          
+        });
         if (!res.ok) throw new Error('sessions request failed: ' + res.status);
 
         const payload: unknown = await res.json();
@@ -106,7 +110,10 @@ function Chatbot() {
 
   const handleNewChat = async () => {
     try {
-      const res = await fetch('/chatbot/new-session', { method: 'POST' });
+      const res = await fetch('/chatbot/new-session', { 
+        method: 'POST',
+        credentials: 'include',
+      });
       const data: { session_id: string } = await res.json();
       const newSession: Session = {
         session_id: data.session_id,
@@ -134,6 +141,7 @@ function Chatbot() {
     try {
       const res = await fetch('/chatbot/set-session', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionId }),
       });

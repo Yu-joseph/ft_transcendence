@@ -186,14 +186,26 @@ export function AiChallange() {
     }
   }, [winner, myTurn]);
 
-  const handlePlayAgain = () => {
+  const resetMatch = (resetLevel: boolean) => {
     setBoard(makeEmptyBoard());
     setPhase("place");
     setMyTurn(true);
     setPieceToRemove(null);
     setStatus("Your turn");
-    setLevel("");
-    localStorage.removeItem(MATCH_STORAGE_KEY); // keep level preference
+    localStorage.removeItem(MATCH_STORAGE_KEY);
+
+    if (resetLevel) {
+      setLevel("");
+      localStorage.removeItem(LEVEL_STORAGE_KEY);
+    }
+  };
+
+  const handlePlayAgain = () => {
+    resetMatch(true); // keep same AI level
+  };
+
+  const handleGiveUp = () => {
+    resetMatch(true); // reset board + reset AI level
   };
 
   const sendHumanMove = (oldindex: number, newindex: number) => {
@@ -250,7 +262,7 @@ export function AiChallange() {
       try {
         const aiPhase = getPhaseForPlayer(board, AI_PLAYER);
 
-        const res = await fetch("/game_br/", {
+        const res = await fetch("/ai_game/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -358,7 +370,7 @@ return (
           Game
         </span>
       </h1>
-      <p className="text-white -mb-4">  { level ==='' ? "Select the apponent level" : "Apponent level"}</p>
+      <p className="text-white -mb-4">  { level ==='' ? "Select the AI level" : ""}</p>
       <div className={`w-full max-w-md grid ${level === "" ? "grid-cols-3" : "grid-cols-1"} gap-2 `}>
         {visibleLevels.map((d) => (
           <button
@@ -433,6 +445,15 @@ return (
           );
         })}
       </div>
+
+      {!gameOver && (
+        <button
+          onClick={handleGiveUp}
+          className="mt-4 px-6 py-2 rounded-lg bg-rose-700 text-white hover:bg-rose-600 transition font-semibold"
+        >
+          Give Up
+        </button>
+      )}
 
       {gameOver && (
         <div className="mt-6 flex items-center gap-3">
