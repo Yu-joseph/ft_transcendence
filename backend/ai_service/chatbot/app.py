@@ -30,6 +30,7 @@ def create_app() -> Flask:
     db.init_app(app)
     _init_db(app)
 
+
     for bp in (chat_bp, session_bp ):
         app.register_blueprint(bp)
     return app
