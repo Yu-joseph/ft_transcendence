@@ -425,3 +425,31 @@ def get_user(request):
         return JsonResponse({"error": "User not found"}, status=404)
 
     return JsonResponse(user)
+
+@csrf_exempt
+def update_avatar(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    try:
+        content_type = request.content_type or ""
+
+        if "application/json" in content_type:
+            data = json.loads(request.body)
+            avatar_url = data.get("avatar_url")
+        else:
+            avatar_url = request.POST.get("avatar_url")
+
+        if not avatar_url:
+            return JsonResponse({"error": "avatar_url is required"}, status=400)
+
+        tmp_user = get_user_from_request(request)
+        tmp_user.avatar = avatar_url
+        tmp_user.save()
+
+        return JsonResponse({"message": "Avatar updated successfully", "avatar": avatar_url}, status=200)
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
