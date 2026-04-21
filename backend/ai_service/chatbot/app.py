@@ -23,6 +23,7 @@ def _init_db(app: Flask):
 
 def create_app() -> Flask:
     app = Flask(__name__ )
+    app = Flask(__name__ )
     app.config.from_object(AppConfig)
     CORS(app)
 
