@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../../auth/useAuth'
+import { BsRobot } from "react-icons/bs";
 
 type Message = {
   role: string
@@ -92,6 +93,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
     try {
       const response = await fetch('/chatbot/chat/stream', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'text/event-stream',
@@ -126,7 +128,8 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
           for (const line of lines) {
             if (!line.startsWith('data:')) continue
 
-            const payload = line.slice(5).trimStart()
+            let payload = line.slice(5)
+            if (payload.startsWith(' ')) payload = payload.slice(1)
 
             if (payload === '[DONE]') {
               const current = readDraft()
@@ -198,6 +201,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
     try {
       const res = await fetch('/chatbot/generate-title', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, session_id: sessionId })
       })
@@ -344,12 +348,10 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
         {messages.length === 0 && !loading && (
           <div className="text-center pt-16 pb-5">
             <div className="w-13 h-13 rounded-xl bg-slate-800 border border-blue-700 flex items-center justify-center text-[22px] text-amber-400 mx-auto mb-4">
-              #
+              <BsRobot></BsRobot>
             </div>
-            <h1 className="text-[26px] font-bold text-amber-400 mb-2">Hey, Ready to dive in??</h1>
-            <p className="text-[13px] text-slate-300 leading-relaxed max-w-105 mx-auto">
-              ask anything.
-            </p>
+            <h1 className="text-[20px] font-bold  mb-2">Hi<span className="text-amber-400"> {user?.username}</span> </h1>
+            <h1 className="text-[26px] font-bold ">What's on your mind today? </h1>
           </div>
         )}
 

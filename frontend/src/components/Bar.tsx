@@ -69,7 +69,7 @@ function Bar() {
               <GiTicTacToe /> Tic-Tac-Toe Arena
             </h1>
           </button>
-          <p className="text-gray-300">Play online multiplayer tic-tac-toe games and tournaments</p>
+          <p className="text-gray-300">Challenge players live, dominate tournaments, and become the champion</p>
         </div>
         <div className="relative ml-8 mr-6" ref={menuRef}>
           <button
