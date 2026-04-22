@@ -1,7 +1,4 @@
-import os
 import time
-import uuid
-
 from flask import Flask 
 from flask_cors import CORS
 from config import AppConfig
@@ -26,11 +23,13 @@ def _init_db(app: Flask):
 
 def create_app() -> Flask:
     app = Flask(__name__ )
+    app = Flask(__name__ )
     app.config.from_object(AppConfig)
     CORS(app)
 
     db.init_app(app)
     _init_db(app)
+
 
     for bp in (chat_bp, session_bp ):
         app.register_blueprint(bp)

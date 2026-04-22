@@ -14,6 +14,7 @@ import Bar from '../components/Bar'
 import CreateTourn from "../components/CreateTourn";
 import { gameSocket } from "../socket/sock";
 import { useAuth } from "../auth/useAuth";
+import UserMatchHistory from "../components/MatchHistory";
 
 
 
@@ -82,7 +83,7 @@ export default function Dashboard() {
               {/* Online players at the top-left */}
               
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-lg mt-4">
+              <div className="grid md:grid-cols-1 lg:grid-cols-2 sm:grid-cols-2 gap-6 w-full mt-4">
                 <button onClick={() => navigate("/AiChallange")} className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-amber-500 hover:scale-105 transition-all duration-300 shadow-lg">
                   <span className="text-4xl"><PiGameControllerFill /></span>
                   <span className="text-amber-500 text-xl font-semibold">AiChallange</span>
@@ -106,7 +107,9 @@ export default function Dashboard() {
 
             <div className="flex flex-col gap-6">
               <Leaderboard />
+              <UserMatchHistory limit={8} />
             </div>
+
 
           </div>
       </main>

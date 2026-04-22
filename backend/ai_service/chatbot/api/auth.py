@@ -5,6 +5,8 @@ from flask import request
 
 def get_user_id():
     token = request.cookies.get('access_token')
+
+    print(f"token = {token} \n\n" , flush=True)
     if not token:
         return None
     try:
