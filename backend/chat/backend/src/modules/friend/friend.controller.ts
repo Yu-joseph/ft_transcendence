@@ -1,11 +1,9 @@
 import {
-    AddFriendRequest,
     PendingFriendType
 } from './friend.types.js';
 import { AuthenticatedRequest } from '../../middlewares/auth.middleware.js';
 import { Response } from 'express';
 import { FriendService } from './friend.service.js';
-// import  { getAuth }  from    '@clerk/express';
 
 export class FriendController {
     /*  _________ Add Friend Request __________    */

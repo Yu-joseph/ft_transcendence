@@ -5,9 +5,10 @@ import  chatRoutes      from    './modules/conversation/conversation.routes.js';
 import  profileRoutes   from    './modules/profile/profile.routes.js';
 import  { Request, Response, NextFunction }   from    'express';
 import cookieParser from "cookie-parser";
-
+import helmet from 'helmet';
 
 const   app = express();
+app.use(helmet());
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
 };
