@@ -169,7 +169,7 @@ export default function TournamentList() {
         </div>
       )}
       {visibleTournaments.length === 0 ? (
-        <div className="px-6 py-8 text-gray-400">No tournaments available yet.</div>
+        <div className="px-6 py-8 text-gray-400 hover:bg-slate-700/40 ">No tournaments available yet.</div>
       ) : (
         <ul className="divide-y divide-blue-800/50">
           {visibleTournaments.map((t) => {

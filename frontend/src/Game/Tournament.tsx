@@ -292,7 +292,7 @@ function Tournament()
           </div>
           <button
             onClick={() => navigate('/Dashboard')}
-            className="text-sm px-4 py-2 rounded-xl border border-slate-600 text-gray-300 hover:bg-slate-700 transition"
+            className="flex items-center justify-center text-sm px-4 h-10 rounded-xl border border-slate-600 text-gray-300 hover:bg-red-700/40 transition"
           >
             ← Back
           </button>

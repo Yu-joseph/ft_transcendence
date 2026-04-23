@@ -89,7 +89,7 @@ export default function MyTournamentsTable() {
       ) : error ? (
         <div className="px-6 py-8 text-red-300">{error}</div>
       ) : rows.length === 0 ? (
-        <div className="px-6 py-8 text-gray-300">You have not joined any tournament yet.</div>
+        <div className="px-6 py-8 text-gray-300 hover:bg-slate-700/40">You have not joined any tournament yet.</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full table-fixed text-left">

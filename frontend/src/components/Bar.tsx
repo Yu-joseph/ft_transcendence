@@ -60,18 +60,18 @@ function Bar() {
   return (
     <header className="z-50 w-full bg-slate-900 border-b border-blue-800 shadow-lg">
       <div className="w-full py-6 pl-10 pr-8 sm:pr-6 lg:pr-3 flex items-center justify-between">
-        <div>
+        <div className="w-1/2">
           <button
             onClick={() => navigate("/Dashboard")}
             className="cursor-pointer group"
           >
-            <h1 className="text-4xl font-bold text-amber-500 flex items-center gap- mb-2 group-hover:text-blue-700 transition-colors duration-200 ">
+            <h1 className="lg:text-4xl md:text-2xl text-xl font-bold text-amber-500 flex items-center gap-1 mb-2 group-hover:text-blue-700 transition-colors duration-200 ">
               <GiTicTacToe /> Tic-Tac-Toe Arena
             </h1>
           </button>
           <p className="text-gray-300">Challenge players live, dominate tournaments, and become the champion</p>
         </div>
-        <div className="relative ml-8 mr-6" ref={menuRef}>
+        <div className="w-1/2 flex items-center lg:justify-end md:justify-end justify-center" ref={menuRef}>
           <button
             type="button"
             onClick={() => setShowMenu((prev) => !prev)}
@@ -88,7 +88,7 @@ function Bar() {
                 {displayInitial}
               </span>
             )}
-            <span className="text-amber-500 text-base">{displayName}</span>
+            <span className="hidden sm:inline text-amber-500 text-base">{displayName}</span>
           </button>
 
           {showMenu && (
