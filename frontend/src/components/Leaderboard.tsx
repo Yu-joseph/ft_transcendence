@@ -9,13 +9,26 @@ type LeaderboardPlayer = {
   rank: number
 }
 
-export default function Leaderboard() {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardPlayer[]>([])
-  const [loading, setLoading] = useState(true)
+type LeaderboardProps = {
+  previewData?: LeaderboardPlayer[]
+}
+
+export default function Leaderboard({ previewData }: LeaderboardProps) {
+  const [leaderboard, setLeaderboard] = useState<LeaderboardPlayer[]>(previewData ?? [])
+  const [loading, setLoading] = useState(!previewData)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let isStillOnScreen = true
+
+    if (previewData) {
+      setLeaderboard(previewData)
+      setLoading(false)
+      setError(null)
+      return () => {
+        isStillOnScreen = false
+      }
+    }
 
     const fetchLeaderboard = async () => {
       try {
@@ -40,7 +53,7 @@ export default function Leaderboard() {
 
     fetchLeaderboard()
     return () => { isStillOnScreen = false }
-  }, [])
+  }, [previewData])
 
   return (
     <section className="w-full bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit">

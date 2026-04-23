@@ -71,7 +71,10 @@ function Bar() {
           </button>
           <p className="text-gray-300">Challenge players live, dominate tournaments, and become the champion</p>
         </div>
-        <div className="w-1/2 flex items-center lg:justify-end md:justify-end justify-center" ref={menuRef}>
+        <div
+          className="relative w-1/2 flex items-center justify-end pr-2 sm:pr-0 lg:justify-end md:justify-end"
+          ref={menuRef}
+        >
           <button
             type="button"
             onClick={() => setShowMenu((prev) => !prev)}
@@ -92,7 +95,7 @@ function Bar() {
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 mt-2 w-64 rounded-xl border border-slate-700 bg-slate-900/95 p-4 shadow-2xl">
+            <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-slate-700 bg-slate-900/95 p-4 shadow-2xl z-50">
               <div className="flex items-center gap-4 pb-3 border-b border-slate-700">
                 {avatarUrl ? (
                   <img

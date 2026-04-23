@@ -9,12 +9,22 @@ type PlayerStats = {
   rank: number;
 };
 
-export default function PlayerState() {
-  const [stats, setStats] = useState<PlayerStats | null>(null);
-  const [loading, setLoading] = useState(true);
+type PlayerStateProps = {
+  previewStats?: PlayerStats;
+};
+
+export default function PlayerState({ previewStats }: PlayerStateProps) {
+  const [stats, setStats] = useState<PlayerStats | null>(previewStats ?? null);
+  const [loading, setLoading] = useState(!previewStats);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (previewStats) {
+      setStats(previewStats);
+      setLoading(false);
+      setError(null);
+      return;
+    }
     /// using async to get promise (object) and waiting using await
     const fetchPlayerState = async () => {
       try {
@@ -36,7 +46,7 @@ export default function PlayerState() {
     };
 
     fetchPlayerState();
-  }, []);
+  }, [previewStats]);
 
   const total = stats ? stats.wins + stats.losses : 0;
   const winRate = stats && total > 0 ? Math.round((stats.wins / total) * 100) : 0;

@@ -56,7 +56,7 @@ export default function Dashboard() {
         <div className="text-center">
           <p className="text-white text-xl mb-4">You need to sign in to continue.</p>
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/login")}
             className="px-6 py-3 text-lg font-semibold rounded-xl bg-linear-to-r from-indigo-500 to-purple-600 text-white hover:scale-105 transition"
           >
             Go to Login
@@ -112,6 +112,30 @@ export default function Dashboard() {
 
 
           </div>
+            <div className="mt-10 flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-lg shadow-slate-950/40 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-white">Legal</h3>
+                <p className="text-sm text-slate-300">
+                  Review the policies that keep the arena fair and transparent.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={() => navigate("/privacy")}
+                  className="rounded-xl border border-blue-700 px-4 py-2 text-sm font-semibold text-blue-200 transition hover:border-amber-400 hover:text-amber-300"
+                >
+                  Privacy Policy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/terms")}
+                  className="rounded-xl border border-blue-700 px-4 py-2 text-sm font-semibold text-blue-200 transition hover:border-amber-400 hover:text-amber-300"
+                >
+                  Terms of Service
+                </button>
+              </div>
+            </div>
       </main>
 
       <BottomNav />
