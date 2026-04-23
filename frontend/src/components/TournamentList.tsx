@@ -188,7 +188,7 @@ export default function TournamentList() {
                     !isJoined && isFull
                       ? "bg-slate-600 cursor-not-allowed opacity-70"
                       : isJoined
-                        ? "bg-emerald-600 hover:bg-emerald-500"
+                        ? "bg-blue-600 hover:bg-blue-800"
                         : "bg-amber-500 hover:bg-amber-600"
                   }`}
                 >
