@@ -13,15 +13,7 @@ export class MessagesController {
             const   currentUserId = req.user?.user_id;
             if (!currentUserId)
                 return  res.status(401).json({message: 'Not authorized'});
-            const   conversationId = Number(req.params?.convId) ;
-            if (!Number.isInteger(conversationId) || conversationId <= 0) {
-                const   response: ResponseModule<null> = {
-                    success: false,
-                    message: 'Invalid Conversation ID',
-                    data: null
-                };
-                return res.status(400).json(response);
-            }
+            const   conversationId = req.params.convId as unknown as bigint;
             const   result: MessagesPayload[] = await MessagesServices.getMessagesByConvId({currentUserId, conversationId} as GetMessagesProps);
             const response: ResponseModule<MessagesPayload[]>  = {
                 success: true,
@@ -42,20 +34,10 @@ export class MessagesController {
     }
     static async getMessagesByFriendId(req: AuthenticatedRequest, res: Response) {
     try {
-        // const   {userId} = getAuth(req);
-        
         const   currentUserId = req.user?.user_id;
         if (!currentUserId)
             return  res.status(401).json({message: 'Not authorized'});
-        const   friendId = req.params?.friendId as string;
-        // if (!Number.isInteger(friendId) || friendId <= 0) {
-        //     const   response: ResponseModule<null> = {
-        //         success: false,
-        //         message: 'Invalid Conversation ID',
-        //         data: null
-        //     };
-        //     return res.status(400).json(response);
-        // }
+        const   friendId = req.params.friendId as string;
         const   result: MessagesWithConvId = await MessagesServices.getMessagesByFriendId({currentUserId, friendId});
         const response: ResponseModule<MessagesWithConvId>  = {
             success: true,
@@ -85,34 +67,11 @@ export class MessagesController {
 
         try {
             const   senderId = req.user?.user_id;
-            const   conversationId = Number(req.params.convId);
-            const   content = req.body?.content as string;
-            const   tempId = req.body?.tempId as string;
+            const   conversationId = req.params.convId as unknown as bigint;
+            const   content = req.body.content as string;
+            const   tempId = req.body.tempId as string;
             temp_id = tempId;
-            // const   status = req.body?.status as MessageState
 
-            if (!Number.isInteger(conversationId) || conversationId <= 0) {
-                console.log("ConversationId:", conversationId);
-                response.message = 'Invalid conversation ID';
-                response.data  = { tempId: tempId,  status: 'error' }
-                return res.status(400).json(response);
-            }
-            if
-            (!tempId || tempId.trim().length === 0) {
-                response.message = 'Invalid message ID';
-                response.data  = { tempId: tempId,  status: 'error' }
-                return res.status(400).json(response);
-            }
-            if (typeof content !== 'string' || content.trim().length === 0) {
-                response.message = 'Message content cannot be empty';
-                response.data  = { tempId: tempId,  status: 'error' }
-                return res.status(400).json(response);
-            }
-            if (content.length > 1000) {
-                response.message = 'message too long (max 1000 characters)';
-                response.data  = { tempId: tempId,  status: 'error' }
-                return res.status(400).json(response);
-            }
             const   result = await MessagesServices.sendMessage(senderId as string, conversationId, content);
             const   rspns: ResponseModule<MessagesPayload> = {
                 

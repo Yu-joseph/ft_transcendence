@@ -28,7 +28,7 @@ export  function useAddFriend() {
             setState(null);
             const   option = {
                 method: 'POST',
-                body: JSON.stringify({receiverId: username})
+                body: JSON.stringify({username: username})
             };
             const   result = await fetchClient('/friend/request', option);
             setInput('');

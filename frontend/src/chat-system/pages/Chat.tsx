@@ -47,7 +47,7 @@ export function Chat() {
       try {
         const result = await fetchClient<MessageItem[] | []>(`/chat/conversations/${selectedConvId}/messages`, {});
         result.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null; });
-        setMessages(result);
+        setMessages(result);  
       } catch (err: any) {
         setSelectedFriendId(null);
         console.log(err);

@@ -8,7 +8,7 @@ export  interface StartConversationData {
 
 export interface GetMessagesProps {
     currentUserId : string
-    conversationId : number
+    conversationId : bigint
 }
 
 

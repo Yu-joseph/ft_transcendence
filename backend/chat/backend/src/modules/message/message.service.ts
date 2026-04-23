@@ -9,7 +9,6 @@ import { SendMessageType, MessagesWithConvId } from "./message.types.js";
 export  class MessagesServices {
     /** @function getMessages getting all messages from single conversation by conversation ID*/
     static async getMessagesByConvId(data: GetMessagesProps) {
-        console.log('User ID', data.currentUserId);
         const   conversationExist = await prisma.conversation.findUnique({
             where: {
                 id: data.conversationId
@@ -89,7 +88,7 @@ export  class MessagesServices {
         return {convId: conversationExist.id, messages: messages?.Message ?? [] as MessagesPayload[]};
     }
     /** @function sendMessage getting all messages from single conversation */
-    static async sendMessage(senderId: string, conversationId: number, content: string) {
+    static async sendMessage(senderId: string, conversationId: bigint, content: string) {
         const   convExist = await prisma.conversation.findUnique({
             where: {
                 id: conversationId

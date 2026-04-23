@@ -2,6 +2,9 @@ import { Router } from "express";
 import { authenticated } from "../../middlewares/auth.middleware.js";
 import { ConversationController } from "./conversation.controller.js";
 import { MessagesController } from "../message/message.controller.js";
+import { validateRequest } from "../../middlewares/validate.middleware.js";
+import { startConversationSchema } from "./schema.validate.conv.js";
+import { getMessagesByConvIdSchema, getMessagesByFriendSchema, sendMessageSchema } from "../message/schema.validate.message.js";
 
 const   routes = Router();
 /**
@@ -11,16 +14,16 @@ const   routes = Router();
 
 
 routes.get('/conversations', authenticated, ConversationController.listConversations);
-routes.post('/conversations', authenticated, ConversationController.startConversation);
-routes.delete('/conversations/:convId', authenticated, ConversationController.deleteConversation);
+routes.post('/conversations', validateRequest(startConversationSchema), authenticated, ConversationController.startConversation);
+// routes.delete('/conversations/:convId', validateRequest(deleteConversationSchema), authenticated, ConversationController.deleteConversation);
 
 /**
  * @ messages routes
  */
 
-routes.get('/conversations/:convId/messages', authenticated, MessagesController.getMessagesByConvId);
-routes.get('/friend/:friendId/messages', authenticated, MessagesController.getMessagesByFriendId);
+routes.get('/conversations/:convId/messages', validateRequest(getMessagesByConvIdSchema), authenticated, MessagesController.getMessagesByConvId);
+routes.get('/friend/:friendId/messages', validateRequest(getMessagesByFriendSchema), authenticated, MessagesController.getMessagesByFriendId);
 
-routes.post('/conversations/:convId/message', authenticated, MessagesController.sendMessage);
+routes.post('/conversations/:convId/message', validateRequest(sendMessageSchema), authenticated, MessagesController.sendMessage);
 
 export default routes;

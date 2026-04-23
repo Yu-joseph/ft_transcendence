@@ -7,7 +7,7 @@ export  interface MessagesType {
 export interface SendMessageType {
     senderId: string
     content: string
-    conversationId: number
+    conversationId: bigint
     created_at: Date
 }
 
