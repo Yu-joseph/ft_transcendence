@@ -66,8 +66,8 @@ services:
       - frontend
       - auth
       - db
-      - game-api
-      - chat-api
+      - ai_game
+      - chatbot
       - chat-system
       
 
@@ -89,32 +89,32 @@ services:
       - auth
       - frontend
   
-  game-api:
-    build: ../backend/ai_service/services/game_api
-    container_name: game-api
+  ai_game:
+    build: ../backend/ai_service/ai_game
+    container_name: ai_game
     ports:
       - "5001:5001"
     networks:
       - app-network
 
-  chat-api:
-    build: ../backend/ai_service/services/chat_api
-    container_name: chat-api
+  chatbot:
+    build: ../backend/ai_service/chatbot
+    container_name: chatbot
     ports:
       - "5000:5000"
     depends_on:
-      postgres:
+      chat_db:
         condition: service_healthy    
-      game-api:
+      ai_game:
         condition: service_started
     env_file:
       - .env
-    environment:
-      GAME_API_URL: http://game-api:5001
-    volumes:
-      - ../backend/ai_service/static:/app/static
-      - ../backend/ai_service/templates:/app/templates
-      - ../backend/ai_service/uploads:/app/uploads
+    # environment:
+    #   GAME_API_URL: http://game-api:5001
+    # volumes:
+    #   - ../backend/ai_service/static:/app/static
+    #   - ../backend/ai_service/templates:/app/templates
+    #   - ../backend/ai_service/uploads:/app/uploads
     networks:
       - app-network
 
@@ -133,12 +133,13 @@ services:
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
     volumes:
       - ../backend/chat/backend:/app
+      - /app/node_modules
     networks:
       - app-network
 
-  postgres:
+  chat_db:
     image: postgres:15
-    container_name: game-postgres
+    container_name: chat_db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER}

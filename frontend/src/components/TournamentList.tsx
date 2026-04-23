@@ -158,7 +158,7 @@ export default function TournamentList() {
   const visibleTournaments = tournaments;
 
   return (
-    <section className="w-full max-w-lg bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit">
+    <section className="w-full bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit">
       <div className="px-6 py-4 border-b border-blue-800">
         <h3 className="text-xl font-semibold text-amber-500">Available Tournaments</h3>
         <p className="text-sm text-gray-400">Join an open tournament</p>
@@ -169,7 +169,7 @@ export default function TournamentList() {
         </div>
       )}
       {visibleTournaments.length === 0 ? (
-        <div className="px-6 py-8 text-gray-400">No tournaments available yet.</div>
+        <div className="px-6 py-8 text-gray-400 hover:bg-slate-700/40 ">No tournaments available yet.</div>
       ) : (
         <ul className="divide-y divide-blue-800/50">
           {visibleTournaments.map((t) => {
