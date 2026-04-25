@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { socket } from "../Game/socket/sock";
+import { gameSocket } from "../socket/sock";
 
 type TournamentOwner = {
   id: string;
@@ -59,13 +60,13 @@ export default function MyTournamentsTable() {
     };
 
     fetchMyTournaments();
-    socket.on("tournament-created", refresh);
-    socket.on("tournament-update", refresh);
+    gameSocket.on("tournament-created", refresh);
+    gameSocket.on("tournament-update", refresh);
 
     return () => {
       mounted = false;
-      socket.off("tournament-created", refresh);
-      socket.off("tournament-update", refresh);
+      gameSocket.off("tournament-created", refresh);
+      gameSocket.off("tournament-update", refresh);
     };
   }, []);
 

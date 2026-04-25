@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GiTicTacToe } from "react-icons/gi";
 import { useAuth } from "../auth/useAuth";
+import { gameSocket } from "../socket/sock";
+
 
 function Bar() {
   const navigate = useNavigate();
@@ -9,9 +11,19 @@ function Bar() {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
+  const emitLogoutPlaying = () =>
+  new Promise<void>((resolve) => {
+    if (!gameSocket.connected) {
+      resolve();
+      return;
+    }
+
+    gameSocket.timeout(1200).emit("logout-playing", {}, () => resolve());
+  });
 
   const handleLogout = async () => {
     try {
+      await emitLogoutPlaying();
       await fetch("/authent/logout/", {
         method: "POST",
         credentials: "include",
