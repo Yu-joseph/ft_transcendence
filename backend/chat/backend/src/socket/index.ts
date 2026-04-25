@@ -3,8 +3,35 @@ import type { Server as HTTPServer } from 'http';
 import { socketAuthenticate } from '../middlewares/socket.auth.middleware.js';
 import { JoinChatInf } from './socket.types.js';
 import prisma from '../lib/prisma.js';
+import z from 'zod';
 
 let io: Server;
+
+const joinChatSchema = z.object({
+    room_id: z.string().min(1, 'Invalid room id')
+                        .transform(val => val.trim()),
+    /******************** */
+    convId: z.string().regex(/^\d+$/, 'Invalid conversation ID')
+                          .transform(val => BigInt(val)),
+    /******************* */
+    userId: z.string().min(1, 'friend ID is required')
+                        .min(3, 'friend ID is too short')
+                        .max(255, 'friend ID is too long')
+                        .transform(val => val.trim())
+})
+
+const roomIdSchema = z.string().min(1);
+
+/** User Othorization helper function */
+const   isUserInConversation = async (convId: bigint, userId: string) => {
+    return await prisma.conversation.findFirst({
+        where: {
+            id: convId,
+            OR: [{ user1Id: userId }, { user2Id: userId }]
+        }
+    });
+}
+/**************** */
 
 export const initSocket = (server: HTTPServer) => {
     io = new Server(server, {
@@ -15,48 +42,62 @@ export const initSocket = (server: HTTPServer) => {
     })
     io.use(socketAuthenticate);
     io.on('connection', (socket) => {
-        socket.join((socket as any).user.user_id); // for conversation Update list, so i emit the event for the sender and receiver
-        console.log('I join my Private Room:', (socket as any).user.user_id);
+        const   authentUser = (socket as any).user;
+
+        socket.join(authentUser.user_id); // for conversation Update list, so i emit the event for the sender and receiver
+
+        console.log('I join my Private Room:', authentUser.user_id);
+        /**
+         * ****  join chat handler ****
+         **/
         const   onJoinChannel = async (data: JoinChatInf) => {
-            if(data.userId !== (socket as any).user.user_id){
-                console.log('++++++++++++++++++  DIFF USERES +++++++++++++++++++++');
+
+            const validatedData = joinChatSchema.safeParse(data);
+
+            if(!validatedData.success || validatedData.data.userId !== authentUser.user_id){
+                console.log(validatedData.error.issues);
+                console.log('++++++++++++++++++ invalid data +++++++++++++++++++++');
                 return ;
             }
-            const   userInConv = await prisma.conversation.findFirst({
-                where: {OR: [{user1Id: data.userId}, {user2Id: data.userId}]}
-            });
-            if(userInConv === null) {
-                console.log('+++++++++++++ THE USER NOT IN THAT CONVERSATION ++++++++++++++++++++');
-                return;
-            }
-            socket.join(data.room_id);
-            console.log(`I'm Joining the Room ${data.room_id}`);
-        }
+            const  {room_id, convId, userId} = validatedData.data;
 
+            if(await isUserInConversation(convId, userId)) {
+                socket.join(room_id);
+                console.log(`User ${userId} authorized and joined room ${room_id}`);
+            }
+        }
+        /**
+        * ****  typing start handler ****
+        **/
         const   onTypingStart = async (data: JoinChatInf) => {
-            if(data.userId !== (socket as any).user.user_id){
-                console.log('++++++++++++++++++  DIFF USERES +++++++++++++++++++++');
+            const   validatedData = joinChatSchema.safeParse(data);
+            if(!validatedData.success || validatedData.data.userId !== authentUser.user_id) {
+                console.log(validatedData.error.issues);
+                console.log('++++++++++++++++++ invalid data +++++++++++++++++++++');
                 return ;
             }
-            const   userInConv = await prisma.conversation.findFirst({
-                where: {OR: [{user1Id: data.userId}, {user2Id: data.userId}]}
-            });
-            if(userInConv === null) {
-                console.log('+++++++++++++ THE USER NOT IN THAT CONVERSATION ++++++++++++++++++++');
-                return;
+            const   {room_id, convId, userId} = validatedData.data;
+            if (await isUserInConversation(convId, userId)) {
+                socket.to(room_id).emit('typing:start', );
             }
-            socket.to(data.room_id).emit('typing:start', );
         }
+        /**
+        * ****  typing start handler ****
+        **/
+        const onTypingStop = async (room_id: any) => {
+            const validated = roomIdSchema.safeParse(room_id);
+            if (!validated.success) return;
+            socket.to(validated.data).emit('typing:stop');
+        };
+        /**
+        * ****  leave conversation handler ****
+        **/
+        socket.on('leave:conversation', (room_id: any) => {
+            const validated = roomIdSchema.safeParse(room_id);
+            if (validated.success) socket.leave(validated.data);
+        });
 
-        
-        socket.on('leave:conversation', (room_id) => {
-            console.log(`User ${(socket as any).user.user_id} leave conversation`);
-            socket.leave(room_id);
-            console.log(`I'm Leave the Room ${room_id}`);
-        })
-        socket.on('typing:stop', (room_id) => {
-            socket.to(room_id).emit('typing:stop', `In Room ${room_id} is stopped`);
-        })
+        socket.on('typing:stop', onTypingStop);
         socket.on('disconnect', () => console.log(`User Disconnected, socketId: ${socket.id}`))
         /**************************************************************************************** */
         socket.on('typing:start', onTypingStart);

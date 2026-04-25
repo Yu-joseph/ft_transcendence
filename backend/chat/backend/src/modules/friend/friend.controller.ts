@@ -4,6 +4,7 @@ import {
 import { AuthenticatedRequest } from '../../middlewares/auth.middleware.js';
 import { Response } from 'express';
 import { FriendService } from './friend.service.js';
+import { AppError } from '../../utils/AppError.js';
 
 export class FriendController {
     /*  _________ Add Friend Request __________    */
@@ -24,10 +25,13 @@ export class FriendController {
 
         } catch (error: any) {
             const statusCode = error.statusCode || 500;
-            console.error(error.message);
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
+            console.error(errorMessage);
             return res.status(statusCode).json({
                 success: false,
-                message: error.message || 'Internal Server Error'
+                message: errorMessage
             })
         }
     }
@@ -47,10 +51,13 @@ export class FriendController {
 
         } catch (error: any) {
             const statusCode = error.statusCode;
-            console.error(error.message || 'Internal server error');
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
+            console.error(errorMessage);
             return res.status(statusCode || 500).json({
                 success: false,
-                message: error.message || 'Internal server error'
+                message: errorMessage
             })
         }
     }
@@ -71,9 +78,12 @@ export class FriendController {
             });
         } catch (error: any) {
             const statusCode = error.statusCode;
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
             return res.status(statusCode || 500).json({
                 success: false,
-                message: error.message || 'Internal server error'
+                message: errorMessage
             });
         }
     }
@@ -92,9 +102,12 @@ export class FriendController {
             })
         } catch (error: any) {
             const statusCode = error.statusCode;
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
             return res.status(statusCode || 500).json({
                 success: false,
-                message: error.message || 'Internal server error'
+                message: errorMessage
             })
         }
     }
@@ -113,10 +126,13 @@ export class FriendController {
             })
         } catch (error: any) {
             const statusCode = error.statusCode;
-            console.log(error.message || 'Internal server error');
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
+            console.log(errorMessage);
             return res.status(statusCode || 500).json({
                 success: false,
-                message: error.message || 'Internal server error'
+                message: errorMessage
             });
         }
     }
@@ -133,10 +149,13 @@ export class FriendController {
                 data: result
             })
         } catch (error: any) {
-            console.log("error", error);
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
+            console.log("error", errorMessage);
             return res.status(500).json({
                 success: false,
-                message: 'Internal server error'
+                message: errorMessage
             })
         }
     }
@@ -153,9 +172,12 @@ export class FriendController {
                 data: result
             })
         } catch (error: any) {
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
             res.status(500).json({
                 success: false,
-                message: error.message || 'Internal server error'
+                message: errorMessage
             });
         }
     }
@@ -173,9 +195,12 @@ export class FriendController {
                 data: result
             })
         } catch (error: any) {
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
             res.status(500).json({
                 success: false,
-                message: error.message || 'Internal server error'
+                message: errorMessage
             });
         }
     }
@@ -194,10 +219,13 @@ export class FriendController {
             });
         } catch (error: any) {
             const statusCode = error.statusCode || 500;
-            console.error(error.message);
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
+            console.error(errorMessage);
             return res.status(statusCode).json({
                 success: false,
-                message: error.message || 'Internal Server Error'
+                message: errorMessage
             })
         }
     }

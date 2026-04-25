@@ -1,5 +1,5 @@
 export interface JoinChatInf {
     room_id: string
-    convId: number
+    convId: bigint
     userId: string
 }

@@ -4,6 +4,7 @@ import { ResponseModule } from "../shared.utils.js";
 import { MessagesServices } from "./message.service.js";
 import { MessageState, MessagesType, MessagesWithConvId, MessageToSendType } from "./message.types.js";
 import { GetMessagesProps, MessagesPayload } from "../conversation/conversation.types.js";
+import { AppError } from "../../utils/AppError.js";
 
 export class MessagesController {
     /** @function getMessages getting all messages from single conversation */
@@ -24,9 +25,12 @@ export class MessagesController {
 
         } catch (error: any) {
             const   statusCode = error.statusCode || 500;
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
             const response: ResponseModule<null> = {
                 success: false,
-                message: error.message || 'Internal server error',
+                message: errorMessage,
                 data: null
             }
             return res.status(statusCode).json(response);
@@ -48,9 +52,12 @@ export class MessagesController {
 
     } catch (error: any) {
         const   statusCode = error.statusCode || 500;
+        let   errorMessage = 'Something went wrong'; 
+        if(error instanceof AppError)
+            errorMessage = error.message;
         const response: ResponseModule<null> = {
             success: false,
-            message: error.message || 'Internal server error',
+            message: errorMessage,
             data: null
         }
         return res.status(statusCode).json(response);
@@ -89,7 +96,10 @@ export class MessagesController {
             return res.status(200).json(rspns);
         } catch (error: any) {
             const   statusCode = error.statusCode || 500;
-            response.message = error.message || 'Internal server error'
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
+            response.message = errorMessage;
             response.data  = { tempId: temp_id,  status: 'error' }
             return res.status(statusCode).json(response);
         }

@@ -4,7 +4,7 @@ import type { MessageItem } from '../../../pages/Chat';
 import  {useAuth}   from    '../../../../auth/useAuth';
 
 interface   UseChatSocketProps {
-    convId: number | null
+    convId: bigint | null
     setMessages: React.Dispatch<React.SetStateAction<MessageItem[]>>
     setIsTyping: React.Dispatch<React.SetStateAction<boolean> >
     
@@ -12,12 +12,12 @@ interface   UseChatSocketProps {
 
 export interface JoinChatInf {
     room_id: string
-    convId: number
+    convId: bigint
     userId: string
 }
 
 export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSocketProps) => {
-    const   {user} = useAuth();
+    const   { user } = useAuth();
     useEffect(() => {
         if(user === null)
             return ;
@@ -80,10 +80,6 @@ export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSock
         return (() => {
             chatSocket.off('connect', onConnect);
             chatSocket.emit('leave:conversation', ROM_ID);
-
-            // chatSocket.off('typing:start'), onTypingStart;
-            // chatSocket.off('typing:stop'), onTypingStop;
-
             chatSocket.off('message:new', onReceiveMessage);
             chatSocket.off('error');
             chatSocket.off('connect_timeout');

@@ -3,6 +3,7 @@ import { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 import { ResponseModule }       from    '../shared.utils.js';
 import { ConversationService } from './conversation.service.js';
 import { ExistingConversationsT } from './conversation.types.js';
+import { AppError } from '../../utils/AppError.js';
 
 export class    ConversationController {
     /**
@@ -22,13 +23,16 @@ export class    ConversationController {
             } 
             return res.status(200).json(response);
         } catch (error: any) {
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
             const   response: ResponseModule<null> = {
                 success: false,
-                message: error.message || 'Internal server error',
+                message: errorMessage,
                 data: null
             }
             const   statusCode = error.statusCode;
-            console.log(error.message);
+            console.log(errorMessage);
             res.status(error.statusCode || 500).json(response);
             
         }
@@ -46,7 +50,6 @@ export class    ConversationController {
 
             const   result = await ConversationService.startConversation({userId, friendId});
 
-            
             const response: ResponseModule<ExistingConversationsT> = {
                 success: true,
                 message: result.statusOfRes.message,
@@ -61,12 +64,15 @@ export class    ConversationController {
 
         } catch (error: any) {
             const   statusCode = error.statusCode || 500;
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
             const   response: ResponseModule<null> = {
                 success: false,
-                message: error.message || 'Internal server error',
+                message: errorMessage,
                 data: null
             }
-            console.log(error.message);
+            console.log(errorMessage);
 
             return res.status(statusCode).json(response);
         }
