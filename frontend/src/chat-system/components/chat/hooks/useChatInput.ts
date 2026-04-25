@@ -9,6 +9,7 @@ export interface ChatInputPorps {
     convId: number | null
     setMessages: React.Dispatch<React.SetStateAction<MessageItem[]>>
     setSelectedFriendId: React.Dispatch<React.SetStateAction<string|null>>
+    friendId: string | null
 }
 
 interface MessageToSendType {
@@ -17,7 +18,7 @@ interface MessageToSendType {
     status: MessageState
 }
 
-export  const   useChatInput = ({convId, setMessages, setSelectedFriendId}: ChatInputPorps) => {
+export  const   useChatInput = ({convId, setMessages, setSelectedFriendId, friendId}: ChatInputPorps) => {
 
     const   MAX_LENGHT = 10;
 
@@ -122,7 +123,7 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId}: Chat
         const   ROOM_ID: string = `ROOM_${convId}`;
         if(!isTyping && messageValue.length > 0) {
             console.log('Typing start from me');
-            chatSocket.emit('typing:start', {room_id: ROOM_ID, userId: user.id, convId: convId} as JoinChatInf)
+            chatSocket.emit('typing:start', {friendId: friendId, userId: user.id, convId: convId})
             setIsTyping(true);
         }
         clearTimeout(typingTimerRef.current);

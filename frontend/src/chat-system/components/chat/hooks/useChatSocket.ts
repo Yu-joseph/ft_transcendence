@@ -7,7 +7,7 @@ interface   UseChatSocketProps {
     convId: bigint | null
     setMessages: React.Dispatch<React.SetStateAction<MessageItem[]>>
     setIsTyping: React.Dispatch<React.SetStateAction<boolean> >
-    
+    messages: MessageItem[]
 }
 
 export interface JoinChatInf {
@@ -16,7 +16,7 @@ export interface JoinChatInf {
     userId: string
 }
 
-export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSocketProps) => {
+export  const   useChatSocket = ({convId, setMessages, setIsTyping, messages}: UseChatSocketProps) => {
     const   { user } = useAuth();
     useEffect(() => {
         if(user === null)
@@ -47,13 +47,26 @@ export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSock
         }
 
         const onReceiveMessage = (newMessage: MessageItem) => {
-            console.log('i receive this message:', newMessage);
-            newMessage.status = null;
-            // console.log('All Message after receiving new:', m)
-            setMessages(prev => [...prev, newMessage]); // here to filter messages and update status... azka
-            // chatSocket.emit('update:conversation', ROM_ID);
+            setMessages(prev => {
+
+                const isPendingOnThisScreen = prev.find(mssg => mssg.tempId === newMessage.tempId);
+                // if that message on my current screen with pending stats
+                if (isPendingOnThisScreen)
+                { 
+                    return prev.map(m => 
+                        m.tempId === newMessage.tempId 
+                        ? { ...newMessage, status: 'sent' } 
+                        : m
+                    );
+                }
+                const finalMessage = { // if that message is not on my current screen, it can come from another tab or from friend
+                    ...newMessage, 
+                    status: newMessage.User.id === user.id ? 'sent' : null 
+                };
+                return [...prev, finalMessage];
+            });
         }
-        
+        /************************************ */
         const onDisconnect = () => {
             console.log(`I'm not connected to server`);
         }

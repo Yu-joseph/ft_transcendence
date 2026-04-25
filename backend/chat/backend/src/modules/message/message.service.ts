@@ -99,7 +99,7 @@ export  class MessagesServices {
         return {convId: conversationExist.id, messages: messages?.Message ?? [] as MessagesPayload[]};
     }
     /** @function sendMessage getting all messages from single conversation */
-    static async sendMessage(senderId: string, conversationId: bigint, content: string) {
+    static async sendMessage(senderId: string, conversationId: bigint, content: string, tempId: string) {
         const   convExist = await prisma.conversation.findUnique({
             where: {
                 id: conversationId
@@ -129,15 +129,7 @@ export  class MessagesServices {
             }
         });
         if(isFriend === null) {
-            const   rmConv = await prisma.$transaction([
-                prisma.message.deleteMany({
-                    where: {conversationId: convExist.id}
-                }),
-                prisma.conversation.delete({
-                    where: { id: convExist.id }
-                })
-            ]);
-            throw new AppError('You are not friends anymore!', 403);
+            throw new AppError('You are not friends anymore! Message cannot be sent.', 403);
         }
         const   [saveMessage, updateConv] = await prisma.$transaction([
             prisma.message.create({ data: newMessage, include: { User: {select: {id: true, username: true}} }}),
@@ -147,8 +139,10 @@ export  class MessagesServices {
 
         const   io = getIo();
         console.log(`Sending message to room ${conversationId}`);
-        io.to(convExist.user1Id === senderId ? convExist.user2Id : convExist.user1Id)
-            .emit('message:new', saveMessage);
+        /** **** emit message to member on channel */
+        io.to(`ROOM_${conversationId.toString()}`)
+            .emit('message:new', {...saveMessage, tempId: tempId});
+            /**Update conversation list for both sender and receiver */
         io.to(convExist.user1Id).to(convExist.user2Id)
             .emit('conversation:updated',
             {

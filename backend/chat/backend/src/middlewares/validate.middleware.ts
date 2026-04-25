@@ -2,20 +2,19 @@ import  {ZodError, ZodObject} from    'zod';
 import { Request, Response, NextFunction } from 'express';
 import { ResponseModule } from '../modules/shared.utils.js';
 
-export const    validateRequest = (schema: ZodObject) => {
+export const    validateRequest = (schema: ZodObject<any>) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const   dataToValidate: Record<string, any> = {};
-            if(schema.shape.body)
-                dataToValidate.body = req.body;
-            if(schema.shape.params)
-                dataToValidate.params = req.params;
-            await schema.parseAsync(dataToValidate);
+            const   dataToValidate = {
+                body: req.body,
+                params: req.params
+            }
+            const validatedData = await schema.parseAsync(dataToValidate);
             //after tge validation of my input, i just reassign the validate data to the request because some input i transform it in validation
-            if(dataToValidate.body)
-                req.body = dataToValidate.body;
-            if(dataToValidate.params)
-                req.params = dataToValidate.params;
+            if(validatedData.body)
+                req.body = validatedData.body;
+            if(validatedData.params)
+                req.params = validatedData.params;
             return next();
         } catch (error) {
             if(error instanceof ZodError) {
@@ -23,6 +22,7 @@ export const    validateRequest = (schema: ZodObject) => {
                     success: false,
                     message: 'validation failed',
                     data: null
+                    // errors: error.errors || null
                 };
                 return res.status(400).json({response})
             }

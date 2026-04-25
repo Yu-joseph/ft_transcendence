@@ -1,4 +1,4 @@
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import type { Server as HTTPServer } from 'http';
 import { socketAuthenticate } from '../middlewares/socket.auth.middleware.js';
 import { JoinChatInf } from './socket.types.js';
@@ -6,6 +6,10 @@ import prisma from '../lib/prisma.js';
 import z from 'zod';
 
 let io: Server;
+
+const   emitError = (socket: Socket, message: string) => {
+    socket.emit('error' ,{message});
+}
 
 const joinChatSchema = z.object({
     room_id: z.string().min(1, 'Invalid room id')
@@ -51,12 +55,11 @@ export const initSocket = (server: HTTPServer) => {
          * ****  join chat handler ****
          **/
         const   onJoinChannel = async (data: JoinChatInf) => {
-
             const validatedData = joinChatSchema.safeParse(data);
 
             if(!validatedData.success || validatedData.data.userId !== authentUser.user_id){
-                console.log(validatedData.error.issues);
-                console.log('++++++++++++++++++ invalid data +++++++++++++++++++++');
+                // console.log(validatedData.error?.issues);
+                emitError(socket, 'Invalid request data');
                 return ;
             }
             const  {room_id, convId, userId} = validatedData.data;
@@ -69,16 +72,29 @@ export const initSocket = (server: HTTPServer) => {
         /**
         * ****  typing start handler ****
         **/
-        const   onTypingStart = async (data: JoinChatInf) => {
-            const   validatedData = joinChatSchema.safeParse(data);
+        const   typingSchema = z.object({
+            friendId: z.string().min(1, 'friend ID is required')
+                        .min(3, 'friend ID is too short')
+                        .max(255, 'friend ID is too long')
+                        .transform(val => val.trim()),
+            userId: z.string().min(1, 'friend ID is required')
+                        .min(3, 'friend ID is too short')
+                        .max(255, 'friend ID is too long')
+                        .transform(val => val.trim()),
+            convId: z.string().regex(/^\d+$/, 'Invalid conversation ID')
+                          .transform(val => BigInt(val))
+        });
+
+        const   onTypingStart = async (data: any) => {
+            const   validatedData = typingSchema.safeParse(data);
             if(!validatedData.success || validatedData.data.userId !== authentUser.user_id) {
-                console.log(validatedData.error.issues);
-                console.log('++++++++++++++++++ invalid data +++++++++++++++++++++');
+                console.log(validatedData.error?.issues);
+                emitError(socket, validatedData.error?.issues as any);
                 return ;
             }
-            const   {room_id, convId, userId} = validatedData.data;
+            const   {friendId, convId, userId} = validatedData.data;
             if (await isUserInConversation(convId, userId)) {
-                socket.to(room_id).emit('typing:start', );
+                socket.to(friendId).emit('typing:start');
             }
         }
         /**
@@ -86,7 +102,10 @@ export const initSocket = (server: HTTPServer) => {
         **/
         const onTypingStop = async (room_id: any) => {
             const validated = roomIdSchema.safeParse(room_id);
-            if (!validated.success) return;
+            if (!validated.success) {
+                emitError(socket, 'Invalid request data');
+                return;
+            } 
             socket.to(validated.data).emit('typing:stop');
         };
         /**
@@ -94,7 +113,11 @@ export const initSocket = (server: HTTPServer) => {
         **/
         socket.on('leave:conversation', (room_id: any) => {
             const validated = roomIdSchema.safeParse(room_id);
-            if (validated.success) socket.leave(validated.data);
+            if (!validated.success) {
+                emitError(socket, 'Invalid request data');
+                return;
+            }
+            socket.leave(validated.data);
         });
 
         socket.on('typing:stop', onTypingStop);
@@ -106,8 +129,6 @@ export const initSocket = (server: HTTPServer) => {
     });
     return io;
 }
-
-
 
 export const getIo = () => {
     if (!io)

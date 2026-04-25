@@ -5,6 +5,7 @@ import { MessagesServices } from "./message.service.js";
 import { MessageState, MessagesType, MessagesWithConvId, MessageToSendType } from "./message.types.js";
 import { GetMessagesProps, MessagesPayload } from "../conversation/conversation.types.js";
 import { AppError } from "../../utils/AppError.js";
+import  sanitizeHtml    from    'sanitize-html';
 
 export class MessagesController {
     /** @function getMessages getting all messages from single conversation */
@@ -79,7 +80,12 @@ export class MessagesController {
             const   tempId = req.body.tempId as string;
             temp_id = tempId;
 
-            const   result = await MessagesServices.sendMessage(senderId as string, conversationId, content);
+            const   cleanContent = sanitizeHtml(content, {
+                allowedTags: [],
+                allowedAttributes: {},
+            })
+
+            const   result = await MessagesServices.sendMessage(senderId as string, conversationId, cleanContent, tempId);
             const   rspns: ResponseModule<MessagesPayload> = {
                 
                 success: true,

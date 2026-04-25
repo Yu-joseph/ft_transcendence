@@ -1,9 +1,9 @@
 import  { IoSend }  from 'react-icons/io5';
 import { useChatInput, type ChatInputPorps } from './hooks/useChatInput';
 
-export  function    ChatInput({setMessages, convId, setSelectedFriendId}: ChatInputPorps) {
+export  function    ChatInput({setMessages, convId, setSelectedFriendId, friendId}: ChatInputPorps) {
 
-    const { handleChange, handleSendMessage, input, messageErrors } = useChatInput({convId, setMessages, setSelectedFriendId});
+    const { handleChange, handleSendMessage, input, messageErrors } = useChatInput({convId, setMessages, setSelectedFriendId, friendId});
 
     if(!convId)
         return <div className='h-0 w-0'></div>
