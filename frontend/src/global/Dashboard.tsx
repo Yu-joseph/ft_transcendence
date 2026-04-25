@@ -112,13 +112,7 @@ export default function Dashboard() {
 
 
           </div>
-            <div className="mt-10 flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-lg shadow-slate-950/40 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-white">Legal</h3>
-                <p className="text-sm text-slate-300">
-                  Review the policies that keep the arena fair and transparent.
-                </p>
-              </div>
+            {/* <div className="mt-10 flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-lg shadow-slate-950/40 sm:flex-row sm:items-center sm:justify-end">
               <div className="flex flex-col gap-3 sm:flex-row">
                 <button
                   type="button"
@@ -135,7 +129,7 @@ export default function Dashboard() {
                   Terms of Service
                 </button>
               </div>
-            </div>
+            </div> */}
       </main>
 
       <BottomNav />

@@ -1,9 +1,11 @@
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import Leaderboard from "../components/Leaderboard";
 import PlayerState from "../components/PlayerState";
+import { useAuth } from "../auth/useAuth";
 
 function LandinPage() {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
   const previewStats = {
     id: "preview-player",
@@ -23,16 +25,28 @@ function LandinPage() {
     { id: "p5", username: "Mirchal", wins: 33, losses: 26, xp: 1620, rank: 5 },
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex items-center justify-center px-4">
+        <p className="text-white text-lg">Loading session...</p>
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Navigate to="/Dashboard" replace />;
+  }
+
   return (
     <div className="landing-root min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 text-slate-100">
-      <style>
+      {/* <style>
         {`
 .landing-root {
   --accent-cool: #38bdf8;
   --accent-warm: #f59e0b;
 }
         `}
-      </style>
+      </style> */}
 
       <div
         className="h-1 w-full"

@@ -8,7 +8,7 @@ export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-blue-800 shadow-2xl z-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex justify-center">
-        <div className="flex gap-2 py-3">
+        <div className="flex flex-wrap items-center gap-2 py-3">
 
           {/* Dashboard Button */}
           <button
@@ -67,6 +67,15 @@ export default function BottomNav() {
           >
             <span className="font-semibold">agent</span>
           </button>
+
+          <div className="ml-2 flex items-center gap-4 border-l border-slate-800 pl-4 text-xs text-slate-500">
+            <a href="/privacy" className="transition hover:text-amber-300">
+              Privacy Policy
+            </a>
+            <a href="/terms" className="transition hover:text-amber-300">
+              Terms of Service
+            </a>
+          </div>
 
           {/* ai agent Button */}
           {/* <button

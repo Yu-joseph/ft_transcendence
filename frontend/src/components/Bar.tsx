@@ -31,6 +31,7 @@ function Bar() {
     } finally {
       setUser(null);
       sessionStorage.removeItem("activeTournament");
+      localStorage.setItem("auth:logout", String(Date.now()));
       navigate("/", { replace: true });
     }
   };
