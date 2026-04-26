@@ -36,9 +36,12 @@ services:
       - app-network
     volumes:
       - ../backend/auth/myauth:/app
+      - vault-secrets:/vault/secrets
     depends_on:
-      - db
-
+     - db
+     - vault
+     - vault-agent
+    
   frontend:
     container_name: frontend
     restart: always
@@ -156,24 +159,108 @@ services:
       timeout: 5s      
       retries: 10       
 
-volumes:
-  pgdata:
-  pp_data:
-  postgres_data:
-    name: postgres_data
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${DATA_PATH}
+  cert-init:
+    image: alpine/openssl
+    container_name: cert-init
+    volumes:
+      - ./vault/userconfig/tls:/vault/userconfig/tls
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+
+        if [ -f /vault/userconfig/tls/vault.crt ]; then
+          echo "Certs already exist, skipping..."
+          exit 0
+        fi
+
+        cd /vault/userconfig/tls
+
+        openssl genrsa -out ca.key 4096
+        openssl req -new -x509 -days 3650 -key ca.key -out ca.crt \
+          -subj "/CN=vault-ca/O=MyOrg"
+
+        openssl genrsa -out vault.key 2048
+        openssl req -new -key vault.key -out vault.csr \
+          -subj "/CN=vault/O=MyOrg"
+
+        cat > san.cnf << 'EOF'
+        [req]
+        req_extensions = v3_req
+        distinguished_name = req_distinguished_name
+        [req_distinguished_name]
+        [v3_req]
+        basicConstraints = CA:FALSE
+        keyUsage = digitalSignature, keyEncipherment
+        extendedKeyUsage = serverAuth, clientAuth
+        subjectAltName = @alt_names
+        [alt_names]
+        DNS.1 = vault
+        DNS.2 = localhost
+        DNS.3 = vault.test.lan
+        IP.1  = 127.0.0.1
+        EOF
+
+        openssl x509 -req -days 365 \
+          -in vault.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
+          -out vault.crt \
+          -extfile san.cnf -extensions v3_req
+
+        chmod 640 vault.key
+        chown -R 100:100 /vault/userconfig/tls
+    
+  vault:
+    privileged: true
+    build: ./vault/
+    restart : always
+    container_name: vault
+    depends_on:
+      cert-init:
+        condition: service_completed_successfully
+    ports:
+    - "8201:8201"
+    - "8200:8200"
+    environment:
+      VAULT_API_ADDR: "https://vault:8200"
+      VAULT_ADDR : "https://127.0.0.1:8200"
+      VAULT_CACERT: ./vault/userconfig/tls/ca.crt
+    cap_add:
+    - IPC_LOCK
+    volumes:
+      - ./vault/config:/vault/config
+      - ./vault/userconfig:/vault/userconfig
+      - ./vault/data:/vault/data
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt
+    networks:
+      - app-network
+
+  vault-agent:
+    privileged: true
+    build : ./agent/
+    user : root
+    cap_add:
+      - IPC_LOCK
+    container_name: vault-agent
+    restart: always
+    volumes:
+      - ./agent/vault-agent-config.hcl:/vault/config/agent.hcl:ro
+      - ./templates:/vault/templates
+      - vault-secrets:/vault/secrets
+      - ./vault/userconfig/tls/ca.crt:/vault/certs/ca.crt
+      - ./vault/userconfig/approle-creds.json:/vault/approle-creds.json   
+    networks:
+      - app-network
+    depends_on:
+      - vault
+
+  
 
 networks:
   app-network:
+    driver: bridge
 
-
-
-
-
-  
- 
-    
+volumes:
+  pgdata:
+  pp_data:
+  vault-secrets:
+  approle-creds:

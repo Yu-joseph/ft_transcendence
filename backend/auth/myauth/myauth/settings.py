@@ -1,4 +1,5 @@
 from datetime import timedelta
+from dotenv import load_dotenv
 from pathlib import Path
 import os
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -64,14 +65,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'myauth.wsgi.application'
 
+VAULT_SECRETS_FILE = '/vault/secrets/database.env'
+
+if os.path.exists(VAULT_SECRETS_FILE):
+    load_dotenv(VAULT_SECRETS_FILE)
+    print("✅ Loaded database credentials from Vault")
+else:
+    print("⚠️  Vault secrets file not found, using environment variables")
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mydb',
-        'USER': 'sayf',
-        'PASSWORD': '1234',
-        'HOST' : 'db',
-        'PORT' : '5432'
+        'NAME':     os.getenv('DB_NAME',     'mydb'),
+        'USER':     os.getenv('DB_USER',     'sayf'),   
+        'PASSWORD': os.getenv('DB_PASSWORD', '1234'), 
+        'HOST':     os.getenv('DB_HOST',     'db'),
+        'PORT':     os.getenv('DB_PORT',     '5432'),
     }
 }
 
