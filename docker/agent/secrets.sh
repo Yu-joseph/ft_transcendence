@@ -2,7 +2,7 @@
 
 VAULT_ADDR="https://vault:8200"
 VAULT_CACERT="/vault/certs/ca.crt"
-CREDS_FILE="/vault/approle-creds.json"
+CREDS_FILE="/vault/userconfig/approle-creds.json"
 
 echo "Waiting for Vault to be reachable..."
 until vault status -address="$VAULT_ADDR" -ca-cert="$VAULT_CACERT" 2>/dev/null; do

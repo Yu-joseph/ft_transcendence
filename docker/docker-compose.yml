@@ -72,7 +72,6 @@ services:
       - game-api
       - chat-api
       - chat-system
-      
 
   game:
     build: ../backend/game_service
@@ -85,8 +84,6 @@ services:
       SECRET_KEY: ${DJANGO_SECRET_KEY}
     ports:
       - "1339:3000"
-    # env_file:
-    #   - .env
     depends_on:
       - db
       - auth
@@ -247,13 +244,11 @@ services:
       - ./templates:/vault/templates
       - vault-secrets:/vault/secrets
       - ./vault/userconfig/tls/ca.crt:/vault/certs/ca.crt
-      - ./vault/userconfig/approle-creds.json:/vault/approle-creds.json   
+      - ./vault/userconfig/:/vault/userconfig/   
     networks:
       - app-network
     depends_on:
       - vault
-
-  
 
 networks:
   app-network:
