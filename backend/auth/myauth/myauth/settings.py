@@ -69,18 +69,18 @@ VAULT_SECRETS_FILE = '/vault/secrets/database.env'
 
 if os.path.exists(VAULT_SECRETS_FILE):
     load_dotenv(VAULT_SECRETS_FILE)
-    print("✅ Loaded database credentials from Vault")
+    print("%s\n", os.getenv('DB_USER'))
 else:
     print("⚠️  Vault secrets file not found, using environment variables")
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME':     os.getenv('DB_NAME',     'mydb'),
-        'USER':     os.getenv('DB_USER',     'sayf'),   
-        'PASSWORD': os.getenv('DB_PASSWORD', '1234'), 
-        'HOST':     os.getenv('DB_HOST',     'db'),
-        'PORT':     os.getenv('DB_PORT',     '5432'),
+        'NAME':     os.getenv('DB_NAME'),
+        'USER':     os.getenv('DB_USER'),   
+        'PASSWORD': os.getenv('DB_PASSWORD'), 
+        'HOST':     os.getenv('DB_HOST'),
+        'PORT':     os.getenv('DB_PORT'),
     }
 }
 
