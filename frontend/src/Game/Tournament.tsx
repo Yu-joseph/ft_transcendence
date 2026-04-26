@@ -254,7 +254,7 @@ function Tournament()
   if (!activeTournament) {
     if (!loading) {
       return (
-        <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
+        <div className="min-h-screen bg-slate-900 flex flex-col">
           <Bar />
           <main className="flex-1 px-6 pt-8 py-8 pb-28 max-w-3xl mx-auto w-full flex items-center justify-center">
             <div className="w-full max-w-md rounded-2xl border border-blue-700 bg-slate-800/80 p-6 text-center shadow-lg">
@@ -276,7 +276,7 @@ function Tournament()
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
+    <div className="min-h-screen bg-slate-900 flex flex-col">
       <Bar />
       <main className="flex-1 px-6 pt-8 py-8 pb-28 max-w-4xl mx-auto w-full">
         {/* Header */}

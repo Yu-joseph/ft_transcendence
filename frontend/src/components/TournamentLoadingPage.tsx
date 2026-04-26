@@ -8,7 +8,7 @@ interface TournamentLoadingPageProps {
 
 function TournamentLoadingPage({ loading, onBack }: TournamentLoadingPageProps) {
   return (
-    <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
+    <div className="min-h-screen bg-slate-900 flex flex-col">
       <Bar />
       <div className="flex-1 flex flex-col items-center justify-center gap-6">
         {loading ? (

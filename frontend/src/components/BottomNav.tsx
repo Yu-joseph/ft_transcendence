@@ -15,8 +15,8 @@ export default function BottomNav() {
             onClick={() => navigate("/Dashboard")}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg transition-all duration-300 transform ${
               pathname === "/Dashboard"
-                ? "bg-cyan-600 text-white scale-110 shadow-lg shadow-cyan-500/50"
-                : "text-gray-400 hover:text-cyan-300 hover:bg-slate-800/50 hover:scale-105"
+                ? "bg-amber-600 text-white scale-110 shadow-lg "
+                : "text-gray-400 hover:text-amber-600 hover:bg-slate-800/50 hover:scale-105"
             }`}
           >
             <span className="font-semibold">Home</span>
@@ -27,8 +27,8 @@ export default function BottomNav() {
             onClick={() => navigate("/Tournament")}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg transition-all duration-300 transform ${
               pathname === "/Tournament"
-                ? "bg-cyan-600 text-white scale-110 shadow-lg shadow-cyan-500/50"
-                : "text-gray-400 hover:text-cyan-300 hover:bg-slate-800/50 hover:scale-105"
+                ? "bg-amber-600 text-white scale-110 shadow-lg "
+                : "text-gray-400 hover:text-amber-600 hover:bg-slate-800/50 hover:scale-105"
             }`}
           >
             <span className="font-semibold">Tournament</span>
@@ -37,8 +37,8 @@ export default function BottomNav() {
             onClick={() => navigate("/Friends")}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg transition-all duration-300 transform ${
               pathname === "/Friends"
-                ? "bg-cyan-600 text-white scale-110 shadow-lg shadow-cyan-500/50"
-                : "text-gray-400 hover:text-cyan-300 hover:bg-slate-800/50 hover:scale-105"
+                ? "bg-amber-600 text-white scale-110 shadow-lg "
+                : "text-gray-400 hover:text-amber-600 hover:bg-slate-800/50 hover:scale-105"
             }`}
           >
             <span className="font-semibold">Friend</span>
@@ -49,8 +49,8 @@ export default function BottomNav() {
             onClick={() => navigate("/Chat")}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg transition-all duration-300 transform ${
               isChatActive
-                ? "bg-cyan-600 text-white scale-110 shadow-lg shadow-cyan-500/50"
-                : "text-gray-400 hover:text-cyan-300 hover:bg-slate-800/50 hover:scale-105"
+                ? "bg-amber-600 text-white scale-110 shadow-lg "
+                : "text-gray-400 hover:text-amber-600 hover:bg-slate-800/50 hover:scale-105"
             }`}
           >
             <span className="font-semibold">Chat</span>
@@ -61,8 +61,8 @@ export default function BottomNav() {
             onClick={() => navigate("/Chatbot")}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg transition-all duration-300 transform ${
               isAgentActive
-                ? "bg-cyan-600 text-white scale-110 shadow-lg shadow-cyan-500/50"
-                : "text-gray-400 hover:text-cyan-300 hover:bg-slate-800/50 hover:scale-105"
+                ? "bg-amber-600 text-white scale-110 shadow-lg "
+                : "text-gray-400 hover:text-amber-600 hover:bg-slate-800/50 hover:scale-105"
             }`}
           >
             <span className="font-semibold">agent</span>
@@ -72,8 +72,8 @@ export default function BottomNav() {
             onClick={() => navigate("/Chatbot")}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg transition-all duration-300 transform ${
               pathname.startsWith("/Chatbot")
-                ? "bg-cyan-600 text-white scale-110 shadow-lg shadow-cyan-500/50"
-                : "text-gray-400 hover:text-cyan-300 hover:bg-slate-800/50 hover:scale-105"
+                ? "bg-amber-600 text-white scale-110 shadow-lg "
+                : "text-gray-400 hover:text-amber-600 hover:bg-slate-800/50 hover:scale-105"
             }`}
           >
             <span className="font-semibold">Ai agent</span>

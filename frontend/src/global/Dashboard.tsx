@@ -44,7 +44,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
         <p className="text-white text-lg">Loading session...</p>
       </div>
     );
@@ -52,7 +52,7 @@ export default function Dashboard() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
         <div className="text-center">
           <p className="text-white text-xl mb-4">You need to sign in to continue.</p>
           <button
@@ -67,7 +67,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex flex-col">
+    <div className="min-h-screen bg-slate-900 flex flex-col">
       <Bar />
       {/* Main Content */}
       <main className="flex-1 w-full max-w-none pl-4 pr-4 pt-8 pb-32 sm:pl-5 sm:pr-6 lg:pl-6 lg:pr-8">
