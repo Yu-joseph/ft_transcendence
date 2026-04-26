@@ -5,9 +5,6 @@ export VAULT_CACERT="/vault/userconfig/tls/ca.crt"
 INIT_FILE="/vault/userconfig/vault-init.json"
 APPROLE_FILE="/vault/userconfig/approle-creds.json"
 
-# ============================================
-# 1. INIT
-# ============================================
 INITIALIZED=$(vault status -format=json 2>/dev/null | jq -r '.initialized')
 if [ "$INITIALIZED" = "false" ]; then
   vault operator init \
@@ -22,9 +19,6 @@ if [ ! -f "$INIT_FILE" ] || [ ! -s "$INIT_FILE" ]; then
   exit 1
 fi
 
-# ============================================
-# 2. UNSEAL
-# ============================================
 SEALED=$(vault status -format=json 2>/dev/null | jq -r '.sealed')
 if [ "$SEALED" = "true" ]; then
   vault operator unseal $(jq -r '.unseal_keys_b64[0]' "$INIT_FILE")
@@ -35,34 +29,24 @@ fi
 
 export VAULT_TOKEN=$(jq -r '.root_token' "$INIT_FILE")
 
-# ============================================
-# 3. KV SECRETS ENGINE
-# ============================================
 vault secrets enable -path=secret kv-v2 2>/dev/null || true
 
 if [ "$INITIALIZED" = "false" ]; then
-  vault kv put secret/myapp/database \
-    username="${DB_USER:-sayf}" \
-    password="${DB_PASS:-1234}" \
-    host="${DB_HOST:-db}" \
-    port="${DB_PORT:-5432}"
-  echo "Static credentials stored"
+  vault kv put secret/myapp/apis \
+    openai_api_key="${OPENROUTER_API_KEY}" \
+    django_secret_key="${DJANGO_SECRET_KEY}"
 fi
 
-# ============================================
-# 4. DATABASE SECRETS ENGINE
-# ============================================
 vault secrets enable database 2>/dev/null || true
 
 if [ "$INITIALIZED" = "false" ]; then
 
-  # --- main database ---
   vault write database/config/main-postgres \
     plugin_name=postgresql-database-plugin \
     allowed_roles="main-readonly,main-readwrite" \
     connection_url="postgresql://{{username}}:{{password}}@db:5432/mydb?sslmode=disable" \
-    username="sayf" \
-    password="1234"
+    username="${ft_user}" \
+    password="${ft_password}"
 
   vault write database/roles/main-readonly \
     db_name=main-postgres \
@@ -70,7 +54,7 @@ if [ "$INITIALIZED" = "false" ]; then
       GRANT SELECT ON ALL TABLES IN SCHEMA public TO \"{{name}}\";" \
     revocation_statements="DROP ROLE IF EXISTS \"{{name}}\";" \
     default_ttl="1h" \
-    max_ttl="24h"
+    max_ttl="3h"
 
   vault write database/roles/main-readwrite \
     db_name=main-postgres \
@@ -84,15 +68,14 @@ if [ "$INITIALIZED" = "false" ]; then
     " \
     revocation_statements="DROP ROLE IF EXISTS \"{{name}}\";" \
     default_ttl="1h" \
-    max_ttl="24h"
+    max_ttl="3h"
 
-  # --- game database ---
   vault write database/config/game-postgres \
     plugin_name=postgresql-database-plugin \
     allowed_roles="game-readonly,game-readwrite" \
     connection_url="postgresql://{{username}}:{{password}}@postgres:5432/chatbot_db?sslmode=disable" \
-    username="${DB_USER:-BRAHIM}" \
-    password="${DB_PASSWORD:-0000}"
+    username="${DB_USER}" \
+    password="${DB_PASSWORD}"
 
   vault write database/roles/game-readonly \
     db_name=game-postgres \
@@ -100,7 +83,7 @@ if [ "$INITIALIZED" = "false" ]; then
       GRANT SELECT ON ALL TABLES IN SCHEMA public TO \"{{name}}\";" \
     revocation_statements="DROP ROLE IF EXISTS \"{{name}}\";" \
     default_ttl="1h" \
-    max_ttl="24h"
+    max_ttl="3h"
 
   vault write database/roles/game-readwrite \
     db_name=game-postgres \
@@ -114,14 +97,9 @@ if [ "$INITIALIZED" = "false" ]; then
     " \
     revocation_statements="DROP ROLE IF EXISTS \"{{name}}\";" \
     default_ttl="1h" \
-    max_ttl="24h"
-
-  echo "Database engines configured"
+    max_ttl="3h"
 fi
 
-# ============================================
-# 5. APPROLE AUTH
-# ============================================
 vault auth enable approle 2>/dev/null || true
 
 vault policy write myapp-policy - <<EOF
@@ -154,26 +132,36 @@ if [ "$INITIALIZED" = "false" ] || [ ! -s "$APPROLE_FILE" ]; then
   SECRET_ID=$(vault write -f -field=secret_id auth/approle/role/my-role/secret-id)
   printf '{"role_id":"%s","secret_id":"%s"}\n' "$ROLE_ID" "$SECRET_ID" > "$APPROLE_FILE"
   chmod 644 "$APPROLE_FILE"
-  echo "AppRole credentials saved to $APPROLE_FILE"
 fi
 
-# ============================================
-# 6. GRANT SCHEMA PERMISSIONS ON POSTGRES
-# ============================================
 if [ "$INITIALIZED" = "false" ]; then
-  echo "Waiting for postgres..."
-  until pg_isready -h db -p 5432 -U sayf 2>/dev/null; do
+
+  echo "Waiting for main postgres..."
+  until pg_isready -h db -p 5432 -U "${ft_user}" 2>/dev/null; do  
     sleep 2
   done
 
-  PGPASSWORD="1234" psql -h db -p 5432 -U sayf -d mydb <<SQL
+  PGPASSWORD="${ft_password}" psql -h db -p 5432 -U "${ft_user}" -d mydb <<SQL
   GRANT ALL ON SCHEMA public TO PUBLIC;
-  ALTER DEFAULT PRIVILEGES FOR ROLE sayf IN SCHEMA public
+  ALTER DEFAULT PRIVILEGES FOR ROLE ${ft_user} IN SCHEMA public
     GRANT ALL ON TABLES TO PUBLIC;
-  ALTER DEFAULT PRIVILEGES FOR ROLE sayf IN SCHEMA public
+  ALTER DEFAULT PRIVILEGES FOR ROLE ${ft_user} IN SCHEMA public
     GRANT ALL ON SEQUENCES TO PUBLIC;
 SQL
-  echo "✅ Schema permissions granted"
+
+  echo "Waiting for game postgres..."
+  until pg_isready -h postgres -p 5432 -U "${DB_USER}" 2>/dev/null; do
+    sleep 2
+  done
+
+  PGPASSWORD="${DB_PASSWORD}" psql -h postgres -p 5432 -U "${DB_USER}" -d chatbot_db <<SQL
+  GRANT ALL ON SCHEMA public TO PUBLIC;
+  ALTER DEFAULT PRIVILEGES FOR ROLE ${DB_USER} IN SCHEMA public
+    GRANT ALL ON TABLES TO PUBLIC;
+  ALTER DEFAULT PRIVILEGES FOR ROLE ${DB_USER} IN SCHEMA public
+    GRANT ALL ON SEQUENCES TO PUBLIC;
+SQL
+
 fi
 
 echo "✅ Vault setup complete"

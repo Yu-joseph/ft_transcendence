@@ -6,9 +6,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: sayf
-      POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: mydb
+      POSTGRES_USER: ${ft_user}
+      POSTGRES_PASSWORD: ${ft_password}
+      POSTGRES_DB: ${ft_db}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -48,7 +48,6 @@ services:
     networks:
       - app-network
     environment:
-      - VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
       - VITE_API_URL=http://localhost:8080/
       - VITE_CHAT_API=https://localhost:8443/api
     build: ../frontend
@@ -210,6 +209,8 @@ services:
     privileged: true
     build: ./vault/
     restart : always
+    env_file:
+      - .env
     container_name: vault
     depends_on:
       cert-init:

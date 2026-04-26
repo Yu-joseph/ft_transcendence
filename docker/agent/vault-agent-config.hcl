@@ -28,3 +28,9 @@ template {
   perms       = 0644
 }
 
+template {
+  source      = "/vault/templates/apis.tpl"
+  destination = "/vault/secrets/apis.env"
+  perms       = 0644
+}
+
