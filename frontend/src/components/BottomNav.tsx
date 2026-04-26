@@ -67,16 +67,6 @@ export default function BottomNav() {
           >
             <span className="font-semibold">agent</span>
           </button>
-
-          <div className="ml-2 flex items-center gap-4 border-l border-slate-800 pl-4 text-xs text-slate-500">
-            <a href="/privacy" className="transition hover:text-amber-300">
-              Privacy Policy
-            </a>
-            <a href="/terms" className="transition hover:text-amber-300">
-              Terms of Service
-            </a>
-          </div>
-
           {/* ai agent Button */}
           {/* <button
             onClick={() => navigate("/Chatbot")}

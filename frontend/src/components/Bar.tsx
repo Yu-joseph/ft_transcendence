@@ -72,17 +72,24 @@ function Bar() {
 
   return (
     <header className="z-50 w-full bg-slate-900 border-b border-blue-800 shadow-lg">
-      <div className="w-full py-6 pl-10 pr-8 sm:pr-6 lg:pr-3 flex items-center justify-between">
+      <div className="w-full py-2 pl-10 pr-8 sm:pr-6 lg:pr-3 flex items-center justify-between">
         <div className="w-1/2">
           <button
             onClick={() => navigate("/Dashboard")}
             className="cursor-pointer group"
           >
-            <h1 className="lg:text-4xl md:text-2xl text-xl font-bold text-amber-500 flex items-center gap-1 mb-2 group-hover:text-blue-700 transition-colors duration-200 ">
+            <h1 className="lg:text-4xl md:text-2xl text-xl font-bold text-amber-500 flex items-center gap-1 mb-2 group-hover:text-amber-400 transition-colors duration-200 ">
               <GiTicTacToe /> Tic-Tac-Toe Arena
             </h1>
           </button>
-          <p className="text-gray-300">Challenge players live, dominate tournaments, and become the champion</p>
+          <div className="flex items-center gap-4 text-xs text-slate-500">
+            <a href="/privacy" className="transition hover:text-amber-400">
+              Privacy Policy
+            </a>
+            <a href="/terms" className="transition hover:text-amber-400">
+              Terms of Service
+            </a>
+          </div>
         </div>
         <div
           className="relative w-1/2 flex items-center justify-end pr-2 sm:pr-0 lg:justify-end md:justify-end"

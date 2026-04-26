@@ -79,7 +79,7 @@ export default function MyTournamentsTable() {
   };
 
   return (
-    <section className="w-full bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit">
+    <section className="w-full bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit hover:border-amber-500 hover:scale-102 transition-all duration-300">
       <div className="px-6 py-4 border-b border-blue-800">
         <h3 className="text-xl font-semibold text-amber-500">My Tournaments</h3>
         <p className="text-sm text-gray-400">Your tournament progress and status</p>

@@ -16,3 +16,4 @@ PyJWT
 
 
 gunicorn
+langchain-groq
