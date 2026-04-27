@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { fetchClient } from "../../../utils/fetchClient";
 import { useAuth } from "../../../../auth/useAuth";
-// import  { useAuth 
+
 export interface FriendsListType {
     id: string
     username: string
     status: string
     avatar: string
-    // created_at: Date
+    created_at: Date
 }
 
 type ActiveTabeType = 'All' | 'Online' | 'Offline';
@@ -17,16 +17,14 @@ export  function    useFriendList() {
     const   [error, setError] = useState(null);
     const   [loading, setLoading] = useState(false);
     const   [activeTab, setActivetab] = useState<ActiveTabeType>('All');
-    // const   [loadingConv, setLoadingConv] = useState(false);
     const   [goChat, setGoChat] = useState<string | null>(null);
-
     const   {user} = useAuth();
 
     useEffect(() => {
         const   fetchUserList = async () => {
             try {
                 setError(null);
-                setLoading(false);
+                setLoading(true);
                 const   result  = await fetchClient<FriendsListType[]>('/friend', {});
                 setFriendList(result);
                 console.log("Friend list:", friendList);
@@ -35,7 +33,7 @@ export  function    useFriendList() {
                 console.log(err);
             }
             finally{
-                setLoading(true);
+                setLoading(false);
             }
         }
         fetchUserList();

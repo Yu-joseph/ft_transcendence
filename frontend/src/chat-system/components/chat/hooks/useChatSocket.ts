@@ -4,20 +4,20 @@ import type { MessageItem } from '../../../pages/Chat';
 import  {useAuth}   from    '../../../../auth/useAuth';
 
 interface   UseChatSocketProps {
-    convId: number | null
+    convId: bigint | null
     setMessages: React.Dispatch<React.SetStateAction<MessageItem[]>>
     setIsTyping: React.Dispatch<React.SetStateAction<boolean> >
-    
+    messages: MessageItem[]
 }
 
 export interface JoinChatInf {
     room_id: string
-    convId: number
+    convId: bigint
     userId: string
 }
 
-export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSocketProps) => {
-    const   {user} = useAuth();
+export  const   useChatSocket = ({convId, setMessages, setIsTyping, messages}: UseChatSocketProps) => {
+    const   { user } = useAuth();
     useEffect(() => {
         if(user === null)
             return ;
@@ -47,13 +47,26 @@ export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSock
         }
 
         const onReceiveMessage = (newMessage: MessageItem) => {
-            console.log('i receive this message:', newMessage);
-            newMessage.status = null;
-            // console.log('All Message after receiving new:', m)
-            setMessages(prev => [...prev, newMessage]); // here to filter messages and update status... azka
-            // chatSocket.emit('update:conversation', ROM_ID);
+            setMessages(prev => {
+
+                const isPendingOnThisScreen = prev.find(mssg => mssg.tempId === newMessage.tempId);
+                // if that message on my current screen with pending stats
+                if (isPendingOnThisScreen)
+                { 
+                    return prev.map(m => 
+                        m.tempId === newMessage.tempId 
+                        ? { ...newMessage, status: 'sent' } 
+                        : m
+                    );
+                }
+                const finalMessage = { // if that message is not on my current screen, it can come from another tab or from friend
+                    ...newMessage, 
+                    status: newMessage.User.id === user.id ? 'sent' : null 
+                };
+                return [...prev, finalMessage];
+            });
         }
-        
+        /************************************ */
         const onDisconnect = () => {
             console.log(`I'm not connected to server`);
         }
@@ -80,10 +93,6 @@ export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSock
         return (() => {
             chatSocket.off('connect', onConnect);
             chatSocket.emit('leave:conversation', ROM_ID);
-
-            // chatSocket.off('typing:start'), onTypingStart;
-            // chatSocket.off('typing:stop'), onTypingStop;
-
             chatSocket.off('message:new', onReceiveMessage);
             chatSocket.off('error');
             chatSocket.off('connect_timeout');

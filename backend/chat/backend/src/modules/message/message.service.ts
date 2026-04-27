@@ -1,5 +1,4 @@
 
-import { off } from "node:cluster";
 import { prisma } from "../../lib/prisma.js";
 import { getIo } from "../../socket/index.js";
 import { AppError } from "../../utils/AppError.js";
@@ -9,7 +8,7 @@ import { SendMessageType, MessagesWithConvId } from "./message.types.js";
 export  class MessagesServices {
     /** @function getMessages getting all messages from single conversation by conversation ID*/
     static async getMessagesByConvId(data: GetMessagesProps) {
-        console.log('User ID', data.currentUserId);
+
         const   conversationExist = await prisma.conversation.findUnique({
             where: {
                 id: data.conversationId
@@ -22,6 +21,17 @@ export  class MessagesServices {
         if (!conversationExist) {
             throw new AppError('Conversation Not found', 404);
         }
+        const   isFriend = await prisma.friend.findFirst({
+            where: {
+                OR: [
+                        { requesterId: conversationExist.user1Id, receiverId: conversationExist.user2Id },
+                        { requesterId: conversationExist.user2Id, receiverId: conversationExist.user1Id }
+                    ],
+                status: 'ACCEPTED'
+            }
+        });
+        if (!isFriend)
+            throw new AppError('Access denied: You are no longer friends.', 403);
         const   isParticipant = conversationExist.User_Conversation_user1IdToUser.id === data.currentUserId || conversationExist.User_Conversation_user2IdToUser.id === data.currentUserId;
         if(!isParticipant)
             throw new AppError('You are not member of this conversation', 403);
@@ -89,7 +99,7 @@ export  class MessagesServices {
         return {convId: conversationExist.id, messages: messages?.Message ?? [] as MessagesPayload[]};
     }
     /** @function sendMessage getting all messages from single conversation */
-    static async sendMessage(senderId: string, conversationId: number, content: string) {
+    static async sendMessage(senderId: string, conversationId: bigint, content: string, tempId: string) {
         const   convExist = await prisma.conversation.findUnique({
             where: {
                 id: conversationId
@@ -119,15 +129,7 @@ export  class MessagesServices {
             }
         });
         if(isFriend === null) {
-            const   rmConv = await prisma.$transaction([
-                prisma.message.deleteMany({
-                    where: {conversationId: convExist.id}
-                }),
-                prisma.conversation.delete({
-                    where: { id: convExist.id }
-                })
-            ]);
-            throw new AppError('You are not friends anymore!', 403);
+            throw new AppError('You are not friends anymore! Message cannot be sent.', 403);
         }
         const   [saveMessage, updateConv] = await prisma.$transaction([
             prisma.message.create({ data: newMessage, include: { User: {select: {id: true, username: true}} }}),
@@ -137,8 +139,10 @@ export  class MessagesServices {
 
         const   io = getIo();
         console.log(`Sending message to room ${conversationId}`);
-        io.to(convExist.user1Id === senderId ? convExist.user2Id : convExist.user1Id)
-            .emit('message:new', saveMessage);
+        /** **** emit message to member on channel */
+        io.to(`ROOM_${conversationId.toString()}`)
+            .emit('message:new', {...saveMessage, tempId: tempId});
+            /**Update conversation list for both sender and receiver */
         io.to(convExist.user1Id).to(convExist.user2Id)
             .emit('conversation:updated',
             {

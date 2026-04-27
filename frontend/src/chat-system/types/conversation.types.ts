@@ -3,7 +3,7 @@ export interface ConversationType {
     otherUser: {
         id: string
         username: string
-        email: string
+        avatar: string
     }
     lastMessage: {
         id: number

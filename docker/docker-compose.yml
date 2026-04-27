@@ -47,7 +47,7 @@ services:
     environment:
       - VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
       - VITE_API_URL=http://localhost:8080/
-      - VITE_CHAT_API=https://10.30.246.78:8443/api
+      - VITE_CHAT_API=https://localhost:8443/api
     build: ../frontend
     volumes:
       - ../frontend:/app/

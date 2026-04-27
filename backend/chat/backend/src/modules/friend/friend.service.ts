@@ -6,15 +6,8 @@ import  {RequestType} from './friend.types.js';
 export class FriendService {
     /*  _________ Add Friend Request __________    */
     static async addFriend(data: AddFriendRequest) {
-        // const   users = await prisma.user.findMany({
-        //     select: {id: true, username: true}
-        // });
-        // console.log('Users >>');
-        // console.log(users);
         const frId = await prisma.user.findUnique({
-            where: {
-                username: data.receiverId //  data.receiverId is username not ID
-            }
+            where: { username: data.friendUsername }
         });
         if (!frId) {
             throw new AppError('The user you are trying to add does not exist.', 404);
@@ -25,14 +18,14 @@ export class FriendService {
         const existing = await prisma.friend.findFirst({
             where: {
                 OR: [
-                    { requesterId: data.requesterId, receiverId: frId.id },
-                    { requesterId: frId.id, receiverId: data.requesterId }
-                ]
+                        { requesterId: data.requesterId, receiverId: frId.id },
+                        { requesterId: frId.id, receiverId: data.requesterId }
+                    ]
             }
         });
         if (existing) {
             if(existing.status === 'PENDING' && existing.requesterId === data.requesterId)
-                throw new AppError(`Friend request to '${data.receiverId}' already sent, wait until accept youre request.`, 400);
+                throw new AppError(`Friend request to '${data.friendUsername}' already sent, wait until accept youre request.`, 400);
             if (existing.status === 'ACCEPTED')
                 throw new AppError('A friend request is already accepted between these users.', 400);
             if(existing.status === 'PENDING') {
@@ -76,7 +69,6 @@ export class FriendService {
         const friendRequest = await prisma.friend.findUnique({
             where: {
                 id: data.friendRequestId
-                // receiverId: data.receiverId
             }
         });
         if (!friendRequest)
@@ -110,9 +102,7 @@ export class FriendService {
     static async rejectFriend(data: AcceptFriendRequest) {
 
         const friendRequest = await prisma.friend.findUnique({
-            where: {
-                id: data.friendRequestId
-            }
+            where: { id: data.friendRequestId }
         });
         if (!friendRequest)
             throw new AppError('Friend request not found', 404);
@@ -148,7 +138,6 @@ export class FriendService {
                     {receiverId: data.requesterId, requesterId: data.friendId}
                 ]
             }
-            
         });
         if (!exist)
             throw new AppError('FriendShip not found', 404);
@@ -212,7 +201,6 @@ export class FriendService {
             }
         });
 
-        console.log("User InfoInfoo:->", Info);
         const friendship = await prisma.friend.findMany({
             where: {
                 OR: [
@@ -222,8 +210,8 @@ export class FriendService {
                 status: 'ACCEPTED'
             },
             include: {
-                User_Friend_receiverIdToUser: { select: { id: true, username: true, email: true, created_at: true } },
-                User_Friend_requesterIdToUser: { select: { id: true, username: true, email: true, created_at: true } }
+                User_Friend_receiverIdToUser: { select: { id: true, username: true, avatar: true, created_at: true } },
+                User_Friend_requesterIdToUser: { select: { id: true, username: true, avatar: true, created_at: true } }
             }
         });
         /** filter to return just the friend excluding currentUser */

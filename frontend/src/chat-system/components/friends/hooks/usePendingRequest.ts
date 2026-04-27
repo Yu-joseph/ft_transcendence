@@ -26,7 +26,7 @@ export  function    usePendingRequest() {
         const   getPendingRequests = async () => {
             try {
                 setError(null);
-                setLoading(false);
+                setLoading(true);
                 const   result: PendingFriendType[] = await fetchClient('/friend/pending', {});
                 setPendingFriend(result);
                 console.log("Result pending:", result);
@@ -35,7 +35,7 @@ export  function    usePendingRequest() {
                 setError(error);
                 console.log('error herer:', error);
             } finally {
-                setLoading(true);
+                setLoading(false);
             }
         }
         getPendingRequests();

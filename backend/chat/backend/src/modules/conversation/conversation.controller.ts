@@ -3,6 +3,7 @@ import { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 import { ResponseModule }       from    '../shared.utils.js';
 import { ConversationService } from './conversation.service.js';
 import { ExistingConversationsT } from './conversation.types.js';
+import { AppError } from '../../utils/AppError.js';
 
 export class    ConversationController {
     /**
@@ -22,13 +23,16 @@ export class    ConversationController {
             } 
             return res.status(200).json(response);
         } catch (error: any) {
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
             const   response: ResponseModule<null> = {
                 success: false,
-                message: error.message || 'Internal server error',
+                message: errorMessage,
                 data: null
             }
             const   statusCode = error.statusCode;
-            console.log(error.message);
+            console.log(errorMessage);
             res.status(error.statusCode || 500).json(response);
             
         }
@@ -42,11 +46,10 @@ export class    ConversationController {
             if(!userId)
                 return res.status(401).json({message: 'Not authorized'});
 
-            const   friendId = req.body?.friendId as string;
+            const   friendId = req.body.friendId;
 
             const   result = await ConversationService.startConversation({userId, friendId});
 
-            
             const response: ResponseModule<ExistingConversationsT> = {
                 success: true,
                 message: result.statusOfRes.message,
@@ -61,45 +64,45 @@ export class    ConversationController {
 
         } catch (error: any) {
             const   statusCode = error.statusCode || 500;
+            let   errorMessage = 'Something went wrong'; 
+            if(error instanceof AppError)
+                errorMessage = error.message;
             const   response: ResponseModule<null> = {
                 success: false,
-                message: error.message || 'Internal server error',
+                message: errorMessage,
                 data: null
             }
-            console.log(error.message);
+            console.log(errorMessage);
 
             return res.status(statusCode).json(response);
         }
     }
-         /**
-     * @function deleteConversation req.user.id delete a single conversation by it's ID
-     */
-    static async deleteConversation(req: AuthenticatedRequest, res: Response) {
-        try {
-            const   currentUserId = req.user?.user_id as string;
-            const   conversationId = Number(req.params.convId);
+    
+    /**
+    * next feature,
+    * @function deleteConversation req.user.id delete a single conversation by it's ID
+    */
+    // static async deleteConversation(req: AuthenticatedRequest, res: Response) {
+    //     try {
+    //         const   currentUserId = req.user?.user_id as string;
+    //         const   conversationId = req.params.convId;
+    //         const   result: bigint = await ConversationService.deleteConversation({currentUserId, conversationId});
+    //         const   response: ResponseModule<bigint> = {
+    //             success: true,
+    //             message: 'Conversation deleted',
+    //             data: result
+    //         };
+    //         return res.status(200).json(response);
 
-            if (!Number.isInteger(conversationId) || conversationId <= 0) {
-                const   response: ResponseModule<null> = {success: false, message: 'Invalid Conversation ID', data: null};
-                return res.status(400).json(response);
-            }
-            const   result: bigint = await ConversationService.deleteConversation({currentUserId, conversationId});
-            const   response: ResponseModule<bigint> = {
-                success: true,
-                message: 'Conversation deleted',
-                data: result
-            };
-            return res.status(200).json(response);
-
-        } catch (error: any) {
-            const   statusCode = error.statusCode || 500;
+    //     } catch (error: any) {
+    //         const   statusCode = error.statusCode || 500;
             
-            const   response: ResponseModule<null> = {
-                success: false,
-                message: error.message || 'Internal server error',
-                data: null
-            }
-            return res.status(statusCode).json(response);
-        }
-    }
+    //         const   response: ResponseModule<null> = {
+    //             success: false,
+    //             message: error.message || 'Internal server error',
+    //             data: null
+    //         }
+    //         return res.status(statusCode).json(response);
+    //     }
+    // }
 }

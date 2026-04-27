@@ -1,23 +1,21 @@
 import { Calendar, Clock, Edit, Fingerprint, Mail, MessageCircle, Shield, UserPlus, UserX, Zap } from "lucide-react";
 import { useAuth } from '../../../auth/useAuth';
-import { useParams, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { EditProfileModal } from "./EditProfileModal";
-import { useProfileHeader } from "./hooks/useProfileHeader";
+import { useProfileHeader, type UserProfileInfo } from "./hooks/useProfileHeader";
 import type React from "react";
-import { useEffect } from "react";
 import type { UserStatGame } from "../../pages/Profile";
 import { GiPodium } from "react-icons/gi";
 
 interface ProfileHeaderProps {
     userGameStat: UserStatGame | null
     isOwnProfile?: boolean
-    setIsOwnProfile: React.Dispatch<React.SetStateAction<boolean>>
-    setUserId: React.Dispatch<React.SetStateAction<string | null>>
+    setUserInfo: React.Dispatch<React.SetStateAction<UserProfileInfo|null>>
+    userInfo: UserProfileInfo | null
 }
 
-export function ProfileHeader({ userGameStat, isOwnProfile, setIsOwnProfile, setUserId }: ProfileHeaderProps) {
+export function ProfileHeader({ userGameStat, isOwnProfile, userInfo, setUserInfo }: ProfileHeaderProps) {
     const { user } = useAuth();
-    const params = useParams<string>();
 
     const {
             handleAddToFriend,
@@ -26,13 +24,8 @@ export function ProfileHeader({ userGameStat, isOwnProfile, setIsOwnProfile, set
             handleSaveProfile,
             gotToChat,
             isEditing,
-            userInfo,
             setIsEditing
-        } = useProfileHeader({userId: params.id as string, user: user, setIsOwnProfile: setIsOwnProfile});
-    
-    useEffect(() => {
-        setUserId(userInfo?.id ?? null);
-    }, [userInfo, setUserId])
+        } = useProfileHeader({user: user, setUserInfo: setUserInfo, userInfo: userInfo});
 
     const friendButtonConfig = {
         not: {
@@ -56,7 +49,7 @@ export function ProfileHeader({ userGameStat, isOwnProfile, setIsOwnProfile, set
 
     return (
         <div className="bg-slate-800/40 border border-white/10 backdrop-blur-lg rounded-3xl p-6 md:p-8
-        flex flex-col md:flex-row items-center gap-6 relative overflow-hidden shadow-xl">
+            flex flex-col md:flex-row items-center gap-6 relative overflow-hidden shadow-xl">
 
             <div className="absolute top-0 right-0 bg-blue-500/10 h-64 w-64 rounded-full blur-3xl -z-10"></div>
             
