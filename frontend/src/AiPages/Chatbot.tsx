@@ -15,6 +15,18 @@ type Message = {
   text: string;
 };
 
+const parseJsonOrThrow = async <T,>(res: Response, fallback: string): Promise<T> => {
+  if (!res.ok) {
+    let message = fallback + ' (' + res.status + ')';
+    try {
+      const body = (await res.json()) as { message?: string };
+      if (body && body.message) message = body.message;
+    } catch {}
+    throw new Error(message);
+  }
+  return (await res.json()) as T;
+};
+
 function Chatbot() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [activeSession, setActiveSession] = useState<string | null>(null);
@@ -111,11 +123,10 @@ function Chatbot() {
 
   const handleNewChat = async () => {
     try {
-      const res = await fetch('/chatbot/new-session', { 
-        method: 'POST',
-        credentials: 'include',
-      });
-      const data: { session_id: string } = await res.json();
+      const res = await fetch('/chatbot/new-session', { method: 'POST', credentials: 'include' });
+      const data = await parseJsonOrThrow<{ session_id?: string }>(res, 'Could not create new session');
+      if (!data.session_id) throw new Error('Invalid new-session payload');
+
       const newSession: Session = {
         session_id: data.session_id,
         title: 'New Chat',
@@ -147,7 +158,10 @@ function Chatbot() {
         body: JSON.stringify({ session_id: sessionId }),
       });
 
-      const data: { messages?: Array<{ role: string; content: string }> } = await res.json();
+      const data = await parseJsonOrThrow<{ messages?: Array<{ role: string; content: string }> }>(
+        res,
+        'Could not load session'
+      );
 
       const messages: Message[] = (data.messages ?? []).map((m) => ({
         role: m.role === 'assistant' ? 'ai' : (m.role as Message['role']),
