@@ -73,7 +73,7 @@ if [ "$INITIALIZED" = "false" ]; then
   vault write database/config/game-postgres \
     plugin_name=postgresql-database-plugin \
     allowed_roles="game-readonly,game-readwrite" \
-    connection_url="postgresql://{{username}}:{{password}}@postgres:5432/chatbot_db?sslmode=disable" \
+    connection_url="postgresql://{{username}}:{{password}}@chat_db:5432/chatbot_db?sslmode=disable" \
     username="${DB_USER}" \
     password="${DB_PASSWORD}"
 
@@ -154,7 +154,7 @@ SQL
     sleep 2
   done
 
-  PGPASSWORD="${DB_PASSWORD}" psql -h postgres -p 5432 -U "${DB_USER}" -d chatbot_db <<SQL
+  PGPASSWORD="${DB_PASSWORD}" psql -h chat_db -p 5432 -U "${DB_USER}" -d chatbot_db <<SQL
   GRANT ALL ON SCHEMA public TO PUBLIC;
   ALTER DEFAULT PRIVILEGES FOR ROLE ${DB_USER} IN SCHEMA public
     GRANT ALL ON TABLES TO PUBLIC;
