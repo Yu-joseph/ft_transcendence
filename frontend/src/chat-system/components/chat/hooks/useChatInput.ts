@@ -128,7 +128,7 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId, frien
         }
         clearTimeout(typingTimerRef.current);
         typingTimerRef.current = setTimeout(() => {
-            chatSocket.emit('typing:stop', ROOM_ID);
+            chatSocket.emit('typing:stop', {friendId: friendId, userId: user.id, convId: convId});
             setIsTyping(false);
         }, 1000);
     }

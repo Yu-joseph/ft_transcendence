@@ -25,7 +25,6 @@ const joinChatSchema = z.object({
 })
 
 const roomIdSchema = z.string().min(1);
-
 /** User Othorization helper function */
 const   isUserInConversation = async (convId: bigint, userId: string) => {
     return await prisma.conversation.findFirst({
@@ -48,9 +47,9 @@ export const initSocket = (server: HTTPServer) => {
     io.on('connection', (socket) => {
         const   authentUser = (socket as any).user;
 
-        socket.join(authentUser.user_id); // for conversation Update list, so i emit the event for the sender and receiver
-
+        socket.join(authentUser.user_id); // for conversation Update and notification , so i emit the event for the sender and receiver
         console.log('I join my Private Room:', authentUser.user_id);
+
         /**
          * ****  join chat handler ****
          **/
@@ -85,11 +84,11 @@ export const initSocket = (server: HTTPServer) => {
                           .transform(val => BigInt(val))
         });
 
-        const   onTypingStart = async (data: any) => {
+        const   onTypingStart = async (data: unknown) => {
             const   validatedData = typingSchema.safeParse(data);
             if(!validatedData.success || validatedData.data.userId !== authentUser.user_id) {
                 console.log(validatedData.error?.issues);
-                emitError(socket, validatedData.error?.issues as any);
+                emitError(socket, 'Invalid request data');
                 return ;
             }
             const   {friendId, convId, userId} = validatedData.data;
@@ -100,18 +99,21 @@ export const initSocket = (server: HTTPServer) => {
         /**
         * ****  typing start handler ****
         **/
-        const onTypingStop = async (room_id: any) => {
-            const validated = roomIdSchema.safeParse(room_id);
-            if (!validated.success) {
+        const onTypingStop = async (data: unknown) => {
+            const validated = typingSchema.safeParse(data);
+            if (!validated.success || validated.data.userId !== authentUser.user_id) {
                 emitError(socket, 'Invalid request data');
                 return;
-            } 
-            socket.to(validated.data).emit('typing:stop');
+            }
+            const   {friendId, convId, userId} = validated.data;
+            if(await isUserInConversation(convId, userId)) {
+                socket.to(friendId).emit('typing:stop');
+            }
         };
         /**
         * ****  leave conversation handler ****
         **/
-        socket.on('leave:conversation', (room_id: any) => {
+        socket.on('leave:conversation', (room_id: unknown) => {
             const validated = roomIdSchema.safeParse(room_id);
             if (!validated.success) {
                 emitError(socket, 'Invalid request data');
@@ -119,6 +121,8 @@ export const initSocket = (server: HTTPServer) => {
             }
             socket.leave(validated.data);
         });
+
+
 
         socket.on('typing:stop', onTypingStop);
         socket.on('disconnect', () => console.log(`User Disconnected, socketId: ${socket.id}`))

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchClient } from "../../../utils/fetchClient";
 import { useAuth } from "../../../../auth/useAuth";
+import { chatSocket } from "../../../../socket/sock";
 
 export interface FriendsListType {
     id: string
@@ -18,8 +19,19 @@ export  function    useFriendList() {
     const   [loading, setLoading] = useState(false);
     const   [activeTab, setActivetab] = useState<ActiveTabeType>('All');
     const   [goChat, setGoChat] = useState<string | null>(null);
+    const   [isEventRequest, setIsEventRequest] = useState<boolean>(false);
     const   {user} = useAuth();
 
+    useEffect(() => {
+        /** this for real-time update friend list, listning for any update of friend request */
+        if(!user)
+            return ;
+        window.addEventListener('refresh_friends', () => setIsEventRequest(!isEventRequest));
+        return () => {
+            window.removeEventListener('refresh_friends', () => setIsEventRequest(!isEventRequest));
+        }
+    }, [user])
+    /******************************* */
     useEffect(() => {
         const   fetchUserList = async () => {
             try {
@@ -37,7 +49,7 @@ export  function    useFriendList() {
             }
         }
         fetchUserList();
-    }, [user])
+    }, [user, isEventRequest])
     
     /************************************** */
     const   handleRemoveFriend = async (friendId: string) => {

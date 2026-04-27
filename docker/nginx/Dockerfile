@@ -25,8 +25,7 @@ WORKDIR /opt
 RUN git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity ModSecurity
 
 WORKDIR /opt/ModSecurity
-RUN git submodule init && \
-    git submodule update && \
+RUN git submodule update --init --recursive && \
     ./build.sh && \
     ./configure && \
     make && \

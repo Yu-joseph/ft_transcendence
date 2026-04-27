@@ -24,7 +24,7 @@ export const    validateRequest = (schema: ZodObject<any>) => {
                     data: null
                     // errors: error.errors || null
                 };
-                return res.status(400).json({response})
+                return res.status(400).json(response)
             }
             return next(error);
         }

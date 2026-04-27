@@ -17,12 +17,14 @@ import { Profile } from '../chat-system/pages/Profile.tsx'
 import GlobalInviteListener from '../components/GlobalInviteListener.tsx'
 import ChangePassw from '../auth/ChangePassw.tsx'
 import ChangeIntra from './ChangeIntra.tsx'
+import { GlobalChatListener } from '../chat-system/GlobalChatListener.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
       <BrowserRouter>
         <GlobalInviteListener />
+        <GlobalChatListener /> {/*  i add this for notification of chat-friend */}
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />

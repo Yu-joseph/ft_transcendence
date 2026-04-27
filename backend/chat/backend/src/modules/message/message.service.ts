@@ -105,8 +105,8 @@ export  class MessagesServices {
                 id: conversationId
             },
             include: {
-                User_Conversation_user1IdToUser: {select: {id: true}},
-                User_Conversation_user2IdToUser: {select: {id: true}}
+                User_Conversation_user1IdToUser: {select: {id: true, username: true}},
+                User_Conversation_user2IdToUser: {select: {id: true, username: true}}
             }
         });
         if (!convExist)
@@ -142,7 +142,7 @@ export  class MessagesServices {
         /** **** emit message to member on channel */
         io.to(`ROOM_${conversationId.toString()}`)
             .emit('message:new', {...saveMessage, tempId: tempId});
-            /**Update conversation list for both sender and receiver */
+        /**Update conversation list for both sender and receiver */
         io.to(convExist.user1Id).to(convExist.user2Id)
             .emit('conversation:updated',
             {
@@ -150,6 +150,10 @@ export  class MessagesServices {
                     id: saveMessage.id, created_at: saveMessage.created_at, content: saveMessage.content, senderId: saveMessage.User.id
                 } 
                 , updated_at: updateConv.updated_at, convId: updateConv.id});
+        /** get the recever and emit a notification for it */
+        const   recever = convExist.user1Id === senderId ? convExist.User_Conversation_user2IdToUser: convExist.User_Conversation_user1IdToUser;
+        io.to(recever.id)
+            .emit('notification:new_message', {senderName: saveMessage.User.username, content: newMessage.content});
         return saveMessage;
     }
 }
