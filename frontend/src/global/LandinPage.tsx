@@ -27,7 +27,7 @@ function LandinPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
         <p className="text-white text-lg">Loading session...</p>
       </div>
     );
@@ -38,7 +38,7 @@ function LandinPage() {
   }
 
   return (
-    <div className="landing-root min-h-screen bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 text-slate-100">
+    <div className="landing-root min-h-screen bg-slate-900 text-slate-100">
       {/* <style>
         {`
 .landing-root {

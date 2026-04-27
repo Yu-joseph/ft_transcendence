@@ -4,7 +4,7 @@ export default function PrivacyPolicy() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-slate-950 via-blue-950 to-slate-900 text-slate-100">
+    <div className="min-h-screen bg-slate-900 text-slate-100">
       <header className="border-b border-blue-900/60 bg-slate-950/80 backdrop-blur">
         <div className="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-8 sm:flex-row sm:items-center sm:justify-between">
           <div>

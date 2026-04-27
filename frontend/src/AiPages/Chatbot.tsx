@@ -256,9 +256,9 @@ function Chatbot() {
   const isUiLocked = isStreaming || deletingSessionId !== null
 
   return (
-    <div className="flex h-screen overflow-hidden flex-col z-10 bg-slate-950">
+    <div className="flex h-screen overflow-hidden flex-col z-10 bg-slate-900">
       <Bar />
-      <div className="flex flex-1 p-2 pb-20 bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 overflow-hidden">
+      <div className="flex flex-1 p-2 pb-20 bg-slate-900 overflow-hidden">
         <Sidebar
           onNewChat={requestNewChat}
           sessions={sessions}
