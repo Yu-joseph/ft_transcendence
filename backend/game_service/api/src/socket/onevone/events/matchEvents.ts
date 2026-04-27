@@ -5,7 +5,7 @@ import {
   disconnectTimeouts,
 } from '../onevoneState';
 import { bindPlayerToSocket, emitLobbyPlayersUpdate, getUserRoom } from '../lobbyPresence';
-import { applyMove, forfeitMatch } from '../gameLogic';
+import { applyMove, forfeitAnyActiveMatchForUser, forfeitMatch } from '../gameLogic';
 
 export function registerMatchEvents(io: Server, socket: Socket) {
 
@@ -70,4 +70,23 @@ export function registerMatchEvents(io: Server, socket: Socket) {
       }
       await forfeitMatch(io, data.matchId, userId);
     });
+    socket.on(
+      "logout-playing",
+      async (_payload: unknown, ack?: (res: { ok: boolean }) => void) => {
+        const userId = socket.data.userId as string | undefined;
+        if (!userId) {
+          ack?.({ ok: false });
+          return;
+        }
+
+        const pending = disconnectTimeouts.get(userId);
+        if (pending) {
+          clearTimeout(pending);
+          disconnectTimeouts.delete(userId);
+        }
+
+        await forfeitAnyActiveMatchForUser(io, userId);
+        ack?.({ ok: true });
+      },
+    );
 }

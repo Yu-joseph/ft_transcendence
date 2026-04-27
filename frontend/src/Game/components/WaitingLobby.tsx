@@ -18,7 +18,7 @@ export default function WaitingLobby({
   onLeave,
 }: WaitingLobbyProps) {
   return (
-    <div className="bg-slate-800 border border-blue-700 rounded-xl p-6 max-w-md">
+    <div className="bg-slate-800 hover:bg-slate-800/70 border border-blue-700 rounded-xl p-6 max-w-md">
       <h2 className="text-lg font-semibold text-white mb-4">Waiting for players…</h2>
       <ul className="space-y-2 mb-6">
         {players.map((p, i) => (
@@ -41,7 +41,7 @@ export default function WaitingLobby({
         ))}
       </ul>
       {isCreator ? (
-        <div className="flex flex-wrap gap-3">
+        <div className="flex lg:flex-row md:flex-row flex-col gap-3">
           <button
             onClick={onStart}
             disabled={!canStart}

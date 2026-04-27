@@ -20,7 +20,8 @@ const corsOptions = {
   origin: [
     "http://localhost:8080",
     "http://localhost:5173",
-    "https://localhost:8443",
+    "Chttps://localhost:8443",
+    "https://10.30.246.78:8443"
   ],
   methods: ["GET", "POST"],
   credentials: true,

@@ -47,7 +47,7 @@ export default function PlayerList() {
 
   return (
     <>
-      <div className="bg-slate-800 border border-blue-700 rounded-xl p-5 w-full max-w-lg">
+      <div className="bg-slate-800 border border-blue-700 rounded-xl p-5 w-full hover:border-amber-500 hover:scale-102 transition-all duration-300">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-amber-500 text-xl font-semibold">Online Players</h2>
           <span className="text-green-400 text-sm">{players.length === 0 ? 0 : players.length - 1} online</span>
@@ -63,7 +63,7 @@ export default function PlayerList() {
               return (
                 <li
                   key={p.id}
-                  className="flex items-center justify-between bg-slate-700 rounded-lg px-4 py-2"
+                  className="flex items-center justify-between bg-slate-700 hover:bg-slate-700/70 rounded-lg px-4 py-2"
                 >
                   <span className="text-white inline-flex items-center gap-2 cursor-pointer group" onClick={() => openProfile(p.id)} >
                     <div className="" > 

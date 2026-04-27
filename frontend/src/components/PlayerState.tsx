@@ -9,12 +9,22 @@ type PlayerStats = {
   rank: number;
 };
 
-export default function PlayerState() {
-  const [stats, setStats] = useState<PlayerStats | null>(null);
-  const [loading, setLoading] = useState(true);
+type PlayerStateProps = {
+  previewStats?: PlayerStats;
+};
+
+export default function PlayerState({ previewStats }: PlayerStateProps) {
+  const [stats, setStats] = useState<PlayerStats | null>(previewStats ?? null);
+  const [loading, setLoading] = useState(!previewStats);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (previewStats) {
+      setStats(previewStats);
+      setLoading(false);
+      setError(null);
+      return;
+    }
     /// using async to get promise (object) and waiting using await
     const fetchPlayerState = async () => {
       try {
@@ -36,13 +46,13 @@ export default function PlayerState() {
     };
 
     fetchPlayerState();
-  }, []);
+  }, [previewStats]);
 
   const total = stats ? stats.wins + stats.losses : 0;
   const winRate = stats && total > 0 ? Math.round((stats.wins / total) * 100) : 0;
 
   return (
-    <section className="w-full bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit">
+    <section className="w-full bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit hover:border-amber-500 hover:scale-102 transition-all duration-300">
       <div className="px-6 py-4 border-b border-blue-800">
         <h3 className="text-xl font-semibold text-amber-500">Your Progress</h3>
         <p className="text-sm text-gray-400">Your personal match statistics</p>
@@ -53,28 +63,28 @@ export default function PlayerState() {
       ) : error ? (
         <div className="px-6 py-8 text-red-300">{error}</div>
       ) : !stats ? (
-        <div className="px-6 py-8 text-gray-300">No games played yet. Go play!</div>
+        <div className="px-6 py-8 text-gray-300 ">No games played yet. Go play!</div>
       ) : (
         <div className="px-6 py-5 space-y-5">
 
           {/* Stat cards */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col items-center bg-slate-900/60 rounded-lg py-4">
+            <div className="flex flex-col items-center bg-slate-900/60 hover:bg-slate-700/40 rounded-lg py-4">
               <span className="text-2xl font-bold text-emerald-300">{stats.wins}</span>
               <span className="text-xs text-gray-400 mt-1 uppercase tracking-wide">Wins</span>
             </div>
-            <div className="flex flex-col items-center bg-slate-900/60 rounded-lg py-4">
+            <div className="flex flex-col items-center bg-slate-900/60 hover:bg-slate-700/40 rounded-lg py-4">
               <span className="text-2xl font-bold text-rose-300">{stats.losses}</span>
               <span className="text-xs text-gray-400 mt-1 uppercase tracking-wide">Losses</span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col items-center bg-slate-900/60 rounded-lg py-4">
+            <div className="flex flex-col items-center bg-slate-900/60 hover:bg-slate-700/40 rounded-lg py-4">
               <span className="text-2xl font-bold text-cyan-300">{stats.xp}</span>
               <span className="text-xs text-gray-400 mt-1 uppercase tracking-wide">XP</span>
             </div>
-            <div className="flex flex-col items-center bg-slate-900/60 rounded-lg py-4">
+            <div className="flex flex-col items-center bg-slate-900/60 hover:bg-slate-700/40 rounded-lg py-4">
               <span className="text-2xl font-bold text-amber-300">#{stats.rank}</span>
               <span className="text-xs text-gray-400 mt-1 uppercase tracking-wide">Rank</span>
             </div>
@@ -88,7 +98,7 @@ export default function PlayerState() {
             </div>
             <div className="w-full bg-slate-700 rounded-full h-3">
               <div
-                className="bg-emerald-400 h-3 rounded-full transition-all duration-500"
+                className="bg-emerald-400 hover:bg-emerald-300 h-3 rounded-full"
                 style={{ width: `${winRate}%` }}
                 //style to make with suitabe with bar if win is 40% should bar also be 40%
               />

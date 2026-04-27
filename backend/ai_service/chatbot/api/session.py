@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from api.auth import get_user_id
 from database.queries import get_sessions
-from database.models import ChatSession
+from database.models import ChatSession , Message
 from extensions import db
 from api.chat import get_chat
 
@@ -50,3 +50,37 @@ def set_session():
 @session_bp.get('/sessions')
 def sessions():
     return jsonify(get_sessions(user_id=get_user_id()))
+
+
+
+@session_bp.delete('/detete-session')
+def delete_session():
+    data = request.get_json(silent=True) or {}
+    print(f"datat =  {data} \n\n " , flush=True)
+
+    session_id = data.get('session_id')
+    print(f"session_id  ===       {session_id} \n\n " , flush=True)
+
+    if not session_id:
+        return jsonify({'error' : 'No session id provided'}) , 400
+    
+    user_id = get_user_id()
+    if not user_id:
+        return jsonify({'error' , 'Unauthorized'}) , 401
+    
+
+    try:
+        session = ChatSession.query.filter_by(session_id=session_id , user_id=user_id).first()
+        if not session :
+            return jsonify({"error" : 'Session not found'}) , 404
+        
+        Message.query.filter_by(session_id=session_id).delete()
+        db.session.delete(session)
+        db.session.commit()
+        return jsonify({'status' : 'deleted'})
+    except Exception as e:
+        db.session.rollback()
+        print(f"[Delete ERROR] {e}")
+        return jsonify({'error' : str(e) }) , 500
+
+    

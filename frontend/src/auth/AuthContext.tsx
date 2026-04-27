@@ -69,6 +69,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== 'auth:logout') {
+        return;
+      }
+
+      setUser(null);
+      setLoading(false);
+      sessionStorage.removeItem('activeTournament');
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
+
   return (
     <AuthContext.Provider value={{ user, loading, setUser }}>
       {children}

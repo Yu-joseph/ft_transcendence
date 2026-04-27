@@ -102,8 +102,14 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
         signal: controller.signal,
       })
 
-      if (!response.ok || !response.body) {
-        throw new Error('Stream request failed')
+      if (!response.ok) {
+        if (response.status === 429) throw new Error('RATE_LIMIT');
+        if (response.status === 401) throw new Error('UNAUTHORIZED');
+        if (response.status >= 500) throw new Error('SERVER_ERROR');
+        throw new Error('HTTP_' + response.status);
+      }
+      if (!response.body) {
+        throw new Error('EMPTY_STREAM');
       }
 
       const reader = response.body.getReader()
@@ -161,6 +167,12 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
           if (streamDone) break
         }
       }
+
+      const finalDraft = readDraft();
+      if (finalDraft && finalDraft.typing) {
+        writeDraft({ ...finalDraft, typing: false, updatedAt: Date.now() });
+      }
+
     } catch (err) {
       const aborted = err instanceof DOMException && err.name === 'AbortError'
 
@@ -172,10 +184,17 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
         return
       }
 
+      let userMessage = 'Error connecting to server.';
+      if (err instanceof Error) {
+        if (err.message === 'RATE_LIMIT') userMessage = 'Too many requests. Please wait and try again.';
+        else if (err.message === 'UNAUTHORIZED') userMessage = 'Session expired. Please sign in again.';
+        else if (err.message === 'SERVER_ERROR') userMessage = 'Server error. Please try again in a moment.';
+      }
+
       writeDraft({
         typing: false,
         userText: messageText,
-        partialAi: 'Error connecting to server.',
+        partialAi: userMessage,
         updatedAt: Date.now(),
       })
     } finally {
