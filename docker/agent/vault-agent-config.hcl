@@ -29,8 +29,14 @@ template {
 }
 
 template {
+  source      = "/vault/templates/br_db.tpl"
+  destination = "/vault/aii/file.env"
+  perms       = 0644
+}
+
+template {
   source      = "/vault/templates/apis.tpl"
-  destination = "/vault/secrets/apis.env"
+  destination = "/vault/chat/file.env"
   perms       = 0644
 }
 

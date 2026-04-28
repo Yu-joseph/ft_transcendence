@@ -34,7 +34,8 @@ vault secrets enable -path=secret kv-v2 2>/dev/null || true
 if [ "$INITIALIZED" = "false" ]; then
   vault kv put secret/myapp/apis \
     openai_api_key="${OPENROUTER_API_KEY}" \
-    django_secret_key="${DJANGO_SECRET_KEY}"
+    django_secret_key="${DJANGO_SECRET_KEY}"\
+    grok_secret_key="${GROQ_API_KEY}"
 fi
 
 vault secrets enable database 2>/dev/null || true
