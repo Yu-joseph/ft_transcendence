@@ -16,8 +16,8 @@ export class MessagesController {
             if (!currentUserId)
                 return  res.status(401).json({message: 'Not authorized'});
             const   conversationId = req.params.convId as unknown as bigint;
-            const   result: MessagesPayload[] = await MessagesServices.getMessagesByConvId({currentUserId, conversationId} as GetMessagesProps);
-            const response: ResponseModule<MessagesPayload[]>  = {
+            const   result: { messages: MessagesPayload[], status: string } = await MessagesServices.getMessagesByConvId({currentUserId, conversationId} as GetMessagesProps);
+            const response: ResponseModule<{ messages: MessagesPayload[], status: string }>  = {
                 success: true,
                 message: 'Getting messages',
                 data: result
@@ -86,17 +86,19 @@ export class MessagesController {
             })
 
             const   result = await MessagesServices.sendMessage(senderId as string, conversationId, cleanContent, tempId);
-            const   rspns: ResponseModule<MessagesPayload> = {
+            const   rspns: ResponseModule<any> = {
                 
                 success: true,
                 message: 'messages sent successfully',
                 data: {
-                    id: result.id,
-                    content: result.content,
-                    created_at: result.created_at,
-                    User: result.User,
-                    tempId: tempId,
-                    status: 'sent'
+                    messages: {
+                        id: result.id,
+                        content: result.content,
+                        created_at: result.created_at,
+                        User: result.User,
+                        tempId: tempId,
+                        status: 'sent'
+                    }
                 }
             }
             return res.status(200).json(rspns);

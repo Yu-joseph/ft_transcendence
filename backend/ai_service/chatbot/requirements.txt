@@ -16,4 +16,5 @@ PyJWT
 
 
 gunicorn
-langchain-groq
+flask-limiter
+redis

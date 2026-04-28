@@ -21,7 +21,7 @@ export  interface   ExistingConversationsT {
         id: string,
         username: string,
         avatar: string | null,
-        status: string
+        user_status: string
     }
     lastMessage: {
         id: bigint,

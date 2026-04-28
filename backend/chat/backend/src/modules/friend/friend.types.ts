@@ -35,6 +35,7 @@ export  interface PendingFriendType {
         id: string
         username: string
         avatar: string | null
+        user_status: string
     }
     type: RequestType
 }
@@ -43,4 +44,5 @@ export interface BlockedFriendType {
     id: string
     username: string
     avatar: string | null
+    user_status: string
 }

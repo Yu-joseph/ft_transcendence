@@ -16,6 +16,7 @@ class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)   
     updated_at = models.DateTimeField(auto_now=True)   
     avatar     = models.ImageField(upload_to='images/', blank=True,null=True , default='/authent/media/images/pipi.jpg')
+    user_status     = models.CharField(max_length=50, default="Offline")    
     status     = models.CharField(max_length=50, default="Online")
     role       = models.CharField(max_length=50, default="user") 
     wins       = models.IntegerField(default=0)

@@ -8,7 +8,7 @@ export const ErrorMessage = ({message, typeOfError}: {message: string|null, type
         <div className="text-red-400 mb-2">
         </div>
         <p className="text-slate-300 px-2">
-          {message && message.includes('Authorisation header missing')  ? 'Youre session has expired. Please login again' : `An error occurred while loading ${typeOfError}.`}
+          {typeof message === 'string' && message.includes('Authorisation header missing')  ? 'Youre session has expired. Please login again' : `An error occurred while loading ${typeOfError}.`}
         </p>
         <button onClick={() => window.location.reload()} className="mt-6 px-6 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/50 rounded-lg text-sm text-white transition-all">
           Try Again

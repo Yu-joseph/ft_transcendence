@@ -9,8 +9,10 @@ class ChatBot:
         self.config = Config()
         self.llm    = self.config.llm
         self.history = [self.config.system_message]
+        self.error = False
 
     def ask_stream(self, message: str):
+        self.error  = False
         try:
             self.history.append(HumanMessage(content=message))
             full_response = ""
@@ -20,7 +22,11 @@ class ChatBot:
                     yield chunk.content.replace('\n', '<br>')
             self.history.append(AIMessage(content=full_response))
         except Exception as e:
-            self.reset()
+            if self.history and isinstance(self.history[-1] , HumanMessage):
+                self.history.pop()
+            
+            self.error = True
+            # self.reset()
             yield Config.handle_error(e)
 
     def reset(self):
@@ -48,10 +54,10 @@ class ChatBot:
 
 # per-user bot register
 
-_bots: dict = {}
+# _bots: dict = {}
 
 
-def get_bot(user_id: str) -> ChatBot:
-    if user_id not in _bots:
-        _bots[user_id] = ChatBot()
-    return _bots[user_id]
+# def get_bot(session_id: str) -> ChatBot:
+#     if session_id not in _bots:
+#         _bots[session_id] = ChatBot()
+#     return _bots[session_id]

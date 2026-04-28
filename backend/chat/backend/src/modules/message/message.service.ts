@@ -30,8 +30,8 @@ export  class MessagesServices {
                 status: 'ACCEPTED'
             }
         });
-        if (!isFriend)
-            throw new AppError('Access denied: You are no longer friends.', 403);
+        // if (!isFriend)
+        //     throw new AppError('Access denied: You are no longer friends.', 403);
         const   isParticipant = conversationExist.User_Conversation_user1IdToUser.id === data.currentUserId || conversationExist.User_Conversation_user2IdToUser.id === data.currentUserId;
         if(!isParticipant)
             throw new AppError('You are not member of this conversation', 403);
@@ -50,7 +50,11 @@ export  class MessagesServices {
         if (!messages) {
             throw new AppError('Messages of this conversation not found', 404);
         }
-        return messages?.Message ?? [] as MessagesPayload[];
+        return {
+            messages: messages?.Message ?? [] as MessagesPayload[],
+            status: !isFriend ? 'NOT FRIEND' : 'FRIEND'
+        } 
+        
     }
     /** @function getMessages getting all messages from single conversation by friend ID*/
     static async getMessagesByFriendId(data: {currentUserId: string, friendId: string}): Promise<MessagesWithConvId> {
@@ -105,8 +109,8 @@ export  class MessagesServices {
                 id: conversationId
             },
             include: {
-                User_Conversation_user1IdToUser: {select: {id: true}},
-                User_Conversation_user2IdToUser: {select: {id: true}}
+                User_Conversation_user1IdToUser: {select: {id: true, username: true}},
+                User_Conversation_user2IdToUser: {select: {id: true, username: true}}
             }
         });
         if (!convExist)
@@ -141,8 +145,8 @@ export  class MessagesServices {
         console.log(`Sending message to room ${conversationId}`);
         /** **** emit message to member on channel */
         io.to(`ROOM_${conversationId.toString()}`)
-            .emit('message:new', {...saveMessage, tempId: tempId});
-            /**Update conversation list for both sender and receiver */
+            .emit('message:new', {...saveMessage, tempId: tempId, convId: conversationId});
+        /**Update conversation list for both sender and receiver */
         io.to(convExist.user1Id).to(convExist.user2Id)
             .emit('conversation:updated',
             {
@@ -150,6 +154,10 @@ export  class MessagesServices {
                     id: saveMessage.id, created_at: saveMessage.created_at, content: saveMessage.content, senderId: saveMessage.User.id
                 } 
                 , updated_at: updateConv.updated_at, convId: updateConv.id});
+        /** get the recever and emit a notification for it */
+        const   recever = convExist.user1Id === senderId ? convExist.User_Conversation_user2IdToUser: convExist.User_Conversation_user1IdToUser;
+        io.to(recever.id)
+            .emit('notification:new_message', {senderName: saveMessage.User.username, content: newMessage.content});
         return saveMessage;
     }
 }

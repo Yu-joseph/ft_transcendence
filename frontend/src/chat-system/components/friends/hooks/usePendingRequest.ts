@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchClient } from "../../../utils/fetchClient";
+// import { chatSocket } from "../../../../socket/sock";
+import { useRefresh } from "../../shared/useRefresh";
 
 
 type RequestType = 'incoming' | 'outgoing';
@@ -19,10 +21,9 @@ export  function    usePendingRequest() {
     const   [pendingFriend, setPendingFriend] = useState<PendingFriendType[]>([]);
     const   [loading, setLoading] = useState(false);
     const   [error, setError] = useState(null);
+    const   refresh = useRefresh();
 
-    /**_____ Hooks _______ */
     useEffect(() => {
-
         const   getPendingRequests = async () => {
             try {
                 setError(null);
@@ -30,7 +31,6 @@ export  function    usePendingRequest() {
                 const   result: PendingFriendType[] = await fetchClient('/friend/pending', {});
                 setPendingFriend(result);
                 console.log("Result pending:", result);
-                
             } catch (error: any) {
                 setError(error);
                 console.log('error herer:', error);
@@ -39,7 +39,7 @@ export  function    usePendingRequest() {
             }
         }
         getPendingRequests();
-    }, [])
+    }, [refresh])
 
     /**_______ Cancel Friend Logic */
     const   handleCancel = async (reqId: number) => {

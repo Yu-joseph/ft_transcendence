@@ -1,7 +1,7 @@
-import React, { useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useAuth } from "../../../../auth/useAuth";
 import { chatSocket } from '../../../../socket/sock';
-import type { JoinChatInf } from "./useChatSocket";
+// import type { JoinChatInf } from "./useChatSocket";
 import type { MessageItem, MessageState } from "../../../pages/Chat";
 
 
@@ -36,6 +36,15 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId, frien
             return;
         }
         event.preventDefault();
+        if (isTyping && friendId && convId) { // stoping typing on send message
+            clearTimeout(typingTimerRef.current);
+            chatSocket.emit('typing:stop', {
+                friendId,
+                userId: user?.id,
+                convId: String(convId)
+            });
+            setIsTyping(false);
+        }
         const   message: string = input.trim();
         if(message === '') {
             setMessageErrors({'error': 'message cannot be empty'});
@@ -68,44 +77,46 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId, frien
             tempId: messageToSend.tempId
         }]); // here render new message for the sender before sending http-req
         try {
-            setTimeout(async () => {
-                const   response = await fetch((import.meta.env.VITE_CHAT_API as string ?? 'http://localhost:80/api') + `/chat/conversations/${convId}/message`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(messageToSend)
-                });
-                const result = await response.json();
-                if(!response.ok){
-                    console.log("Falliled to send message:", messageToSend.content);
-                    console.log('Message Error:', result.message);
-                    setMessages(prev => prev.map(m => { // i update the new message to it's correspond status and id and created_at feom server
-                        if(m.tempId !== result.data.tempId)
-                            return m;
-                        return {
-                            ...m,
-                            id: messageToSend.tempId,
-                            created_at: result.data.created_at ?? '',
-                            status: 'error'
-                        };
-                    }));
-                    setSelectedFriendId(null);
-                    setInput('');
-                    return ;
-                }
+            const   response = await fetch((import.meta.env.VITE_CHAT_API as string ?? 'http://localhost:80/api') + `/chat/conversations/${convId}/message`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(messageToSend)
+            });
+            const result = await response.json();
+            if(!response.ok){
                 setMessages(prev => prev.map(m => { // i update the new message to it's correspond status and id and created_at feom server
                     if(m.tempId !== result.data.tempId)
                         return m;
                     return {
                         ...m,
-                        id: result.data.id,
-                        created_at: result.data.created_at,
-                        status: result.data.status ?? 'sent'
-                    }
+                        id: messageToSend.tempId,
+                        created_at: result.data.created_at ?? '',
+                        status: 'error'
+                    };
                 }));
-            }, 2000);
+                setSelectedFriendId(null);
+                setInput('');
+                return ;
+            }
+            setMessages(prev => {// i update the new message to it's correspond status and id and created_at feom server
+            
+                const exists = prev.some(m => m.tempId === messageToSend.tempId);// Check if our message is still in the current list (User hasn't switched conv)
+                if (!exists) 
+                    return prev; 
+                return prev.map(m => 
+                    m.tempId === messageToSend.tempId 
+                    ? { 
+                        ...m, 
+                        id: result.data.id, 
+                        created_at: result.data.created_at, 
+                        status: result.data.status ?? 'sent' 
+                    } 
+                    : m
+                );
+            });
         } catch (err:any) {
             console.log(err);
             setSelectedFriendId(null);
@@ -116,22 +127,56 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId, frien
 
     /**  _____________ Handle input change : typing indicator ___________  */
     const   handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if(user === null)
+        if(user === null || convId === null || friendId === null)
             return ;
         const   messageValue: string = e.target.value;
         setInput(messageValue);
-        const   ROOM_ID: string = `ROOM_${convId}`;
-        if(!isTyping && messageValue.length > 0) {
-            console.log('Typing start from me');
-            chatSocket.emit('typing:start', {friendId: friendId, userId: user.id, convId: convId})
+
+        if (messageValue.length === 0) { // if field is cleared we emit stop typing 
+            if (isTyping) {
+                chatSocket.emit('typing:stop', {
+                    friendId,
+                    userId: user.id,
+                    convId: String(convId)
+                });
+                setIsTyping(false);
+            }
+            clearTimeout(typingTimerRef.current);
+            return;
+        }
+        if (!isTyping && messageValue.length > 0) { // emit the event just if the first event finish
+            chatSocket.emit('typing:start', {
+                friendId,
+                userId: user.id,
+                convId: String(convId)
+            });
             setIsTyping(true);
         }
         clearTimeout(typingTimerRef.current);
         typingTimerRef.current = setTimeout(() => {
-            chatSocket.emit('typing:stop', ROOM_ID);
+            chatSocket.emit('typing:stop', {
+                friendId,
+                userId: user.id,
+                convId: String(convId)
+            });
             setIsTyping(false);
-        }, 1000);
+        }, 1500);
+
     }
+
+    useEffect(() => {
+    return () => {
+        // when switching conversation or component unmount, stop typing and clear timeout
+        clearTimeout(typingTimerRef.current);
+        if (isTyping && friendId && convId && user) {
+            chatSocket.emit('typing:stop', {
+                friendId,
+                userId: user.id,
+                convId: String(convId)
+            });
+        }
+    };
+}, [convId, friendId])
 /************************************************************************************ */
     return {
         handleChange,

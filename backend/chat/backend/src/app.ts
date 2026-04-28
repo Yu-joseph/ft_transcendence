@@ -13,7 +13,7 @@ app.use(helmet());
   return this.toString();
 };
 app.use(cors({
-  origin: '*',
+  origin: ['https://localhost:8443', 'https://10.30.234.188:8443'],
   credentials: true
 }));
 app.use(express.json());
@@ -30,10 +30,8 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     }
     next(err);
 })
-
 app.use('/api/friend', friendRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/profile', profileRoutes);
-
 
 export  default app;

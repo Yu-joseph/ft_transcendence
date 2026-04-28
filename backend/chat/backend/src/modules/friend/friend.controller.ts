@@ -17,6 +17,7 @@ export class FriendController {
             const   friendUsername: string = req.body.username;
             console.log(`Username:${friendUsername}`);
             const result = await FriendService.addFriend({ requesterId, friendUsername });
+
             return res.status(201).json({
                 success: true,
                 message: 'Friend request created',
@@ -204,6 +205,7 @@ export class FriendController {
             });
         }
     }
+    /****___________________________________________________________ */
     static async getFriendById(req: AuthenticatedRequest, res: Response) {
         try {
             const userId = req.user?.user_id;

@@ -6,10 +6,12 @@ import { useEffect, useState } from "react";
 import { fetchClient } from "../utils/fetchClient";
 import { useChatSocket } from "../components/chat/hooks/useChatSocket";
 import { useAuth } from "../../auth/useAuth";
+import { chatSocket } from "../../socket/sock";
 
 export type MessageState = 'pending' | 'sent' | 'error';
 
 export interface MessageItem {
+  convId?: bigint
   id: number | string;
   content: string;
   User: {
@@ -37,17 +39,44 @@ export function Chat() {
   const [selectedConvId, setSelectedConvId] = useState<number | null>(null);
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(friendId);
   const [isLoadedFromFriendProfile, setIsLoadedFromFriendProfile] = useState<boolean>(false);
+  const [isBlocked, setIsblocked] = useState<boolean>(false); // for blocking userInput where a user block it's friend
 
   useEffect(() => {
-    if(user === null) return ;
+    // Clear messages and reset flags when switching conversations
+    setMessages([]);
+    setIsLoadedFromFriendProfile(false);
+    setIsblocked(false);
+    setIsTyping(false);
+  }, [selectedConvId, selectedFriendId]);
+  /************************************* */
+  useEffect(() => { 
+    if(!user)
+      return;
+    const handleFriendUpdate = (data: {senderName: string, type: string}) => {
+      if(data.type === 'REMOVE') {
+        console.log('You cant chat anymore with him');
+        setIsblocked(!isBlocked);
+      }
+    }
+    /********************** */
+    chatSocket.on('notification:friend_update', handleFriendUpdate);
+    return () => {
+      chatSocket.off('notification:friend_update', handleFriendUpdate);
+    }
+  }, [user])
+/*********************** */
+  useEffect(() => {
+    if(user === null)
+      return ;
     if (selectedConvId === null || isLoadedFromFriendProfile)
       return;
     console.log('Loading History from conv Id');
     const loadHistoryByConvId = async () => {
       try {
-        const result = await fetchClient<MessageItem[] | []>(`/chat/conversations/${selectedConvId}/messages`, {});
-        result.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null; });
-        setMessages(result);  
+        const result = await fetchClient<{messages: MessageItem[], status: string} | {messages: [], status: string}>(`/chat/conversations/${selectedConvId}/messages`, {});
+        setIsblocked(result.status === 'NOT FRIEND' ? true : false);
+        result.messages.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null; });
+        setMessages(result.messages);  
       } catch (err: any) {
         setSelectedFriendId(null);
         console.log(err);
@@ -79,10 +108,10 @@ export function Chat() {
       }
     }
     loadHistoryByFriendId();
-  }, [selectedFriendId, selectedConvId, user])
+  }, [selectedFriendId, selectedConvId, user]);
 
   /** ____________ SOCKET HANDLER ____________ */
-  useChatSocket({convId: selectedConvId, setMessages: setMessages, setIsTyping: setIsTyping, messages: messages });
+  useChatSocket({convId: selectedConvId, setMessages: setMessages, setIsTyping: setIsTyping });
   /*************************  Composnent **************************************** */
   return (
     <main className="h-full flex p-4 gap-4 overflow-hidden container mx-auto maximum-w-7xl">
@@ -90,9 +119,8 @@ export function Chat() {
       <section className="flex-1 flex flex-col bg-slate-800 border border-blue-700 rounded-2xl shadow-xl overflow-hidden hover:border-amber-500 hover:scale-101 transition-all duration-300">
         <ChatMessage messages={messages} friendId={selectedFriendId} convId={selectedConvId} isTyping={isTyping} />
         {
-         selectedFriendId && <ChatInput setMessages={setMessages} convId={selectedConvId} setSelectedFriendId={setSelectedFriendId} friendId={selectedFriendId} />
+          !isBlocked && selectedFriendId && <ChatInput setMessages={setMessages} convId={selectedConvId} setSelectedFriendId={setSelectedFriendId} friendId={selectedFriendId} />
         } 
-          
       </section>
     </main>
   );
