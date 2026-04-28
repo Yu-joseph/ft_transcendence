@@ -25,3 +25,11 @@ class Message(db.Model):
     timestamp  = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+
+class UserUsage(db.Model):
+    __tablename__ = "user_usage"
+
+    user_id = db.Column(db.String, primary_key=True)
+    daily_count = db.Column(db.Integer, default=0)
+    updated_at = db.Column(db.DateTime)
+
