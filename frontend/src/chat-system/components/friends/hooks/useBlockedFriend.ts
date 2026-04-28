@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchClient } from "../../../utils/fetchClient";
+import { useRefresh } from "../../shared/useRefresh";
 
 interface BlockedFriendType {
     id: string
@@ -11,7 +12,7 @@ export  function    useBlockedFriend() {
     const   [loading, setLoading] = useState(false);
     const   [error, setError] = useState(null);
     const   [blocked, setBlocked] = useState<BlockedFriendType[]>([]);
-
+    const   refresh = useRefresh();
     const   [status, setStatus] = useState<{type: 'success' | 'error'; message: string} | null>(null);
 
     
@@ -30,7 +31,7 @@ export  function    useBlockedFriend() {
             }
         }
         getBlockedRequest();
-    }, [])
+    }, [refresh])
 
     const   handleUnblock = async (receiverName: string) => {
         try {

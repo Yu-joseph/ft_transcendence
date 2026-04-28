@@ -95,15 +95,12 @@ export function FriendsList() {
                             border border-slate-700/50 rounded-3xl p-6 shadow-lg hover:-translate-y-1 transition-all duration-300"
                         >
                             <div className="relative mb-4">
-                                {/* <div className="w-24 h-24 rounded-full group-hover:scale-105 transition-transform duration-300"> */}
                                     <img
                                         src={`${fr.avatar}`}
                                         alt="User Avatar"
                                         className="w-24 h-24 rounded-full group-hover:scale-105 transition-transform duration-300  object-cover"
                                     />
-                                    {/* {fr.username.charAt(0).toLocaleUpperCase()} */}
-                                {/* </div> */}
-                                <div className={`absolute w-6 h-6 bottom-0 right-0 ${fr.status === 'Online' ? 'bg-green-500' : 'bg-slate-500'} rounded-full border-2 border-slate-800`}></div>
+                                <div className={`absolute w-6 h-6 bottom-0 right-0 ${fr.user_status === 'Online' ? 'bg-green-500' : 'bg-slate-500'} rounded-full border-2 border-slate-800`}></div>
                             </div>
                             <h3 className="text-white font-medium">{fr.username}</h3>
                             <div className="flex items-center gap-3 w-full">

@@ -4,6 +4,7 @@ export interface ConversationType {
         id: string
         username: string
         avatar: string
+        user_status: string
     }
     lastMessage: {
         id: number

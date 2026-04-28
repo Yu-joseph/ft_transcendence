@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../../auth/useAuth'
+import { BsRobot } from "react-icons/bs";
 
 type Message = {
   role: string
@@ -92,6 +93,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
     try {
       const response = await fetch('/chatbot/chat/stream', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'text/event-stream',
@@ -100,8 +102,14 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
         signal: controller.signal,
       })
 
-      if (!response.ok || !response.body) {
-        throw new Error('Stream request failed')
+      if (!response.ok) {
+        if (response.status === 429) throw new Error('RATE_LIMIT');
+        if (response.status === 401) throw new Error('UNAUTHORIZED');
+        if (response.status >= 500) throw new Error('SERVER_ERROR');
+        throw new Error('HTTP_' + response.status);
+      }
+      if (!response.body) {
+        throw new Error('EMPTY_STREAM');
       }
 
       const reader = response.body.getReader()
@@ -126,7 +134,8 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
           for (const line of lines) {
             if (!line.startsWith('data:')) continue
 
-            const payload = line.slice(5).trimStart()
+            let payload = line.slice(5)
+            if (payload.startsWith(' ')) payload = payload.slice(1)
 
             if (payload === '[DONE]') {
               const current = readDraft()
@@ -158,6 +167,12 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
           if (streamDone) break
         }
       }
+
+      const finalDraft = readDraft();
+      if (finalDraft && finalDraft.typing) {
+        writeDraft({ ...finalDraft, typing: false, updatedAt: Date.now() });
+      }
+
     } catch (err) {
       const aborted = err instanceof DOMException && err.name === 'AbortError'
 
@@ -169,10 +184,17 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
         return
       }
 
+      let userMessage = 'Error connecting to server.';
+      if (err instanceof Error) {
+        if (err.message === 'RATE_LIMIT') userMessage = 'Too many requests. Please wait and try again.';
+        else if (err.message === 'UNAUTHORIZED') userMessage = 'Session expired. Please sign in again.';
+        else if (err.message === 'SERVER_ERROR') userMessage = 'Server error. Please try again in a moment.';
+      }
+
       writeDraft({
         typing: false,
         userText: messageText,
-        partialAi: 'Error connecting to server.',
+        partialAi: userMessage,
         updatedAt: Date.now(),
       })
     } finally {
@@ -198,8 +220,9 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
     try {
       const res = await fetch('/chatbot/generate-title', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
+        body: JSON.stringify({ message, session_id: sessionId })
       })
 
       const data: { title?: string } = await res.json()
@@ -344,12 +367,10 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
         {messages.length === 0 && !loading && (
           <div className="text-center pt-16 pb-5">
             <div className="w-13 h-13 rounded-xl bg-slate-800 border border-blue-700 flex items-center justify-center text-[22px] text-amber-400 mx-auto mb-4">
-              #
+              <BsRobot></BsRobot>
             </div>
-            <h1 className="text-[26px] font-bold text-amber-400 mb-2">Hey, Ready to dive in??</h1>
-            <p className="text-[13px] text-slate-300 leading-relaxed max-w-105 mx-auto">
-              ask anything.
-            </p>
+            <h1 className="text-[20px] font-bold  mb-2">Hi<span className="text-amber-400"> {user?.username}</span> </h1>
+            <h1 className="text-[26px] font-bold ">What's on your mind today? </h1>
           </div>
         )}
 

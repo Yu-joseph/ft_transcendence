@@ -4,6 +4,7 @@ import { socketAuthenticate } from '../middlewares/socket.auth.middleware.js';
 import { JoinChatInf } from './socket.types.js';
 import prisma from '../lib/prisma.js';
 import z from 'zod';
+import { FriendService } from '../modules/friend/friend.service.js';
 
 let io: Server;
 
@@ -24,7 +25,7 @@ const joinChatSchema = z.object({
                         .transform(val => val.trim())
 })
 
-const roomIdSchema = z.string().min(1);
+const roomIdSchema = z.string().min(1).transform(val => val.trim());
 /** User Othorization helper function */
 const   isUserInConversation = async (convId: bigint, userId: string) => {
     return await prisma.conversation.findFirst({
@@ -44,9 +45,22 @@ export const initSocket = (server: HTTPServer) => {
         }
     })
     io.use(socketAuthenticate);
-    io.on('connection', (socket) => {
+    io.on('connection', async (socket) => {
         const   authentUser = (socket as any).user;
-
+        const userConversationCache = new Set<string>(); // stores convId as string
+        /** Update status to Online when connecting  */
+        try {
+            await prisma.user.update({
+                where: { id: authentUser.user_id },
+                data: { user_status: 'Online' }
+            });
+            // Notify friends that this user is now Online
+            const friends = await FriendService.getFriendIds(authentUser.user_id);
+            friends.forEach(fId => io.to(fId).emit('status:update', { userId: authentUser.user_id, status: 'Online' }));
+        } catch (e) {
+            console.error('Failed to update status to Online:', e);
+        }
+        /*************************************************** */
         socket.join(authentUser.user_id); // for conversation Update and notification , so i emit the event for the sender and receiver
         console.log('I join my Private Room:', authentUser.user_id);
 
@@ -57,7 +71,6 @@ export const initSocket = (server: HTTPServer) => {
             const validatedData = joinChatSchema.safeParse(data);
 
             if(!validatedData.success || validatedData.data.userId !== authentUser.user_id){
-                // console.log(validatedData.error?.issues);
                 emitError(socket, 'Invalid request data');
                 return ;
             }
@@ -65,6 +78,7 @@ export const initSocket = (server: HTTPServer) => {
 
             if(await isUserInConversation(convId, userId)) {
                 socket.join(room_id);
+                userConversationCache.add(convId.toString()); // i cach it here
                 console.log(`User ${userId} authorized and joined room ${room_id}`);
             }
         }
@@ -81,7 +95,7 @@ export const initSocket = (server: HTTPServer) => {
                         .max(255, 'friend ID is too long')
                         .transform(val => val.trim()),
             convId: z.string().regex(/^\d+$/, 'Invalid conversation ID')
-                          .transform(val => BigInt(val))
+                          .transform(val => val.trim())
         });
 
         const   onTypingStart = async (data: unknown) => {
@@ -91,9 +105,9 @@ export const initSocket = (server: HTTPServer) => {
                 emitError(socket, 'Invalid request data');
                 return ;
             }
-            const   {friendId, convId, userId} = validatedData.data;
-            if (await isUserInConversation(convId, userId)) {
-                socket.to(friendId).emit('typing:start');
+            const   {friendId, convId} = validatedData.data;
+            if (userConversationCache.has(convId)) {
+                socket.to(friendId).emit('typing:start', {convId});
             }
         }
         /**
@@ -105,9 +119,9 @@ export const initSocket = (server: HTTPServer) => {
                 emitError(socket, 'Invalid request data');
                 return;
             }
-            const   {friendId, convId, userId} = validated.data;
-            if(await isUserInConversation(convId, userId)) {
-                socket.to(friendId).emit('typing:stop');
+            const   {friendId, convId} = validated.data;
+            if(userConversationCache.has(convId)) {
+                socket.to(friendId).emit('typing:stop', {convId});
             }
         };
         /**
@@ -120,12 +134,29 @@ export const initSocket = (server: HTTPServer) => {
                 return;
             }
             socket.leave(validated.data);
+            const   convId = validated.data.replace('ROOM_', '');
+            userConversationCache.delete(convId);
         });
 
 
 
         socket.on('typing:stop', onTypingStop);
-        socket.on('disconnect', () => console.log(`User Disconnected, socketId: ${socket.id}`))
+        socket.on('disconnect', async () => {
+        /** Update status to Offline when user disconnect */
+            try {
+                await prisma.user.update({
+                    where: { id: authentUser.user_id },
+                    data: { user_status: 'Offline' }
+                });
+                // Notify friends that this user is now Offline
+                const friends = await FriendService.getFriendIds(authentUser.user_id);
+                friends.forEach(fId => io.to(fId).emit('status:update', { userId: authentUser.user_id, status: 'Offline' }));
+            } catch (e) {
+                console.error('Failed to update status to Offline:', e);
+            }
+            console.log(`User Disconnected, socketId: ${socket.id}`);
+            userConversationCache.clear();
+        })
         /**************************************************************************************** */
         socket.on('typing:start', onTypingStart);
         socket.on('join-chat', onJoinChannel)

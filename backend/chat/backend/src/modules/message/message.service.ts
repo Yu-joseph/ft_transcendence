@@ -30,8 +30,8 @@ export  class MessagesServices {
                 status: 'ACCEPTED'
             }
         });
-        if (!isFriend)
-            throw new AppError('Access denied: You are no longer friends.', 403);
+        // if (!isFriend)
+        //     throw new AppError('Access denied: You are no longer friends.', 403);
         const   isParticipant = conversationExist.User_Conversation_user1IdToUser.id === data.currentUserId || conversationExist.User_Conversation_user2IdToUser.id === data.currentUserId;
         if(!isParticipant)
             throw new AppError('You are not member of this conversation', 403);
@@ -50,7 +50,11 @@ export  class MessagesServices {
         if (!messages) {
             throw new AppError('Messages of this conversation not found', 404);
         }
-        return messages?.Message ?? [] as MessagesPayload[];
+        return {
+            messages: messages?.Message ?? [] as MessagesPayload[],
+            status: !isFriend ? 'NOT FRIEND' : 'FRIEND'
+        } 
+        
     }
     /** @function getMessages getting all messages from single conversation by friend ID*/
     static async getMessagesByFriendId(data: {currentUserId: string, friendId: string}): Promise<MessagesWithConvId> {
@@ -141,7 +145,7 @@ export  class MessagesServices {
         console.log(`Sending message to room ${conversationId}`);
         /** **** emit message to member on channel */
         io.to(`ROOM_${conversationId.toString()}`)
-            .emit('message:new', {...saveMessage, tempId: tempId});
+            .emit('message:new', {...saveMessage, tempId: tempId, convId: conversationId});
         /**Update conversation list for both sender and receiver */
         io.to(convExist.user1Id).to(convExist.user2Id)
             .emit('conversation:updated',

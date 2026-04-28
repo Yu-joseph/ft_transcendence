@@ -79,7 +79,8 @@ export  function ConversationList({setConvId, convId, selectFriendId, friendId}:
                             className="w-full h-full object-cover rounded-full flex items-center justify-center"
                         />
                       </div>
-                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-800"></div>
+                      {/* user status */}
+                      <div className={`absolute w-3 h-3 bottom-0 right-0 ${conv.otherUser.user_status === 'Online' ? 'bg-green-500' : 'bg-slate-500'} rounded-full border-2 border-slate-800`}></div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between item-baseline mb-1">

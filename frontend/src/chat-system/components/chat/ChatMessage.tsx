@@ -6,11 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import { FaCheck, FaExclamation } from 'react-icons/fa';
 import { Clock } from 'lucide-react';
 import { ErrorMessage, type TypeOfError } from '../shared/ErrorMessage';
+import { chatSocket } from '../../../socket/sock';
 
 interface UserInfo {
     id: string
     username: string
-    status: string
+    user_status: string
     avatar: string
 }
 
@@ -33,16 +34,28 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
     useEffect(() => { // for auto-scrolling to the last message
         scroolToBottomRef.current?.scrollIntoView();
     }, [messages, isTyping])
+    /****************************************************************** */
+    useEffect(() => {
+        const   onUpdateStatus = (data: {userId: string, status: string}) => {
 
+            setFriendInfo(prev => {
+                if (!prev || prev.id !== data.userId) {
+                    return prev;
+                }
+                return { ...prev, user_status: data.status };
+            });
+
+        }
+        chatSocket.on('status:update', onUpdateStatus);
+
+        return () => { chatSocket.off('status:update', onUpdateStatus) }
+    }, [])
+
+    /********************************************************************* */
     useEffect(() => {
         if(friendId === null)
-            return;
-        loadUserInfo();
-    }, [friendId, user, convId])
-    
-    /**__________ JS Function ___________ */
-    
-    const   loadUserInfo = async () => {
+            return;    
+        const   loadUserInfo = async () => {
         setLoading(true);
         setError(null);
         try {
@@ -57,6 +70,11 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
             setLoading(false);
         }
     }
+        loadUserInfo();
+    }, [friendId, user, convId])
+    
+    /**__________ JS Function ___________ */
+    
     
     const   handleViewProfile = (userId: string | undefined) => {
         if(!userId)
@@ -123,13 +141,13 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
                             />
                             {/* {friendInfo && friendInfo.username.charAt(0).toLocaleUpperCase()} */}
                         </div>
-                        <div className="absolute bottom-0 right-0 bg-green-500 w-3 h-3 rounded-full border-2 border-slate-900"></div>
+                        <div className={`absolute w-3 h-3 bottom-0 right-0 ${friendInfo?.user_status === 'Online' ? 'bg-green-500' : 'bg-slate-500'} rounded-full border-2 border-slate-800`}></div>
                     </div>
                     <div>
                         <h3 className="text-lg text-white font-bold leading-tight">
                             {friendInfo && friendInfo.username}
                         </h3>
-                        <p className="text-xs text-green-400 font-medium">{friendInfo && friendInfo.status}</p>
+                        <p className={`text-xs ${friendInfo?.user_status === 'Online' ? 'text-green-400 font-medium' : 'text-slate-400 font-semibold'}  `}>{friendInfo && friendInfo.user_status}</p>
                     </div>
                 </div>
             </header>
@@ -137,10 +155,10 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
             <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-4" >
                 {
                     messages.length === 0 ? <div className='text-slate-300 flex items-center justify-center h-full'>Say Hello!</div> :
-                    Array.isArray(messages) && messages.map(m => {
+                    Array.isArray(messages) && messages.map((m, index) => {
                         const   isMe = m.User.id === currentUserId;
                         return (
-                            <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                            <div key={m.id ? m.id.toString() : m.tempId || index} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[70%] rounded-2xl p-3 shadow-md ${isMe ? 'bg-blue-600 text-white rounded-tr-sm border-2 border-slate-700/50' : 'bg-slate-800 text-slate-200 border-2 border-slate-700/50 rounded-tl-sm'}`}>
                                     <p className='text-sm leading-relaxed'>
                                     {m.content}

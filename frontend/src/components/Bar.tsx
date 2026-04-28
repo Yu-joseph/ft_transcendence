@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GiTicTacToe } from "react-icons/gi";
 import { useAuth } from "../auth/useAuth";
+import { gameSocket } from "../socket/sock";
+
 
 function Bar() {
   const navigate = useNavigate();
@@ -9,27 +11,19 @@ function Bar() {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  // Normalize avatar URL to hit the auth service media endpoint via nginx (/authent/ -> auth:8000)
-  const normalizeAvatarUrl = (url?: string) => {
-    if (!url) 
-      return undefined;
-    const lowerUrl = url.toLowerCase();
-    if (lowerUrl.startsWith("http://") || lowerUrl.startsWith("https://")) 
-      return url; // already absolute
+  const emitLogoutPlaying = () =>
+  new Promise<void>((resolve) => {
+    if (!gameSocket.connected) {
+      resolve();
+      return;
+    }
 
-    const base = "/authent";
-    // Ensure we always request /media/<file>
-    const withMediaPrefix = url.startsWith("/media/")
-      ? url
-      : url.startsWith("media/")
-        ? `/${url}`
-        : `/media/${url}`;
-
-    return `${base}${withMediaPrefix}`;
-  };
+    gameSocket.timeout(1200).emit("logout-playing", {}, () => resolve());
+  });
 
   const handleLogout = async () => {
     try {
+      await emitLogoutPlaying();
       await fetch("/authent/logout/", {
         method: "POST",
         credentials: "include",
@@ -37,6 +31,7 @@ function Bar() {
     } finally {
       setUser(null);
       sessionStorage.removeItem("activeTournament");
+      localStorage.setItem("auth:logout", String(Date.now()));
       navigate("/", { replace: true });
     }
   };
@@ -73,23 +68,33 @@ function Bar() {
 
   const displayName = user?.username ?? "Player";
   const displayInitial = displayName.trim().charAt(0).toUpperCase() || "P";
-  const avatarUrl = user?.avatar ? normalizeAvatarUrl(user.avatar) : undefined;
+  const avatarUrl = user?.avatar ?? undefined;
 
   return (
     <header className="z-50 w-full bg-slate-900 border-b border-blue-800 shadow-lg">
-      <div className="w-full py-6 pl-10 pr-8 sm:pr-6 lg:pr-3 flex items-center justify-between">
-        <div>
+      <div className="w-full py-2 pl-10 pr-8 sm:pr-6 lg:pr-3 flex items-center justify-between">
+        <div className="w-1/2">
           <button
             onClick={() => navigate("/Dashboard")}
             className="cursor-pointer group"
           >
-            <h1 className="text-4xl font-bold text-amber-500 flex items-center gap- mb-2 group-hover:text-blue-700 transition-colors duration-200 ">
+            <h1 className="lg:text-4xl md:text-2xl text-xl font-bold text-amber-500 flex items-center gap-1 mb-2 group-hover:text-amber-400 transition-colors duration-200 ">
               <GiTicTacToe /> Tic-Tac-Toe Arena
             </h1>
           </button>
-          <p className="text-gray-300">Play online multiplayer tic-tac-toe games and tournaments</p>
+          <div className="flex items-center gap-4 text-xs text-slate-500">
+            <a href="/privacy" className="transition hover:text-amber-400">
+              Privacy Policy
+            </a>
+            <a href="/terms" className="transition hover:text-amber-400">
+              Terms of Service
+            </a>
+          </div>
         </div>
-        <div className="relative ml-8 mr-6" ref={menuRef}>
+        <div
+          className="relative w-1/2 flex items-center justify-end pr-2 sm:pr-0 lg:justify-end md:justify-end"
+          ref={menuRef}
+        >
           <button
             type="button"
             onClick={() => setShowMenu((prev) => !prev)}
@@ -106,11 +111,11 @@ function Bar() {
                 {displayInitial}
               </span>
             )}
-            <span className="text-amber-500 text-base">{displayName}</span>
+            <span className="hidden sm:inline text-amber-500 text-base">{displayName}</span>
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 mt-2 w-64 rounded-xl border border-slate-700 bg-slate-900/95 p-4 shadow-2xl">
+            <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-slate-700 bg-slate-900/95 p-4 shadow-2xl z-50">
               <div className="flex items-center gap-4 pb-3 border-b border-slate-700">
                 {avatarUrl ? (
                   <img

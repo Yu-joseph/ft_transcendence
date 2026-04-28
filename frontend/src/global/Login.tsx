@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import { PasswordField } from "../components/PasswordField";
+// import {  } from "re";
 
 function Login() {
   const [emailOrUsername, setEmailOrUsername] = useState("");
@@ -20,13 +21,15 @@ function Login() {
   const [signupLoading, setSignupLoading] = useState(false);
   const intraLoginUrl = "/authent/42/login/";
   const { user, loading: authLoading, setUser } = useAuth();
+  // const ref = useRef(null);
+  // const [flagArrow, setFlagArrow] = useState<boolean>(false);
   const navigate = useNavigate();
 
   
 
   // Show loading state while auth context is still fetching
   if (authLoading) {
-    return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><p className="text-white">Loading...</p></div>;
+    return <div className="min-h-screen bg-slate-900 flex items-center justify-center"><p className="text-white">Loading...</p></div>;
   }
 
   if (user) {
@@ -192,7 +195,7 @@ function Login() {
     signupPasswordConfirm.length > 0 && signupPassword !== signupPasswordConfirm;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-950 via-blue-950 to-slate-900 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
         <div className="text-center md:text-left space-y-4">
           <h1 className="text-5xl font-extrabold leading-tight text-white">
@@ -294,11 +297,11 @@ function Login() {
 
       {showSignup && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center px-4 py-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
           onClick={() => setShowSignup(false)}
         >
           <div
-            className="w-full max-w-md rounded-xl bg-slate-950/90 border border-amber-400/30 shadow-2xl shadow-amber-900/30 p-5"
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl bg-slate-950/90 border border-amber-400/30 shadow-2xl shadow-amber-900/30 p-5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">

@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { fetchClient } from "../../../utils/fetchClient";
 import { useAuth } from "../../../../auth/useAuth";
+import { useRefresh } from "../../shared/useRefresh";
 import { chatSocket } from "../../../../socket/sock";
 
 export interface FriendsListType {
     id: string
     username: string
-    status: string
+    user_status: string
     avatar: string
     created_at: Date
 }
@@ -19,19 +20,21 @@ export  function    useFriendList() {
     const   [loading, setLoading] = useState(false);
     const   [activeTab, setActivetab] = useState<ActiveTabeType>('All');
     const   [goChat, setGoChat] = useState<string | null>(null);
-    const   [isEventRequest, setIsEventRequest] = useState<boolean>(false);
+    const   refresh = useRefresh();
     const   {user} = useAuth();
 
-    useEffect(() => {
-        /** this for real-time update friend list, listning for any update of friend request */
-        if(!user)
-            return ;
-        window.addEventListener('refresh_friends', () => setIsEventRequest(!isEventRequest));
-        return () => {
-            window.removeEventListener('refresh_friends', () => setIsEventRequest(!isEventRequest));
-        }
-    }, [user])
     /******************************* */
+
+    useEffect(() => {
+        const   onStatusUpdate = (data: {userId: string, status: string}) => {
+            setFriendList(prev => prev.map(f => 
+                f.id === data.userId ? {...f, user_status: data.status} : f
+            ));
+        }
+        chatSocket.on('status:update', onStatusUpdate);
+        return () => { chatSocket.off('status:update', onStatusUpdate); }
+    }, [])
+
     useEffect(() => {
         const   fetchUserList = async () => {
             try {
@@ -49,7 +52,7 @@ export  function    useFriendList() {
             }
         }
         fetchUserList();
-    }, [user, isEventRequest])
+    }, [user, refresh])
     
     /************************************** */
     const   handleRemoveFriend = async (friendId: string) => {
@@ -59,7 +62,8 @@ export  function    useFriendList() {
             const   result = await fetchClient(`/friend/${friendId}`, { method: 'DELETE' });
             setFriendList(prev => prev.filter(fr => fr.id !== friendId));
             console.log(result);
-
+            // Broadcast to the rest of the app specialy for my chat.tsx that a friend was removed!
+            window.dispatchEvent(new Event("refresh_friends"));
         } catch (error: any) {
             console.log(error);
         }
@@ -69,8 +73,6 @@ export  function    useFriendList() {
         if(!userId)
             return;
         try {
-            console.log('::::');
-            // setLoadingConv(false);
             setGoChat(null);
             const   result = await fetchClient('/chat/conversations', {
                 method: 'POST',
@@ -88,7 +90,7 @@ export  function    useFriendList() {
 
     const fiteredFriend = friendList.filter((friend) => {
         if (activeTab === 'All') return true;
-        return activeTab === friend.status;
+        return activeTab === friend.user_status;
     });
 
     /**__________________ */

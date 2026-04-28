@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchClient } from "../../../utils/fetchClient";
-import { chatSocket } from "../../../../socket/sock";
+// import { chatSocket } from "../../../../socket/sock";
+import { useRefresh } from "../../shared/useRefresh";
 
 
 type RequestType = 'incoming' | 'outgoing';
@@ -20,19 +21,7 @@ export  function    usePendingRequest() {
     const   [pendingFriend, setPendingFriend] = useState<PendingFriendType[]>([]);
     const   [loading, setLoading] = useState(false);
     const   [error, setError] = useState(null);
-    const   [isEventRequest, setIsEventRequest] = useState<boolean>(false);
-
-    /**_____ Hooks _______ */
-    useEffect(() => {
-        /** this for real-time update friend list, listning for any update of friend request */
-        window.addEventListener('refresh_friends', () => {
-            setIsEventRequest(!isEventRequest);
-            console.log('windowwwwwww');
-        });
-        return () => {
-            window.removeEventListener('refresh_friends', () => setIsEventRequest(!isEventRequest));
-        }
-    }, [])
+    const   refresh = useRefresh();
 
     useEffect(() => {
         const   getPendingRequests = async () => {
@@ -50,7 +39,7 @@ export  function    usePendingRequest() {
             }
         }
         getPendingRequests();
-    }, [isEventRequest])
+    }, [refresh])
 
     /**_______ Cancel Friend Logic */
     const   handleCancel = async (reqId: number) => {

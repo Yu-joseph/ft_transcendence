@@ -205,6 +205,7 @@ export class FriendController {
             });
         }
     }
+    /****___________________________________________________________ */
     static async getFriendById(req: AuthenticatedRequest, res: Response) {
         try {
             const userId = req.user?.user_id;

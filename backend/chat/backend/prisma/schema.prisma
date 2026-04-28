@@ -260,16 +260,17 @@ model User {
   username                                String                  @unique @db.VarChar(255)
   email                                   String                  @unique @db.VarChar(255)
   fullname                                String                  @db.VarChar(255)
+  bio                                     String                  @db.VarChar(255)
   password                                String                  @db.VarChar(255)
   created_at                              DateTime                @db.Timestamptz(6)
   updated_at                              DateTime                @db.Timestamptz(6)
   avatar                                  String?                 @db.VarChar(100)
   status                                  String                  @db.VarChar(50)
+  user_status                             String                  @db.VarChar(50)
   role                                    String                  @db.VarChar(50)
   wins                                    Int
   losses                                  Int
   is_active                               Boolean
-  bio                                     String                  @db.VarChar(255)
   Conversation_Conversation_user1IdToUser Conversation[]          @relation("Conversation_user1IdToUser")
   Conversation_Conversation_user2IdToUser Conversation[]          @relation("Conversation_user2IdToUser")
   Friend_Friend_receiverIdToUser          Friend[]                @relation("Friend_receiverIdToUser")

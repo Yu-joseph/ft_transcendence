@@ -261,8 +261,8 @@ export class FriendService {
                 status: 'ACCEPTED'
             },
             include: {
-                User_Friend_receiverIdToUser: { select: { id: true, username: true, avatar: true, created_at: true } },
-                User_Friend_requesterIdToUser: { select: { id: true, username: true, avatar: true, created_at: true } }
+                User_Friend_receiverIdToUser: { select: { id: true, username: true, avatar: true, created_at: true, user_status: true } },
+                User_Friend_requesterIdToUser: { select: { id: true, username: true, avatar: true, created_at: true, user_status: true } }
             }
         });
         /** filter to return just the friend excluding currentUser */
@@ -276,8 +276,8 @@ export class FriendService {
                 status: 'REJECTED'
             },
             include: {
-                User_Friend_receiverIdToUser: { select: { id: true, username: true, avatar: true} },
-                User_Friend_requesterIdToUser: { select: { id: true, username: true, avatar: true} }
+                User_Friend_receiverIdToUser: { select: { id: true, username: true, avatar: true, user_status: true} },
+                User_Friend_requesterIdToUser: { select: { id: true, username: true, avatar: true, user_status: true} }
             }
         });
         return rejected.map(f => f.requesterId === userId ? f.User_Friend_receiverIdToUser : f.User_Friend_requesterIdToUser);
@@ -295,8 +295,8 @@ export class FriendService {
                 }
             },
             include: {
-                User_Friend_receiverIdToUser: { select: { id: true, username: true, avatar: true } },
-                User_Friend_requesterIdToUser: { select: { id: true, username: true, avatar: true } },
+                User_Friend_receiverIdToUser: { select: { id: true, username: true, avatar: true, user_status: true } },
+                User_Friend_requesterIdToUser: { select: { id: true, username: true, avatar: true, user_status: true } },
             }
         });
         const data : PendingFriendType[] = pendingRequest.map(penReq => {
@@ -318,10 +318,21 @@ export class FriendService {
             where: {
                 id: friendId
             },
-            select: {id: true, username: true, status: true, avatar: true}
+            select: {id: true, username: true, user_status: true, avatar: true}
         });
         if (!existed)
             throw new AppError('User Not Found', 404);
         return existed;
+    }
+    // static async IsFriends(currentUserId: string, otherUserId: string) : Promise<boolean> {
+    static async getFriendIds(userId: string): Promise<string[]> {
+        const friends = await prisma.friend.findMany({
+            where: {
+                OR: [{ requesterId: userId }, { receiverId: userId }],
+                status: 'ACCEPTED'
+            },
+            select: { requesterId: true, receiverId: true }
+        });
+        return friends.map(f => f.requesterId === userId ? f.receiverId : f.requesterId);
     }
 }
