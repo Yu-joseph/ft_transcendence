@@ -81,5 +81,5 @@ export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSock
 
     );
 
-  }, [convId])
+  }, [convId, user?.id])
 }

@@ -55,7 +55,10 @@ export function Chat() {
     const handleFriendUpdate = (data: {senderName: string, type: string}) => {
       if(data.type === 'REMOVE') {
         console.log('You cant chat anymore with him');
-        setIsblocked(!isBlocked);
+        setIsblocked(true);
+        if(selectedConvId) {
+          chatSocket.emit('leave:conversation', selectedConvId); // to leave the room
+        }
       }
     }
     /********************** */
@@ -74,12 +77,14 @@ export function Chat() {
     const loadHistoryByConvId = async () => {
       try {
         const result = await fetchClient<{messages: MessageItem[], status: string} | {messages: [], status: string}>(`/chat/conversations/${selectedConvId}/messages`, {});
-        setIsblocked(result.status === 'NOT FRIEND' ? true : false);
-        result.messages.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null; });
-        setMessages(result.messages);  
+        if(result && result.messages) {
+          setIsblocked(result.status === 'NOT FRIEND' ? true : false);
+          result.messages.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null; });
+          setMessages(result.messages);  
+        }
       } catch (err: any) {
         setSelectedFriendId(null);
-        console.log(err);
+        console.error(err);
         setMessages([]); // to update to display error loading
       }
     }
@@ -96,11 +101,12 @@ export function Chat() {
     const loadHistoryByFriendId = async () => {
       try {
         const result = await fetchClient<MessagesWithConvId>(`/chat/friend/${selectedFriendId}/messages`, {});
-        console.log(result);
-        setIsLoadedFromFriendProfile(true);
-        result.messages.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null});
-        setMessages(result.messages);
-        setSelectedConvId(result.convId);
+        if(result && result.convId){
+          setIsLoadedFromFriendProfile(true);
+          result.messages.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null});
+          setMessages(result.messages);
+          setSelectedConvId(result.convId);
+        }
       } catch (err: any) {
         console.log(err);
         setSelectedFriendId(null);

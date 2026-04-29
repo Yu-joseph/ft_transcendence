@@ -24,10 +24,11 @@ export async function    fetchClient<T>(endpoint: string, option: RequestInit = 
         return Promise.reject(new Error("Unauthorized"));
     }
 
-
-
     if(!response.ok) {
         throw new Error(data.message || `HTTP ${response.status}`);
+    }
+    if (!data || data.data === undefined) {
+        throw new Error(data?.message || "Invalid server response structure");
     }
     return data.data;
 }

@@ -22,7 +22,8 @@ export  function    useBlockedFriend() {
                 setError(null);
                 setLoading(true);
                 const result : BlockedFriendType[] = await fetchClient('/friend/rejected', {});
-                setBlocked(result);
+                if(result)
+                    setBlocked(result);
             } catch (error: any) {
                 setError(error);
                 console.log(error);
@@ -38,7 +39,7 @@ export  function    useBlockedFriend() {
             setStatus(null);
             const   result = await fetchClient('/friend/request', {
                 method: 'POST',
-                body: JSON.stringify({receiverId: receiverName})
+                body: JSON.stringify({username: receiverName})
             });
             setBlocked(prev => prev.filter(u => u.username !== receiverName));
             setStatus({type: 'success', message: 'Friend Unblocked successfuly'});

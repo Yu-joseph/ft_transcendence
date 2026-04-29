@@ -11,7 +11,7 @@ export interface UserProfileInfo {
     fullname: string
     created_at: Date
     avatar: string | null
-    status: string
+    user_status: string
     bio?: string
     rank?: number
     isFriend: FriendStat
@@ -31,7 +31,7 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
     const handleAddToFriend = async (username: string) => {
         console.log("In Add button");
 
-        if (!username)
+        if (!username || !user)
             return;
         try {
             const option = {

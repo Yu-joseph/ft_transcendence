@@ -19,7 +19,6 @@ export function FriendsList() {
     /**_________ Component-Style ___________ */
         
     if(goChat){
-        console.log('In goChat:', goChat);
         return <Navigate state={{selectedFriendId: goChat}} to={`/Chat` }/>
     }
     const   type: TypeOfError = 'friends';

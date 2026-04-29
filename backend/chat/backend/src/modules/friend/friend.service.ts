@@ -195,6 +195,21 @@ export class FriendService {
                 const otherId = exist.requesterId === data.requesterId ? exist.receiverId : exist.requesterId;
                 const me = exist.requesterId === data.requesterId ? exist.User_Friend_requesterIdToUser : exist.User_Friend_receiverIdToUser;
                 getIo().to(otherId).emit('notification:friend_update', {senderName: me.username, type: 'REMOVE'});
+
+                const sharedConv = await prisma.conversation.findFirst({ // if there is a conversation bettwen them, i remove them from the chat room 
+                    where: {
+                        OR: [
+                            { user1Id: data.requesterId, user2Id: data.friendId },
+                            { user1Id: data.friendId, user2Id: data.requesterId }
+                        ]
+                    },
+                    select: { id: true }
+                });
+                if (sharedConv) {
+                    const roomName = `ROOM_${sharedConv.id.toString()}`;
+                    const io = getIo();
+                    io.in(roomName).socketsLeave(roomName); 
+                }
                 return result;
             }
         }

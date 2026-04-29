@@ -7,7 +7,8 @@ export  const   messageLimiter = rateLimit({
     limit: MAX_MESSAGE_REQ,
     message: {
         success: false,
-        message: 'You are sending message too fast. rrta7 chwiya.'
+        message: 'You are sending message too fast. rrta7 chwiya.',
+        data: null
     },
     standardHeaders: true,
     legacyHeaders: false

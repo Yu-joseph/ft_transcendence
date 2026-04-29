@@ -29,8 +29,8 @@ export  function    usePendingRequest() {
                 setError(null);
                 setLoading(true);
                 const   result: PendingFriendType[] = await fetchClient('/friend/pending', {});
-                setPendingFriend(result);
-                console.log("Result pending:", result);
+                if(result)
+                    setPendingFriend(result);
             } catch (error: any) {
                 setError(error);
                 console.log('error herer:', error);
@@ -46,9 +46,7 @@ export  function    usePendingRequest() {
         console.log("That is the cancled request:", reqId);
         try {
             const   result = await fetchClient(`/friend/${reqId}/cancel`, { method: 'DELETE' });
-            console.log(result);
             setPendingFriend(prev => prev.filter(fr => fr.friendRequestId !== reqId));
-            console.log('Friend request canceled successfully');
         } catch (error: any) {
             console.log(error);
         }
@@ -58,7 +56,6 @@ export  function    usePendingRequest() {
         try {
             const   result = await fetchClient(`/friend/${frReqId}/accept`, { method: 'PUT' });
             setPendingFriend(prev => prev.filter(fr => fr.friendRequestId !== frReqId));
-            console.log('request accepted:', result);
         } catch (error : any) {
             console.log(error);
         }
@@ -66,11 +63,8 @@ export  function    usePendingRequest() {
     /**_______ Reject Friend Logic */
     const   handleReject = async (frReqId: number) => {
         try {
-            // const   token = await getToken();
             const   result = await fetchClient(`/friend/${frReqId}/reject`, { method: 'PUT' });
             setPendingFriend(prev => prev.filter(fr => fr.friendRequestId !== frReqId));
-            console.log('request accepted:', result);
-            
         } catch (error : any) {
             console.log(error);
         }

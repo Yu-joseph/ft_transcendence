@@ -18,7 +18,7 @@ interface MessageToSendType {
 
 export  const   useChatInput = ({convId, setMessages, friendId}: ChatInputPorps) => {
 
-    const   MAX_LENGHT = 10;
+    const   MAX_LENGHT = 500;
 
     const   [messageErrors, setMessageErrors] = useState<Record<string, string> | null>(null);
     const   [input, setInput] = useState<string>('');
@@ -89,15 +89,14 @@ export  const   useChatInput = ({convId, setMessages, friendId}: ChatInputPorps)
             let result: any;
             try {
                 result = await response.json();
-            } catch (e) {
+            } catch (e: any) {
                 result = { success: false, message: 'Server error' };
             }
-            if(!response.ok){
-                setMessages(prev => prev.map(m => {
-                    if(result?.data?.tempId && m.tempId !== result.data.tempId)
-                        return m;
-                    return { ...m, status: 'error' };
-                }));
+            if(!response.ok) {
+                setMessages(prev => prev.map(m => 
+                    m.tempId === messageToSend.tempId ? { ...m, status: 'error' } : m
+                ));
+                setMessageErrors({ 'error': result?.message || 'Failed to send message' });
                 return ;
             }
             setMessages(prev => {
@@ -170,7 +169,7 @@ export  const   useChatInput = ({convId, setMessages, friendId}: ChatInputPorps)
         clearTimeout(typingTimerRef.current);
         if (isTyping && friendId && convId && user) {
             chatSocket.emit('typing:stop', {
-                friendId,
+                friendId: friendId,
                 userId: user.id,
                 convId: convId
             });

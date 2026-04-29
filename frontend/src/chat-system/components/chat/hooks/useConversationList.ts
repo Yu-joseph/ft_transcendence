@@ -45,7 +45,8 @@ export  function useConversationList(friendId: string | null){
                 setError(null);
                 setLoading(true);
                 const result : ConversationType[] = await fetchClient('/chat/conversations', {});
-                setConversationList(result ?? []);
+                if(result)
+                    setConversationList(result ?? []);
             } catch (error: any) {
                 setError(error);
                 setConversationList([]);
@@ -61,24 +62,25 @@ export  function useConversationList(friendId: string | null){
 
     useEffect(() => {
         const onConversationUpdate = (updatedData: UpdatedConversationEvent) => {
-        console.log("in Conversation Updated event");
+            if(!updatedData.convId)
+                return ;
+            setConversationList(prev => {
+                const updatedList = prev.map( conv => {
+                if(conv.id !== updatedData.convId)
+                    return conv;
+                const newMessage = {
+                    id: updatedData.lastMessage.id, content: updatedData.lastMessage.content, created_at: updatedData.lastMessage.created_at, senderId: updatedData.lastMessage.senderId
+                };
+                return {
+                    ...conv,
+                    lastMessage: newMessage,
+                    updated_at: updatedData.updated_at
+                }
+                })
+                return updatedList.sort((a, b) => +new Date(b.updated_at).getTime() - +new Date(a.updated_at).getTime());
+            });
+        };
 
-        setConversationList(prev => {
-            const updatedList = prev.map( conv => {
-            if(conv.id !== updatedData.convId)
-                return conv;
-            const newMessage = {
-                id: updatedData.lastMessage.id, content: updatedData.lastMessage.content, created_at: updatedData.lastMessage.created_at, senderId: updatedData.lastMessage.senderId
-            };
-            return {
-                ...conv,
-                lastMessage: newMessage,
-                updated_at: updatedData.updated_at
-            }
-            })
-            return updatedList.sort((a, b) => +new Date(b.updated_at).getTime() - +new Date(a.updated_at).getTime());
-        });
-    };
         chatSocket.on('conversation:updated', onConversationUpdate);
         return () => {
             chatSocket.off('conversation:updated', onConversationUpdate);

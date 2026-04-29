@@ -40,10 +40,11 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
             });
         }, 50);
     }, [messages, isTyping])
-    /****************************************************************** */
+    /**________________________________________________* */
     useEffect(() => {
         const   onUpdateStatus = (data: {userId: string, status: string}) => {
-
+            if(!data || !data.userId)
+                return;
             setFriendInfo(prev => {
                 if (!prev || prev.id !== data.userId) {
                     return prev;
@@ -62,20 +63,21 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
         if(friendId === null)
             return;    
         const   loadUserInfo = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const   result = await fetchClient<UserInfo>(`/friend/${friendId}`, {});
-            setFriendInfo(result);
-        } catch (err: any) {
-            console.log(err);
-            setFriendInfo(null);
-            setError(err.message || 'Failed to load user info');
-            navigate('/');
-        } finally {
-            setLoading(false);
+            setLoading(true);
+            setError(null);
+            try {
+                const   result = await fetchClient<UserInfo>(`/friend/${friendId}`, {});
+                if(result && result.id)
+                    setFriendInfo(result);
+            } catch (err: any) {
+                console.log(err);
+                setFriendInfo(null);
+                setError(err.message || 'Failed to load user info');
+                navigate('/');
+            } finally {
+                setLoading(false);
+            }
         }
-    }
         loadUserInfo();
     }, [friendId, user, convId])
     
