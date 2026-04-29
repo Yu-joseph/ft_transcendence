@@ -29,10 +29,7 @@ export  const   useChatInput = ({convId, setMessages, friendId}: ChatInputPorps)
 
     const   handleSendMessage = async (event: React.SyntheticEvent) => {
         if(user === null || convId === null)
-        {
-            window.location.reload();
             return;
-        }
         event.preventDefault();
         setMessageErrors(null);
         if (isTyping && friendId && convId) { // stoping typing on send message

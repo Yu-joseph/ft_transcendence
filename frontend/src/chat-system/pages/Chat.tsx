@@ -57,7 +57,7 @@ export function Chat() {
         console.log('You cant chat anymore with him');
         setIsblocked(true);
         if(selectedConvId) {
-          chatSocket.emit('leave:conversation', selectedConvId); // to leave the room
+          chatSocket.emit('leave:conversation', `ROOM_${selectedConvId}`); // to leave the room
         }
       }
     }

@@ -120,7 +120,8 @@ export class FriendService {
                         status: 'ACCEPTED'
                     }
                 });
-                io.to(friendRequest.requesterId).emit('notification:friend_update', {senderName: friendRequest.User_Friend_receiverIdToUser.username, type: 'ACCEPT'});
+                io.to(friendRequest.requesterId).emit('notification:friend_update',
+                    {senderName: friendRequest.User_Friend_receiverIdToUser.username, type: 'ACCEPT'});
                 return result;
             }
         }
@@ -157,7 +158,8 @@ export class FriendService {
                         status: 'REJECTED'
                     }
                 });
-                io.to(friendRequest.requesterId).emit('notification:friend_update', {senderName: friendRequest.User_Friend_receiverIdToUser.username, type: 'REJECT'});
+                io.to(friendRequest.requesterId).emit('notification:friend_update',
+                    {senderName: friendRequest.User_Friend_receiverIdToUser.username, type: 'REJECT'});
                 return result;
             }
         }
@@ -194,7 +196,8 @@ export class FriendService {
                 });
                 const otherId = exist.requesterId === data.requesterId ? exist.receiverId : exist.requesterId;
                 const me = exist.requesterId === data.requesterId ? exist.User_Friend_requesterIdToUser : exist.User_Friend_receiverIdToUser;
-                getIo().to(otherId).emit('notification:friend_update', {senderName: me.username, type: 'REMOVE'});
+                getIo().to(otherId).emit('notification:friend_update',
+                    {senderName: me.username, type: 'REMOVE'});
 
                 const sharedConv = await prisma.conversation.findFirst({ // if there is a conversation bettwen them, i remove them from the chat room 
                     where: {
@@ -242,7 +245,8 @@ export class FriendService {
                         status: 'REJECTED'
                     }
                 });
-                getIo().to(existed.User_Friend_receiverIdToUser.id).emit('notification:friend_update', {senderName: existed.User_Friend_receiverIdToUser.username, type: 'CANCEL'});
+                getIo().to(existed.User_Friend_receiverIdToUser.id).emit('notification:friend_update',
+                    {senderName: existed.User_Friend_receiverIdToUser.username, type: 'CANCEL'});
                 return result;
             }
             case 'PENDING': {

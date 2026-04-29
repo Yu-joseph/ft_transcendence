@@ -1,7 +1,7 @@
-import  { useState } from "react";
+import  { useEffect, useState } from "react";
 import  { fetchClient } from "../../../utils/fetchClient";
 import  type { AuthUser } from "../../../../auth/auth-context";
-import { useRefresh } from "../../shared/useRefresh";
+import { chatSocket } from "../../../../socket/sock";
 
 type FriendStat = 'accepted' | 'pending' | 'not';
 
@@ -28,9 +28,33 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [gotToChat, setGoToChat] = useState<string | null>(null);
 
+    useEffect(() => {
 
-    const   refresh = useRefresh();
+        const   handleFriendUpdate = (data: {senderName: string, type: string}) => {
+            if (userInfo?.username === data.senderName) {
+                
+                if (data.type === 'ACCEPT') {
+                    // They accepted our request
+                    setUserInfo(prev => prev ? { ...prev, isFriend: 'accepted' } : null);
+                    
+                } else if (data.type === 'REMOVE' || data.type === 'REJECT' || data.type === 'CANCEL') {
+                    // The friendship or request was destroyed
+                    setUserInfo(prev => prev ? { ...prev, isFriend: 'not' } : null);
+                    
+                } else if (data.type === 'REQUEST') {
+                    // They just sent us a friend request while we are looking at their profile!
+                    setUserInfo(prev => prev ? { ...prev, isFriend: 'pending' } : null);
+                }
+            }
+        };
+        
+        chatSocket.on('notification:friend_update', handleFriendUpdate);
 
+        return () => {
+            chatSocket.off('notification:friend_update', handleFriendUpdate);
+        };
+    }, [userInfo?.username, setUserInfo])
+    
     /** *** Botton Click******/
     const handleAddToFriend = async (username: string) => {
         console.log("In Add button");
