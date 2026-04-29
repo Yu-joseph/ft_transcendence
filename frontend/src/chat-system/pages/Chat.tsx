@@ -66,41 +66,54 @@ export function Chat() {
     return () => {
       chatSocket.off('notification:friend_update', handleFriendUpdate);
     }
-  }, [])
-/*********************** */
+  }, [user?.id])
+/** ___________ Load Messages from Conversation Id ___________ */
   useEffect(() => {
     if(user === null)
       return ;
     if (selectedConvId === null || isLoadedFromFriendProfile)
       return;
     console.log('Loading History from conv Id');
+    const  abortController = new AbortController(); // just for aborting the request if the user switch to another conversation
+
     const loadHistoryByConvId = async () => {
       try {
-        const result = await fetchClient<{messages: MessageItem[], status: string} | {messages: [], status: string}>(`/chat/conversations/${selectedConvId}/messages`, {});
+        const result = await fetchClient<{messages: MessageItem[], status: string} | {messages: [], status: string}>(`/chat/conversations/${selectedConvId}/messages`,
+                                                                                                                {signal: abortController.signal});
         if(result && result.messages) {
           setIsblocked(result.status === 'NOT FRIEND' ? true : false);
           result.messages.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null; });
           setMessages(result.messages);  
         }
       } catch (err: any) {
+        if(err.name === 'AbortError') {
+          console.log('Loading history by conv Id aborted');
+          return ;
+        }
         setSelectedFriendId(null);
         console.error(err);
         setMessages([]); // to update to display error loading
       }
     }
     loadHistoryByConvId();
+    return () => {
+      abortController.abort();
+    };
   }, [selectedConvId, selectedFriendId, user])
 
   // when user come from friend profile to open chat message
   useEffect(() => {
-    if(user === null) return ;
+    if(user === null)
+      return ;
 
     if (!selectedFriendId || selectedConvId)
       return;
+    const  abortController = new AbortController();
     console.log('Comming from friend profile');
     const loadHistoryByFriendId = async () => {
       try {
-        const result = await fetchClient<MessagesWithConvId>(`/chat/friend/${selectedFriendId}/messages`, {});
+        const result = await fetchClient<MessagesWithConvId>(`/chat/friend/${selectedFriendId}/messages`,
+                                                            {signal: abortController.signal});
         if(result && result.convId){
           setIsLoadedFromFriendProfile(true);
           result.messages.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null});
@@ -108,12 +121,18 @@ export function Chat() {
           setSelectedConvId(result.convId);
         }
       } catch (err: any) {
-        console.log(err);
+        if(err.name === 'AbortError') {
+          console.log('Loading history by Friend Id aborted');
+          return ;
+        }
         setSelectedFriendId(null);
         setMessages([]); // to update to display error loading
       }
     }
     loadHistoryByFriendId();
+    return () => {
+      abortController.abort();
+    };
   }, [selectedFriendId, selectedConvId, user]);
 
   /** ____________ SOCKET HANDLER ____________ */

@@ -1,6 +1,7 @@
 import  { useState } from "react";
 import  { fetchClient } from "../../../utils/fetchClient";
 import  type { AuthUser } from "../../../../auth/auth-context";
+import { useRefresh } from "../../shared/useRefresh";
 
 type FriendStat = 'accepted' | 'pending' | 'not';
 
@@ -27,6 +28,9 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [gotToChat, setGoToChat] = useState<string | null>(null);
 
+
+    const   refresh = useRefresh();
+
     /** *** Botton Click******/
     const handleAddToFriend = async (username: string) => {
         console.log("In Add button");
@@ -36,10 +40,9 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
         try {
             const option = {
                 method: 'POST',
-                body: JSON.stringify({ receiverId: username })
+                body: JSON.stringify({ username: username })
             };
             const result = await fetchClient('/friend/request', option);
-            console.log("result adding:", result);
             setUserInfo(prev => prev ? ({ ...prev, isFriend: 'pending' }) : null)
         } catch (err) {
             console.log('error is:', err);
