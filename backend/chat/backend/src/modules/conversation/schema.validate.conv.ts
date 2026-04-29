@@ -14,7 +14,7 @@ export const deleteConversationSchema = z.object({
   // convId is the id of conversation Model in prisma schema, and represnted as bigint
     params: z.object({
         convId: z.string().regex(/^\d+$/, 'Invalid conversation ID')
-                          .transform(val => BigInt(val))
+                          .transform(val => val.trim())
     })
 });
  

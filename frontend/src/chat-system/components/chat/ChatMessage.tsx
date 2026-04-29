@@ -18,7 +18,7 @@ interface UserInfo {
 interface ChatMessageProp {
     friendId: string | null
     messages: MessageItem[]
-    convId: number | null
+    convId: string | null
     isTyping: boolean
 }  
 
@@ -31,8 +31,14 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
     const   navigate = useNavigate();
     const   scroolToBottomRef = useRef<HTMLDivElement | null>(null);
     /**__________ HOOKS ____________________ */
+    
     useEffect(() => { // for auto-scrolling to the last message
-        scroolToBottomRef.current?.scrollIntoView();
+        setTimeout(() => {
+            scroolToBottomRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'end'
+            });
+        }, 50);
     }, [messages, isTyping])
     /****************************************************************** */
     useEffect(() => {
@@ -75,10 +81,11 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
     
     /**__________ JS Function ___________ */
     
-    
     const   handleViewProfile = (userId: string | undefined) => {
-        if(!userId)
+        if(!userId){
             navigate('/');
+            return;
+        }
         navigate(`/Profile/${userId}`);
     }
     const   detectMessageStatIcon = (state: MessageState) => {
@@ -158,7 +165,7 @@ export function ChatMessage({messages, friendId, convId, isTyping} : ChatMessage
                     Array.isArray(messages) && messages.map((m, index) => {
                         const   isMe = m.User.id === currentUserId;
                         return (
-                            <div key={m.id ? m.id.toString() : m.tempId || index} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                            <div key={m.id ? m.id : m.tempId || index} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[70%] rounded-2xl p-3 shadow-md ${isMe ? 'bg-blue-600 text-white rounded-tr-sm border-2 border-slate-700/50' : 'bg-slate-800 text-slate-200 border-2 border-slate-700/50 rounded-tl-sm'}`}>
                                     <p className='text-sm leading-relaxed'>
                                     {m.content}

@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import { chatSocket } from "../socket/sock";
-import { data, useNavigate } from "react-router-dom";
-
-
-
+import { useNavigate } from "react-router-dom";
 
 export const  GlobalChatListener = () => {
     const   [notification, setNotification] = useState<{mssg: string, type: string} | null>(null);
@@ -65,8 +62,15 @@ export const  GlobalChatListener = () => {
         /************* Globale Event Listener ********************** */
         chatSocket.on('notification:friend_update', handleFriendUpdate);
         chatSocket.on('notification:new_message', handleNewMessageNotify);
-
+        /******************************************************* */
+        const onSocketErr = (err: any) => console.error('SOCKET error', err);
+        const onConnErr = (err: any) => console.error('SOCKET connect_error', err);
+        chatSocket.on('connect_error', onConnErr);
+        chatSocket.on('error', onSocketErr);
+        /******************************************************** */
         return () => {
+            chatSocket.off('connect_error', onConnErr);
+            chatSocket.off('error', onSocketErr);
             chatSocket.off('notification:friend_update', handleFriendUpdate);
             chatSocket.off('notification:new_message', handleNewMessageNotify);
         }

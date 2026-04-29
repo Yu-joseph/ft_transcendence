@@ -13,7 +13,7 @@ export interface AddFriendRequest {
 
 export interface AcceptFriendRequest {
     receiverId: string
-    friendRequestId: bigint
+    friendRequestId: string
 }
 
 export interface RemoveFriendShip {
@@ -23,13 +23,13 @@ export interface RemoveFriendShip {
 
 export interface CancelFriendRequest {
     userId: string | undefined
-    friendRequestId: bigint
+    friendRequestId: string
 }
 
 export type RequestType = 'incoming' | 'outgoing';
 
 export  interface PendingFriendType {
-    friendRequestId: bigint
+    friendRequestId: string
     status: string
     userInfo: {
         id: string

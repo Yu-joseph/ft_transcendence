@@ -1,6 +1,6 @@
 import {rateLimit} from    'express-rate-limit';
 
-const   MAX_MESSAGE_REQ = 2;
+const   MAX_MESSAGE_REQ = 20;
 
 export  const   messageLimiter = rateLimit({
     windowMs: 10 * 1000,

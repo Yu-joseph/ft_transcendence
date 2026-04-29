@@ -1,18 +1,17 @@
 import { useEffect } from 'react';
 import  {chatSocket}  from    '../../../../socket/sock';
-import type { MessageItem } from '../../../pages/Chat';
+import type { MessageItem, MessageState } from '../../../pages/Chat';
 import  {useAuth}   from    '../../../../auth/useAuth';
-// import { translateToBigInt } from '../../../utils/translator';
 
 interface   UseChatSocketProps {
-    convId: bigint | null
+    convId: string | null
     setMessages: React.Dispatch<React.SetStateAction<MessageItem[]>>
     setIsTyping: React.Dispatch<React.SetStateAction<boolean> >
 }
 
 export interface JoinChatInf {
     room_id: string
-    convId: bigint
+    convId: string
     userId: string
 }
 
@@ -48,7 +47,7 @@ export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSock
                     return prev;
                 const finalMessage = { // if that message is not on my current screen, it can come from another tab or from friend
                     ...newMessage, 
-                    status: newMessage.User.id === user.id ? 'sent' : null 
+                    status: (newMessage.User.id === user.id ? 'sent' : null) as MessageState | null 
                 };
                 return [...prev, finalMessage];
             });
@@ -56,39 +55,28 @@ export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSock
         
         /************************************ */
         const   onTypingStart = (data: {convId: string}) => {
-            if(String(convId) !== data.convId)
+            if(convId !== data.convId)
                 return ;
             setIsTyping(true);
             console.log('its typinggg:', data);
         }
         const   onTypingStop = (data: {convId: string}) => {
-            if(String(convId) !== data.convId)
+            if(convId !== data.convId)
                 return ;
             setIsTyping(false);
             console.log('its typinggg:', data);
         }
         /************************************************* */
-        // chatSocket.on('notification:new_message', () => );
         chatSocket.on('message:new', onReceiveMessage)
         chatSocket.on('typing:start', onTypingStart);
         chatSocket.on('typing:stop', onTypingStop);
         /************************************************* */
-        chatSocket.on('connect_error', (err: any) => console.error('SOCKET connect_error', err));
-        chatSocket.on('connect_timeout', (t) => console.error('SOCKET connect_timeout', t));
-        chatSocket.on('error', (err) => console.error('SOCKET error', err));
-        chatSocket.on('reconnect_attempt', (n) => console.log('SOCKET reconnect_attempt', n));
-        chatSocket.on('reconnect_failed', () => console.error('SOCKET reconnect_failed'));
         return (() => {
             chatSocket.emit('leave:conversation', ROM_ID);
             chatSocket.off('typing:start', onTypingStart);
             chatSocket.off('typing:stop', onTypingStop);
             setIsTyping(false);
             chatSocket.off('message:new', onReceiveMessage);
-            chatSocket.off('error');
-            chatSocket.off('connect_timeout');
-            chatSocket.off('reconnect_attempt');
-            chatSocket.off('reconnect_failed');
-            chatSocket.off('connect_error');
     }
 
     );

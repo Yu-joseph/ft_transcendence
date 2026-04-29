@@ -59,7 +59,7 @@ export function Profile() {
                 return;
             try {
                 setStatError(null);
-                const result = await fetch(`http://${window.location.hostname}:1339/api/users/${userId}/status`, {
+                const result = await fetch(`https://${window.location.hostname}:8443/game-api/api/users/${userId}/status`, {
                     'credentials': 'include'
                 });
                 if (!result.ok)

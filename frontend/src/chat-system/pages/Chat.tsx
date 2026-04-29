@@ -11,8 +11,8 @@ import { chatSocket } from "../../socket/sock";
 export type MessageState = 'pending' | 'sent' | 'error';
 
 export interface MessageItem {
-  convId?: bigint
-  id: number | string;
+  convId?: string
+  id: string;
   content: string;
   User: {
     id: string;
@@ -23,7 +23,7 @@ export interface MessageItem {
   tempId: string | null
 }
 export interface MessagesWithConvId {
-  convId: number;
+  convId: string;
   messages: MessageItem[];
 }
 
@@ -36,7 +36,7 @@ export function Chat() {
   const [isTyping, setIsTyping] = useState<boolean>(false);
 
   const [messages, setMessages] = useState<MessageItem[]>([]);
-  const [selectedConvId, setSelectedConvId] = useState<number | null>(null);
+  const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(friendId);
   const [isLoadedFromFriendProfile, setIsLoadedFromFriendProfile] = useState<boolean>(false);
   const [isBlocked, setIsblocked] = useState<boolean>(false); // for blocking userInput where a user block it's friend
@@ -63,7 +63,7 @@ export function Chat() {
     return () => {
       chatSocket.off('notification:friend_update', handleFriendUpdate);
     }
-  }, [user])
+  }, [])
 /*********************** */
   useEffect(() => {
     if(user === null)
@@ -118,8 +118,20 @@ export function Chat() {
       <ConversationList setConvId={setSelectedConvId} convId={selectedConvId} selectFriendId={setSelectedFriendId} friendId={selectedFriendId} />
       <section className="flex-1 flex flex-col bg-slate-800 border border-blue-700 rounded-2xl shadow-xl overflow-hidden hover:border-amber-500 hover:scale-101 transition-all duration-300">
         <ChatMessage messages={messages} friendId={selectedFriendId} convId={selectedConvId} isTyping={isTyping} />
+        
         {
-          !isBlocked && selectedFriendId && <ChatInput setMessages={setMessages} convId={selectedConvId} setSelectedFriendId={setSelectedFriendId} friendId={selectedFriendId} />
+          selectedFriendId ? (
+            !isBlocked ? (
+              <ChatInput setMessages={setMessages} convId={selectedConvId}friendId={selectedFriendId} />
+            ) : (
+            <footer className="px-6 py-4 border-t-2 border-slate-700/50 bg-slate-900/80 backdrop:blur-md sticky bottom-0 z-0 flex items-center justify-center">
+              <div
+                className="bg-slate-800/80 border border-slate-700 rounded-full px-6 py-3 shadow-inner w-full flex justify-center text-slate-400 text-sm font-medium cursor-not-allowed">
+                You are no longer friends. Add them to chat again.
+              </div>
+            </footer>
+            )
+          ) : null
         } 
       </section>
     </main>

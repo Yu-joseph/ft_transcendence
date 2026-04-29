@@ -1,6 +1,6 @@
 import { MessagesPayload } from "../conversation/conversation.types.js";
 export  interface MessagesType {
-    id: number,
+    id: string,
     messages: object | undefined
 }
 
@@ -13,7 +13,7 @@ export interface SendMessageType {
 
 
 export interface MessageItem {
-  id: number;
+  id: string;
   content: string;
   sender: {
     id: string;
@@ -23,7 +23,7 @@ export interface MessageItem {
 }
 
 export interface MessagesWithConvId {
-  convId: bigint;
+  convId: string;
   messages: MessagesPayload[];
 }
 

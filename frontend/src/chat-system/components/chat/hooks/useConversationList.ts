@@ -6,13 +6,13 @@ import { useRefresh } from "../../shared/useRefresh";
 
 interface UpdatedConversationEvent {
   lastMessage: {
-    id: number,
+    id: string,
     created_at: Date,
     content: string,
     senderId: string
   }
   updated_at: Date
-  convId: bigint
+  convId: string
 }
 
 export  function useConversationList(friendId: string | null){
@@ -43,7 +43,7 @@ export  function useConversationList(friendId: string | null){
         const loadConversation = async () => {
             try {
                 setError(null);
-                setLoading(false);
+                setLoading(true);
                 const result : ConversationType[] = await fetchClient('/chat/conversations', {});
                 setConversationList(result ?? []);
             } catch (error: any) {
@@ -51,7 +51,7 @@ export  function useConversationList(friendId: string | null){
                 setConversationList([]);
                 console.log(error);
             } finally {
-                setLoading(true);
+                setLoading(false);
             }
         };
         loadConversation();
@@ -62,11 +62,10 @@ export  function useConversationList(friendId: string | null){
     useEffect(() => {
         const onConversationUpdate = (updatedData: UpdatedConversationEvent) => {
         console.log("in Conversation Updated event");
-        const convIdNum = Number(updatedData.convId);
 
         setConversationList(prev => {
             const updatedList = prev.map( conv => {
-            if(conv.id != convIdNum)
+            if(conv.id !== updatedData.convId)
                 return conv;
             const newMessage = {
                 id: updatedData.lastMessage.id, content: updatedData.lastMessage.content, created_at: updatedData.lastMessage.created_at, senderId: updatedData.lastMessage.senderId

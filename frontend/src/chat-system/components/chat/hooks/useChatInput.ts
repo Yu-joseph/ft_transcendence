@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from "react"
 import { useAuth } from "../../../../auth/useAuth";
 import { chatSocket } from '../../../../socket/sock';
-// import type { JoinChatInf } from "./useChatSocket";
 import type { MessageItem, MessageState } from "../../../pages/Chat";
 
 
 export interface ChatInputPorps {
-    convId: number | null
+    convId: string | null
     setMessages: React.Dispatch<React.SetStateAction<MessageItem[]>>
-    setSelectedFriendId: React.Dispatch<React.SetStateAction<string|null>>
     friendId: string | null
 }
 
@@ -18,7 +16,7 @@ interface MessageToSendType {
     status: MessageState
 }
 
-export  const   useChatInput = ({convId, setMessages, setSelectedFriendId, friendId}: ChatInputPorps) => {
+export  const   useChatInput = ({convId, setMessages, friendId}: ChatInputPorps) => {
 
     const   MAX_LENGHT = 10;
 
@@ -36,12 +34,13 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId, frien
             return;
         }
         event.preventDefault();
+        setMessageErrors(null);
         if (isTyping && friendId && convId) { // stoping typing on send message
             clearTimeout(typingTimerRef.current);
             chatSocket.emit('typing:stop', {
                 friendId,
                 userId: user?.id,
-                convId: String(convId)
+                convId: convId
             });
             setIsTyping(false);
         }
@@ -54,13 +53,14 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId, frien
         }
         if(/[<>]/.test(message)) {
             setMessageErrors({'error': `HTML tags not allowed`});
-            console.log('Message too long');
+            setInput('');
             return;
         }
         if(message.length > MAX_LENGHT)
         {
             setMessageErrors({'error': `message too long (max: ${MAX_LENGHT} character)`});
             console.log(`message too long (max: ${MAX_LENGHT} character)`);
+            setInput('');
             return;
         }
         const   messageToSend: MessageToSendType = {
@@ -72,7 +72,7 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId, frien
             id: messageToSend.tempId,
             content: messageToSend.content,
             User: {id: user.id, username: user.username},
-            created_at: new Date().toLocaleTimeString(),
+            created_at: new Date().toISOString(),
             status: 'pending',
             tempId: messageToSend.tempId
         }]); // here render new message for the sender before sending http-req
@@ -85,41 +85,39 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId, frien
                 },
                 body: JSON.stringify(messageToSend)
             });
-            const result = await response.json();
+
+            let result: any;
+            try {
+                result = await response.json();
+            } catch (e) {
+                result = { success: false, message: 'Server error' };
+            }
             if(!response.ok){
-                setMessages(prev => prev.map(m => { // i update the new message to it's correspond status and id and created_at feom server
-                    if(m.tempId !== result.data.tempId)
+                setMessages(prev => prev.map(m => {
+                    if(result?.data?.tempId && m.tempId !== result.data.tempId)
                         return m;
-                    return {
-                        ...m,
-                        id: messageToSend.tempId,
-                        created_at: result.data.created_at ?? '',
-                        status: 'error'
-                    };
+                    return { ...m, status: 'error' };
                 }));
-                setSelectedFriendId(null);
-                setInput('');
                 return ;
             }
-            setMessages(prev => {// i update the new message to it's correspond status and id and created_at feom server
-            
-                const exists = prev.some(m => m.tempId === messageToSend.tempId);// Check if our message is still in the current list (User hasn't switched conv)
-                if (!exists) 
+            setMessages(prev => {
+                const exists = prev.some(m => m.tempId === messageToSend.tempId);
+                if (!exists)
                     return prev; 
                 return prev.map(m => 
                     m.tempId === messageToSend.tempId 
                     ? { 
                         ...m, 
-                        id: result.data.id, 
-                        created_at: result.data.created_at, 
-                        status: result.data.status ?? 'sent' 
+                        id: result?.data?.messages?.id || m.id, 
+                        created_at: result?.data?.messages?.created_at || m.created_at, 
+                        status: 'sent' 
                     } 
                     : m
                 );
             });
+
         } catch (err:any) {
-            console.log(err);
-            setSelectedFriendId(null);
+            console.error(err);
             setMessages(prev => prev.map(m => m.tempId === messageToSend.tempId ? {...m, status: 'error'} : m ));
         }
         setInput('');
@@ -131,13 +129,15 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId, frien
             return ;
         const   messageValue: string = e.target.value;
         setInput(messageValue);
-
+        if (messageErrors) {
+            setMessageErrors(null);
+        }
         if (messageValue.length === 0) { // if field is cleared we emit stop typing 
             if (isTyping) {
                 chatSocket.emit('typing:stop', {
                     friendId,
                     userId: user.id,
-                    convId: String(convId)
+                    convId: convId
                 });
                 setIsTyping(false);
             }
@@ -148,7 +148,7 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId, frien
             chatSocket.emit('typing:start', {
                 friendId,
                 userId: user.id,
-                convId: String(convId)
+                convId: convId
             });
             setIsTyping(true);
         }
@@ -157,7 +157,7 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId, frien
             chatSocket.emit('typing:stop', {
                 friendId,
                 userId: user.id,
-                convId: String(convId)
+                convId: convId
             });
             setIsTyping(false);
         }, 1500);
@@ -172,7 +172,7 @@ export  const   useChatInput = ({convId, setMessages, setSelectedFriendId, frien
             chatSocket.emit('typing:stop', {
                 friendId,
                 userId: user.id,
-                convId: String(convId)
+                convId: convId
             });
         }
     };

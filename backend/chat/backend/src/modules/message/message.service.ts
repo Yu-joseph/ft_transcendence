@@ -11,7 +11,7 @@ export  class MessagesServices {
 
         const   conversationExist = await prisma.conversation.findUnique({
             where: {
-                id: data.conversationId
+                id: BigInt(data.conversationId)
             },
             include: {
                 User_Conversation_user1IdToUser: {select: {id: true}},
@@ -51,7 +51,7 @@ export  class MessagesServices {
             throw new AppError('Messages of this conversation not found', 404);
         }
         return {
-            messages: messages?.Message ?? [] as MessagesPayload[],
+            messages: (messages?.Message ?? []).map(m => ({ ...m, id: m.id.toString() })) as MessagesPayload[],
             status: !isFriend ? 'NOT FRIEND' : 'FRIEND'
         } 
         
@@ -100,13 +100,13 @@ export  class MessagesServices {
                 },
             },
         });
-        return {convId: conversationExist.id, messages: messages?.Message ?? [] as MessagesPayload[]};
+        return {convId: conversationExist.id.toString(), messages: (messages?.Message ?? []).map(m => ({ ...m, id: m.id.toString() })) as MessagesPayload[]};
     }
     /** @function sendMessage getting all messages from single conversation */
-    static async sendMessage(senderId: string, conversationId: bigint, content: string, tempId: string) {
+    static async sendMessage(senderId: string, conversationId: string, content: string, tempId: string) {
         const   convExist = await prisma.conversation.findUnique({
             where: {
-                id: conversationId
+                id: BigInt(conversationId)
             },
             include: {
                 User_Conversation_user1IdToUser: {select: {id: true, username: true}},
@@ -121,7 +121,7 @@ export  class MessagesServices {
         const   newMessage: SendMessageType = {
             senderId: senderId,
             content: content,
-            conversationId: conversationId,
+            conversationId: BigInt(conversationId),
             created_at: new Date
         };
         const   isFriend = await prisma.friend.findFirst({
@@ -138,26 +138,38 @@ export  class MessagesServices {
         const   [saveMessage, updateConv] = await prisma.$transaction([
             prisma.message.create({ data: newMessage, include: { User: {select: {id: true, username: true}} }}),
             prisma.conversation.update({
-            where: { id: conversationId }, data: { updated_at: new Date() }})
+            where: { id: BigInt(conversationId) }, data: { updated_at: new Date() }})
         ]);
 
         const   io = getIo();
-        console.log(`Sending message to room ${conversationId}`);
         /** **** emit message to member on channel */
         io.to(`ROOM_${conversationId.toString()}`)
-            .emit('message:new', {...saveMessage, tempId: tempId, convId: conversationId});
+            .emit('message:new', {
+                ...saveMessage, 
+                id: saveMessage.id.toString(), 
+                tempId: tempId, 
+                convId: conversationId.toString()
+            });
         /**Update conversation list for both sender and receiver */
         io.to(convExist.user1Id).to(convExist.user2Id)
             .emit('conversation:updated',
             {
                 lastMessage: {
-                    id: saveMessage.id, created_at: saveMessage.created_at, content: saveMessage.content, senderId: saveMessage.User.id
-                } 
-                , updated_at: updateConv.updated_at, convId: updateConv.id});
+                    id: saveMessage.id.toString(), 
+                    created_at: saveMessage.created_at, 
+                    content: saveMessage.content, 
+                    senderId: saveMessage.User.id
+                },
+                updated_at: updateConv.updated_at,
+                convId: updateConv.id.toString()
+            });
         /** get the recever and emit a notification for it */
         const   recever = convExist.user1Id === senderId ? convExist.User_Conversation_user2IdToUser: convExist.User_Conversation_user1IdToUser;
         io.to(recever.id)
-            .emit('notification:new_message', {senderName: saveMessage.User.username, content: newMessage.content});
+            .emit('notification:new_message',{
+                senderName: saveMessage.User.username,
+                content: newMessage.content
+            });
         return saveMessage;
     }
 }
