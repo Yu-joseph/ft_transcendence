@@ -1,16 +1,18 @@
-from datetime import datetime
+from datetime import datetime , timedelta
 from extensions import db
-from database.models import ChatSession, Message
+from database.models import ChatSession, Message , UserUsage
 
 
-# messages
+
+
 
 def save_message(session_id: str, role: str, content: str, user_id: str = None):
     try:
-        session = ChatSession.query.get(session_id)
+        session = db.session.get(ChatSession, session_id)
+
         if not session:
-            session = ChatSession(session_id=session_id, user_id=user_id)
-            db.session.add(session)
+            print(f"[DB ERROR] save_message: session {session_id} not found")
+            return
 
         db.session.add(Message(session_id=session_id, role=role, content=content))
         session.message_count = (session.message_count or 0) + 1
@@ -31,7 +33,7 @@ def get_messages(session_id: str) -> list:
         rows = (
             Message.query
             .filter_by(session_id=session_id)
-            .order_by(Message.timestamp.asc())
+            .order_by(Message.id.asc())
             .all()
         )
         print(f"[DB] Loaded {len(rows)} messages for session {session_id}")
@@ -45,8 +47,6 @@ def get_messages(session_id: str) -> list:
     
 
 
-
-# # sessions
 
 def get_sessions(user_id: str = None) -> list:
     try:
@@ -87,7 +87,9 @@ def get_sessions(user_id: str = None) -> list:
 
 def update_session_title(session_id: str, title: str):
     try:
-        session = ChatSession.query.get(session_id)
+        # session = ChatSession.query.get(session_id)
+        session = db.session.get(ChatSession, session_id)
+
         if session:
             session.title = title
             session.updated_at = datetime.utcnow()
@@ -98,4 +100,14 @@ def update_session_title(session_id: str, title: str):
     except Exception as e:
         db.session.rollback()
         print(f"[DB ERROR] update_session_title: {e}")
+
+
+
+
+
+def  check_session_exist(session_id : str , user_id: str) -> bool:
+    session = ChatSession.query.filter_by(session_id=session_id , user_id=user_id).first()
+    if session:
+        return True
+    return False
 

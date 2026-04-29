@@ -24,7 +24,8 @@ class Config:
         # )
 
         self.llm = ChatGroq(                        
-            model="llama-3.3-70b-versatile",  
+            # model="llama-3.3-70b-versatile",  
+            model="llama-3.1-8b-instant",
             temperature=0.7,
             max_tokens=1024,
             api_key=os.getenv("GROQ_API_KEY"), 
@@ -98,3 +99,6 @@ class Config:
             return "AI service is out of credits. Please try later."
         return f"Error: {e}"
     
+
+
+

@@ -19,8 +19,10 @@ const parseJsonOrThrow = async <T,>(res: Response, fallback: string): Promise<T>
   if (!res.ok) {
     let message = fallback + ' (' + res.status + ')';
     try {
-      const body = (await res.json()) as { message?: string };
-      if (body && body.message) message = body.message;
+      const body = (await res.json()) as { message?: string; error?: string; detail?: string };
+      if (body?.message) message = body.message;
+      else if (body?.error) message = body.error;
+      else if (body?.detail) message = body.detail;
     } catch {}
     throw new Error(message);
   }
@@ -219,7 +221,7 @@ function Chatbot() {
 
     try {
       
-      const res = await fetch("/chatbot/detete-session", {
+      const res = await fetch("/chatbot/delete-session", {
         method: 'DELETE',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
