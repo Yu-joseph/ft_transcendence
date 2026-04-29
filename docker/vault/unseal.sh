@@ -142,7 +142,7 @@ if [ "$INITIALIZED" = "false" ]; then
     sleep 2
   done
 
-  PGPASSWORD="${ft_password}" psql -h db -p 5432 -U "${ft_user}" -d mydb <<SQL
+  PGPASSWORD="${ft_password}" psql -h db -p 5432 -U "${ft_user}" -d "${ft_db}" <<SQL
   GRANT ALL ON SCHEMA public TO PUBLIC;
   ALTER DEFAULT PRIVILEGES FOR ROLE ${ft_user} IN SCHEMA public
     GRANT ALL ON TABLES TO PUBLIC;
@@ -155,7 +155,7 @@ SQL
     sleep 2
   done
 
-  PGPASSWORD="${DB_PASSWORD}" psql -h chat_db -p 5432 -U "${DB_USER}" -d chatbot_db <<SQL
+  PGPASSWORD="${DB_PASSWORD}" psql -h chat_db -p 5432 -U "${DB_USER}" -d "${DB_NAME}" <<SQL
   GRANT ALL ON SCHEMA public TO PUBLIC;
   ALTER DEFAULT PRIVILEGES FOR ROLE ${DB_USER} IN SCHEMA public
     GRANT ALL ON TABLES TO PUBLIC;

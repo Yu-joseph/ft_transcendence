@@ -13,21 +13,31 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${ft_user} -d ${ft_db}"]
+      interval: 5s   
+      timeout: 5s      
+      retries: 10 
 
   auth:
     container_name: auth
     build: ../backend/auth
-    command: python3 manage.py runserver 0.0.0.0:8000
     restart: always
     networks:
       - app-network
     volumes:
       - ../backend/auth/myauth:/app
       - vault-secrets:/vault/secrets
+      - vault-chat:/vault/chat
     depends_on:
-     - db
-     - vault
-     - vault-agent
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f curl -f http://localhost:8000/login || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     
   frontend:
     container_name: frontend
@@ -35,13 +45,9 @@ services:
     networks:
       - app-network
     environment:
-      - VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
       - VITE_API_URL=http://localhost:8080/
       - VITE_CHAT_API=https://localhost:8443/api
     build: ../frontend
-    volumes:
-      - ../frontend:/app/
-      - /app/node_modules 
 
   nginx:
     build : ./nginx
@@ -72,9 +78,8 @@ services:
     ports:
       - "1339:3000"
     depends_on:
-      - db
-      - auth
-      - frontend
+      auth:
+        condition: service_healthy
   
   ai_game:
     build: ../backend/ai_service/ai_game
@@ -108,13 +113,14 @@ services:
     container_name: chat-system
     restart: always
     depends_on:
-      - db
+      auth:
+        condition: service_healthy
     ports:
       - "3000:3000"
     volumes:
       - vault-chat:/vault/chat
     environment:
-      SECRET_KEY: 'django-insecure-4vkpyy2bkd3(%hi=nhqdr(yx5j71%*zf!o!ej2kfnivhbno!%n'
+      SECRET_KEY: ${DJANGO_SECRET_KEY}
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
     networks:
       - app-network
@@ -200,22 +206,26 @@ services:
   vault:
     privileged: true
     build: ./vault/
-    restart : always
+    restart: always
     env_file:
       - .env
     container_name: vault
     depends_on:
       cert-init:
         condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      chat_db:
+        condition: service_healthy
     ports:
-    - "8201:8201"
-    - "8200:8200"
+      - "8201:8201"
+      - "8200:8200"
     environment:
       VAULT_API_ADDR: "https://vault:8200"
-      VAULT_ADDR : "https://127.0.0.1:8200"
+      VAULT_ADDR: "https://127.0.0.1:8200"
       VAULT_CACERT: ./vault/userconfig/tls/ca.crt
     cap_add:
-    - IPC_LOCK
+      - IPC_LOCK
     volumes:
       - ./vault/config:/vault/config
       - ./vault/userconfig:/vault/userconfig
@@ -223,11 +233,17 @@ services:
       - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "vault status -address=https://127.0.0.1:8200 -ca-cert=./vault/userconfig/tls/ca.crt 2>&1 | grep -q 'Sealed.*false' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   vault-agent:
     privileged: true
-    build : ./agent/
-    user : root
+    build: ./agent/
+    user: root
     cap_add:
       - IPC_LOCK
     container_name: vault-agent
@@ -239,11 +255,13 @@ services:
       - vault-ai:/vault/aii
       - vault-chat:/vault/chat
       - ./vault/userconfig/tls/ca.crt:/vault/certs/ca.crt
-      - ./vault/userconfig/:/vault/userconfig/   
+      - ./vault/userconfig/:/vault/userconfig/
     networks:
       - app-network
     depends_on:
-      - vault
+      vault:
+        condition: service_healthy
+     
 
 networks:
   app-network:
