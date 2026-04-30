@@ -67,16 +67,16 @@ function LandinPage() {
 
   return (
     <div className="landing-root min-h-screen bg-slate-900 text-white">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between pl-0 pr-4 py-6 sm:pl-2 sm:pr-6 lg:pl-4 lg:pr-8">
-        <div className="-ml-4 sm:-ml-6 lg:-ml-8">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+        <div className="text-center sm:text-left">
           <p className="text-xs uppercase tracking-[0.3em] text-amber-500">Tic-TAC-toe Areana</p>
           <h1 className="text-xl font-semibold text-white">AI play, live chat, ranked battles</h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex w-full items-center justify-center gap-3 sm:w-auto sm:justify-end">
           <button
             type="button"
             onClick={() => navigate("/login")}
-            className="rounded-2xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-300"
+            className="w-full rounded-2xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-300 sm:w-auto"
           >
             join Platform
           </button>

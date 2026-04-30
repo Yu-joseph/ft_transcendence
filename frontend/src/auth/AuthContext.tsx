@@ -47,7 +47,9 @@ function fetchAuthUser(): Promise<AuthUser | null> {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const REVALIDATE_INTERVAL_MS = 5000;
 
+  // Revalidate session periodically and on tab focus so expired tokens log the user out quickly.
   useEffect(() => {
     // Prevent state updates if this provider closes before fetch completes.
     let isActive = true;
@@ -66,6 +68,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const refreshAuthUser = async () => {
+      const userData = await fetchAuthUser();
+      if (isActive) {
+        setUser(userData);
+      }
+    };
+
+    // Recheck the server session every 5s to catch access-token expiry without a refresh.
+    //using window to access build in features browser 
+    const intervalId = window.setInterval(refreshAuthUser, REVALIDATE_INTERVAL_MS);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshAuthUser();
+      }
+    };
+
+    window.addEventListener('focus', refreshAuthUser);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      isActive = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', refreshAuthUser);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
