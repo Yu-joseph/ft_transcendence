@@ -11,9 +11,24 @@ export async function    fetchClient<T>(endpoint: string, option: RequestInit = 
         credentials: 'include'
     });
 
-    const   data = await response.json();
+    let   data: any;
+    try {
+        data = await response.json();
+    } catch (e) {
+        data = {message: 'Server unreachable. Try again later...'};
+    }
+
+    if (response.status === 401) {
+        console.warn("Session expired. Redirecting to login...");
+        window.location.href = '/'; // redirect to login page when token expired
+        return Promise.reject(new Error("Unauthorized"));
+    }
+
     if(!response.ok) {
         throw new Error(data.message || `HTTP ${response.status}`);
+    }
+    if (!data || data.data === undefined) {
+        throw new Error(data?.message || "Invalid server response structure");
     }
     return data.data;
 }

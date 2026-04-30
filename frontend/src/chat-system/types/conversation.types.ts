@@ -1,12 +1,13 @@
 export interface ConversationType {
-    id: number
+    id: string
     otherUser: {
         id: string
         username: string
-        email: string
+        avatar: string
+        user_status: string
     }
     lastMessage: {
-        id: number
+        id: string
         created_at: Date
         content: string
         senderId: string
