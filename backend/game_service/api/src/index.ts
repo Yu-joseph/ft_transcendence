@@ -8,7 +8,11 @@ import {
   setupSocketHandlers,
 } from "./socket/handlers";
 import { setupTournamentHandlers } from "./socket/tournament/tournament";
+import { setupTournamentHandlers } from "./socket/tournament/tournament";
 import { getUserIdFromToken } from "./auth/identity";
+import { getRankedUsers } from "./socket/onevone/leaderboardService";
+import { isPlayerInActiveMatch } from "./socket/onevone/lobbyPresence";
+import { players } from "./socket/onevone/onevoneState";
 import { getRankedUsers } from "./socket/onevone/leaderboardService";
 import { isPlayerInActiveMatch } from "./socket/onevone/lobbyPresence";
 import { players } from "./socket/onevone/onevoneState";
@@ -19,6 +23,7 @@ const PORT = 3000;
 const corsOptions = {
   origin: [
     "http://localhost:8080",
+    "http://localhost:5173",
     "http://localhost:5173",
     "https://localhost:8443",
     "https://10.30.246.78:8443"
@@ -178,6 +183,7 @@ app.get("/api/users/:id/status", async (req, res) => {
     const ranked = rankedUsers.find((u) => u.id === userId);
 
     const isPlaying = isPlayerInActiveMatch(userId);
+    const isOnline = players.has(userId);
     const isOnline = players.has(userId);
 
     const status = isPlaying

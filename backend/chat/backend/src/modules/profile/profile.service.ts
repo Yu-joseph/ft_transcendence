@@ -32,7 +32,12 @@ export  class ProfileService {
             user.isFriend = 'not';
             return user;
         }
-        user.isFriend = isFriend.status === 'ACCEPTED' ? 'accepted' : 'pending';
+        if(isFriend.status === 'REJECTED') {
+            user.isFriend = 'not';
+        }
+        else {
+            user.isFriend = isFriend.status === 'ACCEPTED' ? 'accepted' : 'pending';
+        }
         return user;
     };
 }

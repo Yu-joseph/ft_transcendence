@@ -34,4 +34,13 @@ app.use('/api/friend', friendRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/profile', profileRoutes);
 
+/** to prevent server for sending HTML content for not found routes */
+app.use((req: Request, res: Response) => {
+    res.status(404).json({
+        success: false,
+        message: `Route ${req.originalUrl} not found`,
+        data: null
+    });
+});
+
 export  default app;

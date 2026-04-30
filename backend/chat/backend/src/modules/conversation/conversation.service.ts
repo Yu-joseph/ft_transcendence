@@ -38,9 +38,9 @@ export  class   ConversationService {
         });
 
         const result : ExistingConversationsT[] = conversations.map(conv => ({
-            id: conv.id,
+            id: conv.id.toString(),
             otherUser: conv.user1Id === userId ? conv.User_Conversation_user2IdToUser : conv.User_Conversation_user1IdToUser,
-            lastMessage: conv.Message?.[0] ?? null,
+            lastMessage: conv.Message?.[0] ? { ...conv.Message[0], id: conv.Message[0].id.toString() } : null,
             updated_at: conv.updated_at
         }));
         console.log('Conversation list:', result);
@@ -89,9 +89,11 @@ export  class   ConversationService {
                     statusCode: 200,
                     message: 'Conversation Already exist'
                 },
-                id: conversationExist.id,
+                id: conversationExist.id.toString(),
                 otherUser: otherUser,
-                lastMessage: conversationExist.Message?.[0] ?? null,
+                lastMessage: conversationExist.Message?.[0] 
+                    ? { ...conversationExist.Message[0], id: conversationExist.Message[0].id.toString() } 
+                    : null,
                 updated_at: conversationExist.updated_at
             }
             return res;
@@ -114,7 +116,7 @@ export  class   ConversationService {
                 statusCode: 201,
                 message: 'Conversation Created successfuly'
             },
-            id: createdConv.id,
+            id: createdConv.id.toString(),
             otherUser: otherUser,
             lastMessage: null,
             updated_at: createdConv.updated_at

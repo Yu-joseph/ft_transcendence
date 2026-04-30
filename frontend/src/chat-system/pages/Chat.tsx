@@ -11,8 +11,8 @@ import { chatSocket } from "../../socket/sock";
 export type MessageState = 'pending' | 'sent' | 'error';
 
 export interface MessageItem {
-  convId?: bigint
-  id: number | string;
+  convId?: string
+  id: string;
   content: string;
   User: {
     id: string;
@@ -23,7 +23,7 @@ export interface MessageItem {
   tempId: string | null
 }
 export interface MessagesWithConvId {
-  convId: number;
+  convId: string;
   messages: MessageItem[];
 }
 
@@ -36,7 +36,7 @@ export function Chat() {
   const [isTyping, setIsTyping] = useState<boolean>(false);
 
   const [messages, setMessages] = useState<MessageItem[]>([]);
-  const [selectedConvId, setSelectedConvId] = useState<number | null>(null);
+  const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(friendId);
   const [isLoadedFromFriendProfile, setIsLoadedFromFriendProfile] = useState<boolean>(false);
   const [isBlocked, setIsblocked] = useState<boolean>(false); // for blocking userInput where a user block it's friend
@@ -55,7 +55,10 @@ export function Chat() {
     const handleFriendUpdate = (data: {senderName: string, type: string}) => {
       if(data.type === 'REMOVE') {
         console.log('You cant chat anymore with him');
-        setIsblocked(!isBlocked);
+        setIsblocked(true);
+        if(selectedConvId) {
+          chatSocket.emit('leave:conversation', `ROOM_${selectedConvId}`); // to leave the room
+        }
       }
     }
     /********************** */
@@ -63,51 +66,73 @@ export function Chat() {
     return () => {
       chatSocket.off('notification:friend_update', handleFriendUpdate);
     }
-  }, [user])
-/*********************** */
+  }, [user?.id])
+/** ___________ Load Messages from Conversation Id ___________ */
   useEffect(() => {
     if(user === null)
       return ;
     if (selectedConvId === null || isLoadedFromFriendProfile)
       return;
     console.log('Loading History from conv Id');
+    const  abortController = new AbortController(); // just for aborting the request if the user switch to another conversation
+
     const loadHistoryByConvId = async () => {
       try {
-        const result = await fetchClient<{messages: MessageItem[], status: string} | {messages: [], status: string}>(`/chat/conversations/${selectedConvId}/messages`, {});
-        setIsblocked(result.status === 'NOT FRIEND' ? true : false);
-        result.messages.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null; });
-        setMessages(result.messages);  
+        const result = await fetchClient<{messages: MessageItem[], status: string} | {messages: [], status: string}>(`/chat/conversations/${selectedConvId}/messages`,
+                                                                                                                {signal: abortController.signal});
+        if(result && result.messages) {
+          setIsblocked(result.status === 'NOT FRIEND' ? true : false);
+          result.messages.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null; });
+          setMessages(result.messages);  
+        }
       } catch (err: any) {
+        if(err.name === 'AbortError') {
+          console.log('Loading history by conv Id aborted');
+          return ;
+        }
         setSelectedFriendId(null);
-        console.log(err);
+        console.error(err);
         setMessages([]); // to update to display error loading
       }
     }
     loadHistoryByConvId();
+    return () => {
+      abortController.abort();
+    };
   }, [selectedConvId, selectedFriendId, user])
 
   // when user come from friend profile to open chat message
   useEffect(() => {
-    if(user === null) return ;
+    if(user === null)
+      return ;
 
     if (!selectedFriendId || selectedConvId)
       return;
+    const  abortController = new AbortController();
     console.log('Comming from friend profile');
     const loadHistoryByFriendId = async () => {
       try {
-        const result = await fetchClient<MessagesWithConvId>(`/chat/friend/${selectedFriendId}/messages`, {});
-        console.log(result);
-        setIsLoadedFromFriendProfile(true);
-        result.messages.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null});
-        setMessages(result.messages);
-        setSelectedConvId(result.convId);
+        const result = await fetchClient<MessagesWithConvId>(`/chat/friend/${selectedFriendId}/messages`,
+                                                            {signal: abortController.signal});
+        if(result && result.convId){
+          setIsLoadedFromFriendProfile(true);
+          result.messages.forEach(m => {m.status = m.User.id === user.id ? 'sent' : null});
+          setMessages(result.messages);
+          setSelectedConvId(result.convId);
+        }
       } catch (err: any) {
-        console.log(err);
+        if(err.name === 'AbortError') {
+          console.log('Loading history by Friend Id aborted');
+          return ;
+        }
         setSelectedFriendId(null);
         setMessages([]); // to update to display error loading
       }
     }
     loadHistoryByFriendId();
+    return () => {
+      abortController.abort();
+    };
   }, [selectedFriendId, selectedConvId, user]);
 
   /** ____________ SOCKET HANDLER ____________ */
@@ -118,8 +143,20 @@ export function Chat() {
       <ConversationList setConvId={setSelectedConvId} convId={selectedConvId} selectFriendId={setSelectedFriendId} friendId={selectedFriendId} />
       <section className="flex-1 flex flex-col bg-slate-800 border border-blue-700 rounded-2xl shadow-xl overflow-hidden hover:border-amber-500 hover:scale-101 transition-all duration-300">
         <ChatMessage messages={messages} friendId={selectedFriendId} convId={selectedConvId} isTyping={isTyping} />
+        
         {
-          !isBlocked && selectedFriendId && <ChatInput setMessages={setMessages} convId={selectedConvId} setSelectedFriendId={setSelectedFriendId} friendId={selectedFriendId} />
+          selectedFriendId ? (
+            !isBlocked ? (
+              <ChatInput setMessages={setMessages} convId={selectedConvId}friendId={selectedFriendId} />
+            ) : (
+            <footer className="px-6 py-4 border-t-2 border-slate-700/50 bg-slate-900/80 backdrop:blur-md sticky bottom-0 z-0 flex items-center justify-center">
+              <div
+                className="bg-slate-800/80 border border-slate-700 rounded-full px-6 py-3 shadow-inner w-full flex justify-center text-slate-400 text-sm font-medium cursor-not-allowed">
+                You are no longer friends. Add them to chat again.
+              </div>
+            </footer>
+            )
+          ) : null
         } 
       </section>
     </main>

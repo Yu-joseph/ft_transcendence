@@ -8,7 +8,7 @@ export  interface StartConversationData {
 
 export interface GetMessagesProps {
     currentUserId : string
-    conversationId : bigint
+    conversationId : string
 }
 
 
@@ -16,7 +16,7 @@ export  interface   ExistingConversationsT {
     /**
      * @description return-type of existing Conversation
     */
-   id: bigint
+   id: string
    otherUser: {
         id: string,
         username: string,
@@ -24,7 +24,7 @@ export  interface   ExistingConversationsT {
         user_status: string
     }
     lastMessage: {
-        id: bigint,
+        id: string,
         created_at: Date,
         content: string,
         senderId: string
@@ -41,11 +41,11 @@ export interface SingleConversation extends ExistingConversationsT {
 
 export  interface DeleteConversation {
     currentUserId: string
-    conversationId: number
+    conversationId: string
 }
 
 export interface MessagesPayload {
-    id: bigint;
+    id: string;
     content: string;
     User: {
         id: string;

@@ -34,15 +34,15 @@ export  function    useFriendList() {
         chatSocket.on('status:update', onStatusUpdate);
         return () => { chatSocket.off('status:update', onStatusUpdate); }
     }, [])
-
+    /***________________________________________________________________ */
     useEffect(() => {
         const   fetchUserList = async () => {
             try {
                 setError(null);
                 setLoading(true);
                 const   result  = await fetchClient<FriendsListType[]>('/friend', {});
-                setFriendList(result);
-                console.log("Friend list:", friendList);
+                if(result)
+                    setFriendList(result ?? []);
             } catch (err: any) {
                 setError(err);
                 console.log(err);
@@ -60,8 +60,8 @@ export  function    useFriendList() {
             return;
         try {
             const   result = await fetchClient(`/friend/${friendId}`, { method: 'DELETE' });
-            setFriendList(prev => prev.filter(fr => fr.id !== friendId));
-            console.log(result);
+            if(result)
+                setFriendList(prev => prev.filter(fr => fr.id !== friendId));
             // Broadcast to the rest of the app specialy for my chat.tsx that a friend was removed!
             window.dispatchEvent(new Event("refresh_friends"));
         } catch (error: any) {
@@ -78,13 +78,10 @@ export  function    useFriendList() {
                 method: 'POST',
                 body: JSON.stringify({friendId: userId})
             });
-            console.log("Result of start Conversation:",result);
-            setGoChat(userId);
-
+            if(result)
+                setGoChat(userId);
         } catch (error:any) {
             console.log('errr:', error);
-        } finally {
-            // setLoadingConv(true);
         }
     }
 

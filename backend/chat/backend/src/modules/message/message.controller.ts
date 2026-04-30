@@ -1,8 +1,8 @@
 import { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
-import  { response, Response }    from    'express';
+import  { Response }    from    'express';
 import { ResponseModule } from "../shared.utils.js";
 import { MessagesServices } from "./message.service.js";
-import { MessageState, MessagesType, MessagesWithConvId, MessageToSendType } from "./message.types.js";
+import { MessageState, MessagesWithConvId } from "./message.types.js";
 import { GetMessagesProps, MessagesPayload } from "../conversation/conversation.types.js";
 import { AppError } from "../../utils/AppError.js";
 import  sanitizeHtml    from    'sanitize-html';
@@ -15,7 +15,7 @@ export class MessagesController {
             const   currentUserId = req.user?.user_id;
             if (!currentUserId)
                 return  res.status(401).json({message: 'Not authorized'});
-            const   conversationId = req.params.convId as unknown as bigint;
+            const   conversationId = req.params.convId as string;
             const   result: { messages: MessagesPayload[], status: string } = await MessagesServices.getMessagesByConvId({currentUserId, conversationId} as GetMessagesProps);
             const response: ResponseModule<{ messages: MessagesPayload[], status: string }>  = {
                 success: true,
@@ -75,7 +75,7 @@ export class MessagesController {
 
         try {
             const   senderId = req.user?.user_id;
-            const   conversationId = req.params.convId as unknown as bigint;
+            const   conversationId = req.params.convId as string;
             const   content = req.body.content as string;
             const   tempId = req.body.tempId as string;
             temp_id = tempId;

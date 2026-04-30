@@ -22,7 +22,6 @@ export const    validateRequest = (schema: ZodObject<any>) => {
                     success: false,
                     message: 'validation failed',
                     data: null
-                    // errors: error.errors || null
                 };
                 return res.status(400).json(response)
             }

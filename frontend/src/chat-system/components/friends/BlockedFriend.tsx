@@ -54,7 +54,6 @@ export  function BlockedFriend() {
                                     alt="User Avatar"
                                     className="w-full h-full object-cover rounded-full flex items-center justify-center"
                                 />
-                                {/* {user.username.charAt(0).toUpperCase()} */}
                             </div>
                             <span className='text-slate-300 font-medium text-lg'>{user.username}</span>
                         </div>

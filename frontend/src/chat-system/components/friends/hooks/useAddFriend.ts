@@ -33,8 +33,6 @@ export  function useAddFriend() {
             const   result = await fetchClient('/friend/request', option);
             setInput('');
             setState({status: 'success', message: 'Friend request sent'});
-            console.log("result adding:", result);
-            
         } catch (error: any) {
             console.log('error is:', error);
             setState({status: 'error', message: error?.message ?? 'Failed to send request'});

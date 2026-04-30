@@ -42,7 +42,7 @@ export class FriendController {
             const receiverId = req.user?.user_id;
             if(!receiverId)
                 return res.status(401).json({message: 'Not authorized'});
-            const friendRequestId = req.params.id as unknown as bigint;
+            const friendRequestId = req.params.id as string;
             const result = await FriendService.acceptFriend({ receiverId, friendRequestId });
             return res.status(200).json({
                 success: true,
@@ -69,7 +69,7 @@ export class FriendController {
             const receiverId = req.user?.user_id;
             if (!receiverId)
                 return res.status(401).json({message: 'Not authorized'});
-            const friendRequestId = req.params.id as unknown as bigint;
+            const friendRequestId = req.params.id as string;
             const result = await FriendService.rejectFriend({ receiverId, friendRequestId });
 
             return res.status(200).json({
@@ -118,7 +118,7 @@ export class FriendController {
             const   userId = req.user?.user_id;
             if(!userId)
                 return res.status(401).json({message: 'Not Authorized'});
-            const friendRequestId = req.params.id as unknown as bigint;
+            const friendRequestId = req.params.id as string;
             const result = await FriendService.cancelFriend({ userId, friendRequestId })
             return res.status(200).json({
                 success: true,

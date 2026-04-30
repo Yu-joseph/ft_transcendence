@@ -5,6 +5,7 @@ import { JoinChatInf } from './socket.types.js';
 import prisma from '../lib/prisma.js';
 import z from 'zod';
 import { FriendService } from '../modules/friend/friend.service.js';
+import { JwtPayload } from '../middlewares/auth.middleware.js';
 
 let io: Server;
 
@@ -17,7 +18,7 @@ const joinChatSchema = z.object({
                         .transform(val => val.trim()),
     /******************** */
     convId: z.string().regex(/^\d+$/, 'Invalid conversation ID')
-                          .transform(val => BigInt(val)),
+                          .transform(val => val.trim()),
     /******************* */
     userId: z.string().min(1, 'friend ID is required')
                         .min(3, 'friend ID is too short')
@@ -27,10 +28,10 @@ const joinChatSchema = z.object({
 
 const roomIdSchema = z.string().min(1).transform(val => val.trim());
 /** User Othorization helper function */
-const   isUserInConversation = async (convId: bigint, userId: string) => {
+const   isUserInConversation = async (convId: string, userId: string) => {
     return await prisma.conversation.findFirst({
         where: {
-            id: convId,
+            id: BigInt(convId),
             OR: [{ user1Id: userId }, { user2Id: userId }]
         }
     });
@@ -46,7 +47,7 @@ export const initSocket = (server: HTTPServer) => {
     })
     io.use(socketAuthenticate);
     io.on('connection', async (socket) => {
-        const   authentUser = (socket as any).user;
+        const   authentUser = (socket as any).user as JwtPayload;
         const userConversationCache = new Set<string>(); // stores convId as string
         /** Update status to Online when connecting  */
         try {
@@ -78,7 +79,7 @@ export const initSocket = (server: HTTPServer) => {
 
             if(await isUserInConversation(convId, userId)) {
                 socket.join(room_id);
-                userConversationCache.add(convId.toString()); // i cach it here
+                userConversationCache.add(convId); // i cach it here
                 console.log(`User ${userId} authorized and joined room ${room_id}`);
             }
         }
@@ -111,7 +112,7 @@ export const initSocket = (server: HTTPServer) => {
             }
         }
         /**
-        * ****  typing start handler ****
+        * ****  typing stop handler ****
         **/
         const onTypingStop = async (data: unknown) => {
             const validated = typingSchema.safeParse(data);
@@ -138,8 +139,6 @@ export const initSocket = (server: HTTPServer) => {
             userConversationCache.delete(convId);
         });
 
-
-
         socket.on('typing:stop', onTypingStop);
         socket.on('disconnect', async () => {
         /** Update status to Offline when user disconnect */
@@ -150,7 +149,13 @@ export const initSocket = (server: HTTPServer) => {
                 });
                 // Notify friends that this user is now Offline
                 const friends = await FriendService.getFriendIds(authentUser.user_id);
-                friends.forEach(fId => io.to(fId).emit('status:update', { userId: authentUser.user_id, status: 'Offline' }));
+                friends.forEach(fId => {
+                    io.to(fId).emit('status:update', 
+                        { 
+                            userId: authentUser.user_id, 
+                            status: 'Offline'
+                        })
+                });
             } catch (e) {
                 console.error('Failed to update status to Offline:', e);
             }

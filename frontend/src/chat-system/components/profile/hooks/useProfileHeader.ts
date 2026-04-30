@@ -1,6 +1,7 @@
 import  { useState } from "react";
 import  { fetchClient } from "../../../utils/fetchClient";
 import  type { AuthUser } from "../../../../auth/auth-context";
+import { chatSocket } from "../../../../socket/sock";
 
 type FriendStat = 'accepted' | 'pending' | 'not';
 
@@ -11,7 +12,7 @@ export interface UserProfileInfo {
     fullname: string
     created_at: Date
     avatar: string | null
-    status: string
+    user_status: string
     bio?: string
     rank?: number
     isFriend: FriendStat
@@ -27,19 +28,45 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [gotToChat, setGoToChat] = useState<string | null>(null);
 
+    useEffect(() => {
+
+        const   handleFriendUpdate = (data: {senderName: string, type: string}) => {
+            if (userInfo?.username === data.senderName) {
+                
+                if (data.type === 'ACCEPT') {
+                    // They accepted our request
+                    setUserInfo(prev => prev ? { ...prev, isFriend: 'accepted' } : null);
+                    
+                } else if (data.type === 'REMOVE' || data.type === 'REJECT' || data.type === 'CANCEL') {
+                    // The friendship or request was destroyed
+                    setUserInfo(prev => prev ? { ...prev, isFriend: 'not' } : null);
+                    
+                } else if (data.type === 'REQUEST') {
+                    // They just sent us a friend request while we are looking at their profile!
+                    setUserInfo(prev => prev ? { ...prev, isFriend: 'pending' } : null);
+                }
+            }
+        };
+        
+        chatSocket.on('notification:friend_update', handleFriendUpdate);
+
+        return () => {
+            chatSocket.off('notification:friend_update', handleFriendUpdate);
+        };
+    }, [userInfo?.username, setUserInfo])
+    
     /** *** Botton Click******/
     const handleAddToFriend = async (username: string) => {
         console.log("In Add button");
 
-        if (!username)
+        if (!username || !user)
             return;
         try {
             const option = {
                 method: 'POST',
-                body: JSON.stringify({ receiverId: username })
+                body: JSON.stringify({ username: username })
             };
             const result = await fetchClient('/friend/request', option);
-            console.log("result adding:", result);
             setUserInfo(prev => prev ? ({ ...prev, isFriend: 'pending' }) : null)
         } catch (err) {
             console.log('error is:', err);

@@ -16,7 +16,7 @@ export class    ConversationController {
                 return res.status(401).json({message: 'Not authorized'});
             const   result = await ConversationService.listConversations(userId);
 
-            const   response: ResponseModule<any> = {
+            const   response: ResponseModule<ExistingConversationsT[]> = {
                 success: true,
                 message: 'Getting conversations success',
                 data: result

@@ -32,21 +32,20 @@ export function Profile() {
     const [errHeaderInfo, setErrHeaderInfo] = useState<string|null>(null);// this for load header info in 'ProfileHeader' component
 
     useEffect(() => {
-        setLoadHeaderInfo(true);
         if(!user?.id || !userId)
             return ;
         const loadUserInfo = async () => {
+            setLoadHeaderInfo(true);
             setIsOwnProfile(false);
             setErrHeaderInfo(null);
             try {
-                console.log("TRhe ID in PARAM:", userId);
                 const result = await fetchClient<UserProfileInfo>(`/profile/${userId}`); /** */
                 setIsOwnProfile(result.id === user?.id);
                 setUserInfo(result)
                 console.log("UserInfo result:", result);
             } catch (err:any) {
                 console.log('Error in profile header:', err);
-                setErrHeaderInfo(err);
+                setErrHeaderInfo(err?.message || 'Failed to load profile');
             } finally {
                 setLoadHeaderInfo(false);
             }
@@ -59,7 +58,7 @@ export function Profile() {
                 return;
             try {
                 setStatError(null);
-                const result = await fetch(`http://${window.location.hostname}:1339/api/users/${userId}/status`, {
+                const result = await fetch(`https://${window.location.hostname}:8443/game-api/api/users/${userId}/status`, {
                     'credentials': 'include'
                 });
                 if (!result.ok)

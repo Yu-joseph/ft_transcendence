@@ -88,7 +88,7 @@ export class FriendService {
     static async acceptFriend(data: AcceptFriendRequest) {
         const friendRequest = await prisma.friend.findUnique({
             where: {
-                id: data.friendRequestId
+                id: BigInt(data.friendRequestId)
             },
             include: {
                 User_Friend_receiverIdToUser: { select: { id: true, username: true} },
@@ -113,14 +113,15 @@ export class FriendService {
             case 'PENDING':{
                 const result = await prisma.friend.update({
                     where: {
-                        id: data.friendRequestId,
+                        id: BigInt(data.friendRequestId),
                         receiverId: data.receiverId
                     },
                     data: {
                         status: 'ACCEPTED'
                     }
                 });
-                io.to(friendRequest.requesterId).emit('notification:friend_update', {senderName: friendRequest.User_Friend_receiverIdToUser.username, type: 'ACCEPT'});
+                io.to(friendRequest.requesterId).emit('notification:friend_update',
+                    {senderName: friendRequest.User_Friend_receiverIdToUser.username, type: 'ACCEPT'});
                 return result;
             }
         }
@@ -129,7 +130,7 @@ export class FriendService {
     static async rejectFriend(data: AcceptFriendRequest) {
 
         const friendRequest = await prisma.friend.findUnique({
-            where: { id: data.friendRequestId },
+            where: { id: BigInt(data.friendRequestId) },
             include: {
                 User_Friend_receiverIdToUser: { select: { id: true, username: true} },
                 User_Friend_requesterIdToUser: { select: { id: true, username: true} }
@@ -150,14 +151,15 @@ export class FriendService {
 
                 const result = await prisma.friend.update({
                     where: {
-                        id: data.friendRequestId,
+                        id: BigInt(data.friendRequestId),
                         receiverId: data.receiverId
                     },
                     data: {
                         status: 'REJECTED'
                     }
                 });
-                io.to(friendRequest.requesterId).emit('notification:friend_update', {senderName: friendRequest.User_Friend_receiverIdToUser.username, type: 'REJECT'});
+                io.to(friendRequest.requesterId).emit('notification:friend_update',
+                    {senderName: friendRequest.User_Friend_receiverIdToUser.username, type: 'REJECT'});
                 return result;
             }
         }
@@ -194,7 +196,23 @@ export class FriendService {
                 });
                 const otherId = exist.requesterId === data.requesterId ? exist.receiverId : exist.requesterId;
                 const me = exist.requesterId === data.requesterId ? exist.User_Friend_requesterIdToUser : exist.User_Friend_receiverIdToUser;
-                getIo().to(otherId).emit('notification:friend_update', {senderName: me.username, type: 'REMOVE'});
+                getIo().to(otherId).emit('notification:friend_update',
+                    {senderName: me.username, type: 'REMOVE'});
+
+                const sharedConv = await prisma.conversation.findFirst({ // if there is a conversation bettwen them, i remove them from the chat room 
+                    where: {
+                        OR: [
+                            { user1Id: data.requesterId, user2Id: data.friendId },
+                            { user1Id: data.friendId, user2Id: data.requesterId }
+                        ]
+                    },
+                    select: { id: true }
+                });
+                if (sharedConv) {
+                    const roomName = `ROOM_${sharedConv.id.toString()}`;
+                    const io = getIo();
+                    io.in(roomName).socketsLeave(roomName); 
+                }
                 return result;
             }
         }
@@ -203,7 +221,7 @@ export class FriendService {
     static async cancelFriend(data: CancelFriendRequest) {
         const existed = await prisma.friend.findUnique({
             where: {
-                id: data.friendRequestId
+                id: BigInt(data.friendRequestId)
             },
             include: {
                 User_Friend_receiverIdToUser: { select: { id: true, username: true} },
@@ -222,30 +240,36 @@ export class FriendService {
                     throw new AppError('Cannot cancel a request that has already been rejected. Try removing the friendship instead.', 400);
                 const result = await prisma.friend.delete({
                     where: {
-                        id: data.friendRequestId,
+                        id: BigInt(data.friendRequestId),
                         requesterId: data.userId,
                         status: 'REJECTED'
                     }
                 });
-                getIo().to(existed.User_Friend_receiverIdToUser.id).emit('notification:friend_update', {senderName: existed.User_Friend_receiverIdToUser.username, type: 'CANCEL'});
+                getIo().to(existed.User_Friend_receiverIdToUser.id).emit('notification:friend_update',
+                    {senderName: existed.User_Friend_receiverIdToUser.username, type: 'CANCEL'});
                 return result;
             }
             case 'PENDING': {
                 const result = await prisma.friend.delete({
                     where: {
-                        id: data.friendRequestId,
+                        id: BigInt(data.friendRequestId),
                         requesterId: data.userId,
                         status: 'PENDING'
                     }
                 });
-                getIo().to(existed.User_Friend_receiverIdToUser.id).to(existed.User_Friend_requesterIdToUser.id).emit('notification:friend_update', {senderName: existed.User_Friend_receiverIdToUser.username, type: 'CANCEL'});
+                getIo().to(existed.User_Friend_receiverIdToUser.id)
+                       .to(existed.User_Friend_requesterIdToUser.id)
+                       .emit('notification:friend_update', 
+                        {
+                            senderName: existed.User_Friend_receiverIdToUser.username,
+                            type: 'CANCEL'
+                        });
                 return result;
             }
         }
 }
     /*  _________ Get All FriendShip __________    */
     static async getFriends(userId: string) {
-        console.log('User in friend service:', userId);
         const Info = await prisma.user.findUnique({
             where: {
                 id: userId
@@ -261,12 +285,33 @@ export class FriendService {
                 status: 'ACCEPTED'
             },
             include: {
-                User_Friend_receiverIdToUser: { select: { id: true, username: true, avatar: true, created_at: true, user_status: true } },
-                User_Friend_requesterIdToUser: { select: { id: true, username: true, avatar: true, created_at: true, user_status: true } }
+                User_Friend_receiverIdToUser: { 
+                    select: 
+                        { 
+                            id: true, 
+                            username: true,  
+                            avatar: true, 
+                            created_at: true, 
+                            user_status: true 
+                        } 
+                },
+                User_Friend_requesterIdToUser: { 
+                    select: 
+                        { 
+                            id: true, 
+                            username: true, 
+                            avatar: true, 
+                            created_at: true, 
+                            user_status: true 
+                        } 
+                }
             }
         });
         /** filter to return just the friend excluding currentUser */
-        return friendship.map(f => f.requesterId === userId ? f.User_Friend_receiverIdToUser : f.User_Friend_requesterIdToUser);
+        return friendship.map(f => 
+            f.requesterId === userId ? f.User_Friend_receiverIdToUser 
+                                     : f.User_Friend_requesterIdToUser
+        );
     }
     /*  _________ Get Rejected FriendShip __________    */
     static async getRejectedFriend(userId: string) : Promise<BlockedFriendType[]> {
@@ -276,15 +321,31 @@ export class FriendService {
                 status: 'REJECTED'
             },
             include: {
-                User_Friend_receiverIdToUser: { select: { id: true, username: true, avatar: true, user_status: true} },
-                User_Friend_requesterIdToUser: { select: { id: true, username: true, avatar: true, user_status: true} }
+                User_Friend_receiverIdToUser: { 
+                    select: { 
+                        id: true, 
+                        username: true, 
+                        avatar: true, 
+                        user_status: true
+                    } 
+                },
+                User_Friend_requesterIdToUser: { 
+                    select: { 
+                        id: true, 
+                        username: true, 
+                        avatar: true, 
+                        user_status: true
+                    } 
+                }
             }
         });
-        return rejected.map(f => f.requesterId === userId ? f.User_Friend_receiverIdToUser : f.User_Friend_requesterIdToUser);
+        return rejected.map(f => 
+            f.requesterId === userId ? f.User_Friend_receiverIdToUser 
+                                     : f.User_Friend_requesterIdToUser
+        );
     }
     /*  _________ Get PENDING FriendShip __________    */
     static async getPendingFriend(userId: string) : Promise<PendingFriendType[]> {
-
         const pendingRequest = await prisma.friend.findMany({
             where: {
                 OR: [
@@ -295,14 +356,28 @@ export class FriendService {
                 }
             },
             include: {
-                User_Friend_receiverIdToUser: { select: { id: true, username: true, avatar: true, user_status: true } },
-                User_Friend_requesterIdToUser: { select: { id: true, username: true, avatar: true, user_status: true } },
+                User_Friend_receiverIdToUser: { 
+                    select: { 
+                        id: true, 
+                        username: true, 
+                        avatar: true, 
+                        user_status: true 
+                    } 
+                },
+                User_Friend_requesterIdToUser: { 
+                    select: { 
+                        id: true, 
+                        username: true, 
+                        avatar: true, 
+                        user_status: true 
+                    } 
+                },
             }
         });
         const data : PendingFriendType[] = pendingRequest.map(penReq => {
             const   type : RequestType =  penReq.requesterId === userId ? 'outgoing' : 'incoming';
             const   friendRequest : PendingFriendType = {
-                friendRequestId: penReq.id,
+                friendRequestId: penReq.id.toString(),
                 status: penReq.status,
                 userInfo: type === 'outgoing' ? penReq.User_Friend_receiverIdToUser : penReq.User_Friend_requesterIdToUser,
                 type: type
