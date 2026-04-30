@@ -67,7 +67,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col">
+    <div className="min-h-screen bg-blue-950 flex flex-col">
       <Bar />
       {/* Main Content */}
       <main className="flex-1 w-full max-w-none pl-4 pr-4 pt-8 pb-32 sm:pl-5 sm:pr-6 lg:pl-6 lg:pr-8">
@@ -79,17 +79,13 @@ export default function Dashboard() {
                 Welcome, <span className="text-amber-500">{user?.username ?? "Player"}</span>!
               </h2>
               <p className="text-gray-300">Challenge players live, dominate tournaments, and become the champion.</p>
-
-              {/* Online players at the top-left */}
-              
-              
               <div className="grid md:grid-cols-1 lg:grid-cols-2 sm:grid-cols-2 gap-6 w-full mt-4">
-                <button onClick={() => navigate("/AiChallange")} className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-amber-500 hover:scale-102 transition-all duration-300 shadow-lg">
+                <button onClick={() => navigate("/AiChallange")} className="flex flex-col items-center gap-3 p-8 rounded-b-4xl bg-slate-800 border border-black hover:border-amber-500 hover:scale-102 transition-all duration-300 shadow-lg">
                   <span className="text-4xl"><PiGameControllerFill /></span>
                   <span className="text-amber-500 text-xl font-semibold">AiChallange</span>
                   <span className="text-gray-400 text-sm">Find players and start a match</span>
                 </button>
-                <button onClick={() => setOpenPop(true)} className="flex flex-col items-center gap-3 p-8 rounded-xl bg-slate-800 border border-blue-700 hover:border-amber-500 hover:scale-102 transition-all duration-300 shadow-lg">
+                <button onClick={() => setOpenPop(true)} className="flex flex-col items-center gap-3 p-8 rounded-b-4xl bg-slate-800 border border-black hover:border-amber-500 hover:scale-102 transition-all duration-300 shadow-lg">
                   <span className="text-4xl"><TbTournament /></span>
                   <span className="text-amber-500 text-xl font-semibold">Create Tournament</span>
                   <span className="text-gray-400 text-sm">Create Tournmanet</span>
@@ -112,24 +108,6 @@ export default function Dashboard() {
 
 
           </div>
-            {/* <div className="mt-10 flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-lg shadow-slate-950/40 sm:flex-row sm:items-center sm:justify-end">
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => navigate("/privacy")}
-                  className="rounded-xl border border-blue-700 px-4 py-2 text-sm font-semibold text-blue-200 transition hover:border-amber-400 hover:text-amber-300"
-                >
-                  Privacy Policy
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate("/terms")}
-                  className="rounded-xl border border-blue-700 px-4 py-2 text-sm font-semibold text-blue-200 transition hover:border-amber-400 hover:text-amber-300"
-                >
-                  Terms of Service
-                </button>
-              </div>
-            </div> */}
       </main>
 
       <BottomNav />

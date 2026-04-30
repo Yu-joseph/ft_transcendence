@@ -71,7 +71,7 @@ function Bar() {
   const avatarUrl = user?.avatar ?? undefined;
 
   return (
-    <header className="z-50 w-full bg-slate-900 border-b border-blue-800 shadow-lg">
+    <header className="z-50 w-full bg-slate-800 border-b border-black shadow-lg">
       <div className="w-full py-2 pl-10 pr-8 sm:pr-6 lg:pr-3 flex items-center justify-between">
         <div className="w-1/2">
           <button
