@@ -24,6 +24,6 @@ dist-ssr
 *.sw?
 .env
 
-/docker/vault/data/*
-/docker/vault/userconfig/*.json
-/docker/vault/userconfig/tls/*
+docker/vault/data/
+docker/vault/userconfig/*.json
+docker/vault/userconfig/tls/    

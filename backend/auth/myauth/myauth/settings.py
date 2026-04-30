@@ -72,7 +72,6 @@ while True:
         
 
 load_dotenv(VAULT_SECRETS_FILE)
-print("%s\n" % os.getenv('DB_USER'))
 
 DATABASES = {
     'default': {
@@ -128,7 +127,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 DJANGO_FILE_SC = '/vault/chat/file.env'
 load_dotenv(DJANGO_FILE_SC)
-print("%s\n" % os.getenv('DJANGO_SECRET_KEY'))
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 SIMPLE_JWT = {
