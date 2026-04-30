@@ -1,73 +1,86 @@
 import { useState } from "react";
 import { FriendsList } from "../components/friends/FriendsList";
-import  { Users, Clock, UserPlus, Ban }   from 'lucide-react';
+import { Users, Clock, UserPlus, Ban } from 'lucide-react';
 import { PendingRequests } from "../components/friends/PendingRequests";
 import { AddFriend } from "../components/friends/AddFriend";
 import { BlockedFriend } from "../components/friends/BlockedFriend";
+import { useLocation } from "react-router-dom";
 
-type    TabTypes = 'friends' | 'pending' | 'add' | 'blocked';
+type TabTypes = 'friends' | 'pending' | 'add' | 'blocked';
 
 export function Friends() {
-    const   [activeTab, setActivetab] = useState<TabTypes>('friends');
+    const   location = useLocation();
+    const [activeTab, setActivetab] = useState<TabTypes>(location.state?.activeTab || 'friends');
 
-    const   renderContent = () => {
+
+    const renderContent = () => {
         switch (activeTab) {
             case 'friends':
-                return <FriendsList/>;
+                return <FriendsList />;
             case 'pending':
-                return <PendingRequests/>;
+                return <PendingRequests />;
             case 'add':
-                return <AddFriend/>
+                return <AddFriend />
             case 'blocked':
-                return <BlockedFriend/>
+                return <BlockedFriend />
             default:
-                return <FriendsList/>
+                return <FriendsList />
         }
     }
     return (
         <div className="flex flex-col h-full w-full bg-slate-900 overflow-hidden">
-            <div className="flex items-center px-4 h-12 border-b border-slate-700/50 bg-slate-800/80 shrink-0">
-                <div className="flex items-center text-slate-300 font-semibold gap-2 mr-6">
-                    <Users size={20} className="text-slate-400"/>
-                    <span>Friends</span>
+            <header className="sticky top-0 z-10 flex items-center px-6 h-14 backdrop-blur-xl bg-slate-900/70 border-b border-white/5 shrink-0">
+                <div className="hidden md:flex items-center gap-3 mr-8 shrink-0">
+                    <div className="p-2 bg-indigo-500/10 rounded-lg">
+                        <Users size={20} className="text-indigo-400" />
+                    </div>
+                    <span className="text-slate-100 font-bold tracking-tight text-lg">Friends</span>
                 </div>
-                <div className="w-px bg-slate-700 h-6 mx-2"></div>
-                <nav className="flex items-center gap-4">
-                    <button 
+                
+                <nav className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar py-1 w-full md:w-auto">
+                    <button
                         onClick={() => setActivetab('friends')}
-                        className={`px-3 py-1 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                            activeTab === 'friends' ? 'bg-slate-700/60 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                        className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 shrink-0 ${
+                            activeTab === 'friends' 
+                            ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.1)]' 
+                            : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                         }`}>
                         All Friends
                     </button>
                     <button
-                        onClick={() => setActivetab('pending')} 
-                        className={`px-3 py-1 rounded-md text-sm font-medium cursor-pointer flex items-center gap-2 transition-colors ${
-                            activeTab === 'pending' ? 'bg-slate-700/60 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                        onClick={() => setActivetab('pending')}
+                        className={`px-4 py-1.5 rounded-full text-sm font-semibold flex items-center gap-2 transition-all duration-200 shrink-0 ${
+                            activeTab === 'pending' 
+                            ? 'bg-slate-700/40 text-white border border-slate-600/50' 
+                            : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                         }`}>
-                            <Clock size={16}/>
-                            Pending
+                        <Clock size={16} />
+                        Pending
                     </button>
                     <button
                         onClick={() => setActivetab('add')}
-                        className={`px-3 py-1 rounded-md text-sm font-medium cursor-pointer flex items-center gap-2 transition-colors ${
-                            activeTab === 'add' ? 'bg-emerald-600 text-white' : 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30'
+                        className={`px-4 py-1.5 rounded-full text-sm font-semibold flex items-center gap-2 transition-all duration-200 shrink-0 ${
+                            activeTab === 'add' 
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                            : 'bg-emerald-500/5 text-emerald-500/70 hover:bg-emerald-500/10 hover:text-emerald-400'
                         }`}>
-                            <UserPlus size={16}/>
-                            Add Friend
+                        <UserPlus size={16} />
+                        Add Friend
                     </button>
                     <button
                         onClick={() => setActivetab('blocked')}
-                        className={`px-3 py-1 rounded-md text-sm font-medium cursor-pointer flex items-center gap-2 transition-colors ${
-                            activeTab === 'blocked' ? 'bg-red-500/20 text-red-500' : 'text-slate-400  hover:bg-slate-800 hover:text-red-400'
+                        className={`px-4 py-1.5 rounded-full text-sm font-semibold flex items-center gap-2 transition-all duration-200 shrink-0 ${
+                            activeTab === 'blocked' 
+                            ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' 
+                            : 'text-slate-400 hover:text-rose-400/80 hover:bg-rose-500/5'
                         }`}>
-                            <Ban size={16}/>
-                            Blocked
+                        <Ban size={16} />
+                        Rejected
                     </button>
                 </nav>
-            </div>
+            </header>
             <div className="flex-1 overflow-y-auto">
-                        {renderContent()}
+                {renderContent()}
             </div>
         </div>
     );
