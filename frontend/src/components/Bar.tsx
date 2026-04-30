@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GiTicTacToe } from "react-icons/gi";
 import { useAuth } from "../auth/useAuth";
-import { gameSocket } from "../socket/sock";
+import { chatSocket, gameSocket } from "../socket/sock";
 
 
 function Bar() {
@@ -24,6 +24,7 @@ function Bar() {
   const handleLogout = async () => {
     try {
       await emitLogoutPlaying();
+      chatSocket.disconnect();
       await fetch("/authent/logout/", {
         method: "POST",
         credentials: "include",
@@ -71,7 +72,7 @@ function Bar() {
   const avatarUrl = user?.avatar ?? undefined;
 
   return (
-    <header className="z-50 w-full bg-slate-900 border-b border-blue-800 shadow-lg">
+    <header className="z-50 w-full bg-slate-800 border-b border-black shadow-lg">
       <div className="w-full py-2 pl-10 pr-8 sm:pr-6 lg:pr-3 flex items-center justify-between">
         <div className="w-1/2">
           <button

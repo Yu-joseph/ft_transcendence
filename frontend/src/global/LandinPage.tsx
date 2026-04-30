@@ -2,6 +2,13 @@ import { Navigate, useNavigate } from "react-router-dom";
 import Leaderboard from "../components/Leaderboard";
 import PlayerState from "../components/PlayerState";
 import { useAuth } from "../auth/useAuth";
+// import xoBackground from "../Devolopers/xo.jpg";
+import bouhammoImage from "../Devolopers/bouhammo.jpg";
+import ismailImage from "../Devolopers/eismail_red.jpg";
+import maitTajImage from "../Devolopers/mait-taj.jpg";
+import sahamZaoImage from "../Devolopers/sahamzao.jpg";
+import youssefiImage from "../Devolopers/ysouhail.jpg";
+
 
 function LandinPage() {
   const navigate = useNavigate();
@@ -25,6 +32,27 @@ function LandinPage() {
     { id: "p5", username: "Mirchal", wins: 33, losses: 26, xp: 1620, rank: 5 },
   ];
 
+  const previewBoard: ("X" | "O" | null)[] = [
+    "X",
+    null,
+    "O",
+    null,
+    "X",
+    "O",
+    "O",
+    null,
+    "X",
+  ];
+
+  const developers = [
+    { id: "dev-1", name: "Brahim", image: bouhammoImage },
+    { id: "dev-2", name: "ismail", image: ismailImage },
+    { id: "dev-3", name: "Mouhmaed", image: maitTajImage },
+    { id: "dev-4", name: "sayd aldin", image: sahamZaoImage },
+    { id: "dev-5", name: "Youssef", image: youssefiImage },
+  ];
+
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
@@ -38,69 +66,25 @@ function LandinPage() {
   }
 
   return (
-    <div className="landing-root min-h-screen bg-slate-900 text-slate-100">
-      {/* <style>
-        {`
-.landing-root {
-  --accent-cool: #38bdf8;
-  --accent-warm: #f59e0b;
-}
-        `}
-      </style> */}
-
-      <div
-        className="h-1 w-full"
-        style={{ background: "linear-gradient(90deg, var(--accent-cool), var(--accent-warm))" }}
-      />
-
-      <header className="border-b border-blue-800 bg-slate-900/90">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-amber-300">Infinity Tacos</p>
-            <h1 className="text-xl font-semibold text-white">AI play, live chat, ranked battles</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => navigate("/login")}
-              className="rounded-xl bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-amber-300"
-            >
-              Sign In
-            </button>
-          </div>
+    <div className="landing-root min-h-screen bg-slate-900 text-white">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+        <div className="text-center sm:text-left">
+          <p className="text-xs uppercase tracking-[0.3em] text-amber-500">Tic-TAC-toe Areana</p>
+          <h1 className="text-xl font-semibold text-white">AI play, live chat, ranked battles</h1>
         </div>
-      </header>
+        <div className="flex w-full items-center justify-center gap-3 sm:w-auto sm:justify-end">
+          <button
+            type="button"
+            onClick={() => navigate("/login")}
+            className="w-full rounded-2xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-300 sm:w-auto"
+          >
+            join Platform
+          </button>
+        </div>
+      </div>
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-16 pt-10 sm:px-6 lg:px-8">
-        <section className="rounded-2xl border border-blue-800 bg-slate-800/60 p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-200/80">
-            AI tactics + live chat
-          </p>
-          <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
-            Special tic-tac-toe battles powered by Creativity  and real-time chat.
-          </h2>
-          <p className="mt-2 text-sm text-slate-300 sm:text-base">
-            Train against adaptive AI, coordinate with friends, and climb ranked tournaments
-            without leaving the arena.
-          </p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            {[
-              { label: "AI modes", value: "Adaptive" },
-              { label: "Chat rooms", value: "Live" },
-              { label: "Tournaments", value: "Ranked" },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="rounded-xl border border-blue-800 bg-slate-800/70 p-4"
-              >
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{item.label}</p>
-                <p className="mt-2 text-lg font-semibold text-white">{item.value}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <main className="relative mx-auto w-full max-w-7xl flex-1 px-4 pb-16 pt-10 sm:px-6 lg:px-8">
+        <section className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1fr_minmax(0,0.9fr)]">
           <div className="flex flex-col gap-6">
             <PlayerState previewStats={previewStats} />
           </div>
@@ -108,48 +92,99 @@ function LandinPage() {
             <Leaderboard previewData={previewLeaderboard} />
           </div>
           <div className="flex flex-col gap-6">
-            <section className="w-full bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit">
-              <div className="px-6 py-4 border-b border-blue-800">
-                <h3 className="text-xl font-semibold text-amber-500">AI Challenge</h3>
-                <p className="text-sm text-gray-400">A simple training room preview</p>
+            <section className="w-full bg-slate-800 border border-slate-900 rounded-b-md shadow-lg overflow-hidden h-full flex flex-col hover:border-amber-500 hover:-translate-y-0.5 transition-all duration-300">
+              <div className="px-6 py-4 border-b border-amber-500">
+                <h3 className="text-xl font-semibold text-amber-500">Match preview</h3>
+                <p className="text-sm text-white">Small board from a live match</p>
               </div>
-              <div className="px-6 py-6 space-y-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-300">Opponent</span>
-                  <span className="text-white font-semibold">ArenaBot</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-300">Mode</span>
-                  <span className="text-cyan-300 font-semibold">Adaptive AI</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-300">Win streak</span>
-                  <span className="text-emerald-300 font-semibold">3 wins</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {["X", "O", "", "", "X", "", "O", "", ""].map((cell, index) => (
-                    <div
-                      key={`${cell}-${index}`}
-                      className="flex h-10 items-center justify-center rounded-lg border border-slate-700 bg-slate-900 text-lg font-semibold text-cyan-300"
-                    >
-                      {cell}
-                    </div>
-                  ))}
+              <div className="px-6 py-6 flex-1 flex items-center justify-center">
+                <div className="w-full max-w-65 aspect-square grid grid-cols-3 gap-2">
+                  {previewBoard.map((cell, index) => {
+                    const cellColor =
+                      cell === "X" ? "bg-rose-700" :
+                      cell === "O" ? "bg-cyan-800" :
+                      "bg-slate-900";
+
+                    return (
+                      <div
+                        key={`preview-cell-${index}`}
+                        className={`aspect-square rounded-md flex items-center justify-center text-xl sm:text-2xl font-bold text-white ${cellColor}`}
+                      >
+                        {cell ?? ""}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </section>
           </div>
         </section>
+        <section className="mt-10 grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-500">
+              AI tactics + live chat
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
+              Special tic-tac-toe battles powered by Creativity and real-time chat.
+            </h2>
+            <p className="mt-2 text-sm text-white sm:text-base">
+              I bet that you can't defeted our (hard) AI challange.
+            </p>
+            <div className="mt-6 max-w-3xl">
+              <p className="text-xs uppercase tracking-[0.3em] text-amber-500">How to Play</p>
+              <h3 className="mt-2 text-lg font-semibold text-white">How to Play OUR Tic Tac Toe Online</h3>
+              <ul className="mt-3 space-y-2 text-sm text-white">
+                <li>Each player can have only 3 pieces on the board at a time.</li>
+                <li>On your turn, place a piece on an empty square. The AI plays O.</li>
+                <li>When you are about to place a 4th piece, remove one of your own 3 pieces first, then place.</li>
+                <li>Win by aligning 3 in a row: row, column, or diagonal.</li>
+              </ul>
+            </div>
+          </div>
+          {/* <div className="hidden lg:flex justify-center">
+            <img
+              src={xoBackground}
+              alt="Tic-tac-toe board"
+              className="h-auto w-80 opacity-70"
+            />
+          </div> */}
+        </section>
+        <section className="mt-12">
+          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-500">
+            Developers
+          </p>
+          <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
+            Meet the team behind the arena
+          </h2>
+          <div className="mt-6 grid grid-cols-2 gap-4 justify-items-center sm:grid-cols-3 lg:grid-cols-5">
+            {developers.map((developer) => (
+              <div
+                key={developer.id}
+                className="flex flex-col items-center gap-2"
+              >
+                <div className="group relative flex h-28 w-28 items-end justify-center overflow-hidden rounded-full border border-slate-800 bg-slate-900/40 sm:h-32 sm:w-32">
+                  <img
+                    src={developer.image}
+                    alt={developer.name}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                </div>
+                <p className="text-[0.7rem] font-semibold tracking-wide text-white">{developer.name}</p>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
 
       <footer className="mx-auto w-full max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-start justify-between gap-4 border-t border-slate-800 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center">
-          <p>Infinity Tacos (c) 2026</p>
+        <div className="flex flex-col items-start justify-between gap-4 border-t border-slate-800 pt-6 text-xs text-white sm:flex-row sm:items-center">
+          <p>TIC-TAC-TOE AREANA (c) 2026</p>
           <div className="flex gap-4">
-              <a href="/privacy" className="transition hover:text-amber-300">
+              <a href="/privacy" className="transition hover:text-white">
               Privacy Policy
               </a>
-              <a href="/terms" className="transition hover:text-amber-300">
+              <a href="/terms" className="transition hover:text-white">
               Terms of Service
               </a>
           </div>

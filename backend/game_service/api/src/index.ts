@@ -184,7 +184,6 @@ app.get("/api/users/:id/status", async (req, res) => {
 
     const isPlaying = isPlayerInActiveMatch(userId);
     const isOnline = players.has(userId);
-    const isOnline = players.has(userId);
 
     const status = isPlaying
       ? "playing"

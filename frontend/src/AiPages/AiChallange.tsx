@@ -270,7 +270,6 @@ export function AiChallange() {
             phase: aiPhase,
             player: AI_PLAYER,
             difficulty: level
-
           }),
         });
 
@@ -282,6 +281,9 @@ export function AiChallange() {
         if (!data.action) {
           throw new Error(data.error || "No AI action");
         }
+
+        // Add delay here (in milliseconds)
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         const oldindex =
           typeof data.action.oldindex === "number"
@@ -447,16 +449,27 @@ return (
       </div>
 
       {!gameOver && (
-        <button
-          onClick={handleGiveUp}
-          className="mt-4 px-6 py-2 rounded-lg bg-rose-700 text-white hover:bg-rose-600 transition font-semibold"
-        >
-          Give Up
-        </button>
+         <div className="mt-6 flex flex-col items-center gap-3">
+          {(board.some(cell => cell !== null) || (level !== "")) && (
+          <button
+            onClick={handleGiveUp}
+            className="px-6 py-2 rounded-lg bg-rose-700 text-white hover:bg-rose-600 transition font-semibold"
+          >
+            Give Up
+          </button>
+          )}
+          <button
+            onClick={() => navigate("/Dashboard")}
+            className="px-6 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-500 transition font-semibold"
+          >
+            Back to Dashboard
+          </button>
+         </div>
+        
       )}
 
       {gameOver && (
-        <div className="mt-6 flex items-center gap-3">
+        <div className="mt-6 flex flex-col items-center gap-3">
           <button
             onClick={handlePlayAgain}
             className="px-6 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition font-semibold"

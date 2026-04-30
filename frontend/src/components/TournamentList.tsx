@@ -158,8 +158,8 @@ export default function TournamentList() {
   const visibleTournaments = tournaments;
 
   return (
-    <section className="w-full bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit hover:border-amber-500 hover:scale-102 transition-all duration-300">
-      <div className="px-6 py-4 border-b border-blue-800">
+    <section className="w-full bg-slate-800 border border-black rounded-xl shadow-lg overflow-hidden h-fit hover:border-amber-500 hover:scale-102 transition-all duration-300">
+      <div className="px-6 py-4 border-b border-black">
         <h3 className="text-xl font-semibold text-amber-500">Available Tournaments</h3>
         <p className="text-sm text-gray-400">Join an open tournament</p>
       </div>
@@ -171,7 +171,7 @@ export default function TournamentList() {
       {visibleTournaments.length === 0 ? (
         <div className="px-6 py-8 text-gray-400 hover:bg-slate-700/40 ">No tournaments available yet.</div>
       ) : (
-        <ul className="divide-y divide-blue-800/50">
+        <ul className="divide-y divide-black/50">
           {visibleTournaments.map((t) => {
             const isFull = t.playerCount >= t.maxPlayers;
             const isJoined = joinedTournamentIds.includes(t.tournamentId);

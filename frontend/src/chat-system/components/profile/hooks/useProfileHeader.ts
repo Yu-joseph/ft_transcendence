@@ -1,4 +1,4 @@
-import  { useState } from "react";
+import  { useEffect, useState } from "react";
 import  { fetchClient } from "../../../utils/fetchClient";
 import  type { AuthUser } from "../../../../auth/auth-context";
 import { chatSocket } from "../../../../socket/sock";
@@ -23,6 +23,7 @@ interface UseUserProfileProps {
     setUserInfo: React.Dispatch<React.SetStateAction<UserProfileInfo|null>>
     userInfo: UserProfileInfo | null
 }
+
 
 export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfileProps) {
     const [isEditing, setIsEditing] = useState<boolean>(false);
