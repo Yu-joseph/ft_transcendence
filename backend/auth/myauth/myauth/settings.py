@@ -1,9 +1,9 @@
 from datetime import timedelta
+from dotenv import load_dotenv
 from pathlib import Path
 import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-4vkpyy2bkd3(%hi=nhqdr(yx5j71%*zf!o!ej2kfnivhbno!%n'
 
 DEBUG = True
 
@@ -64,14 +64,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'myauth.wsgi.application'
 
+VAULT_SECRETS_FILE = '/vault/secrets/database.env'
+
+while True:
+    if os.path.exists(VAULT_SECRETS_FILE):
+        break
+        
+
+load_dotenv(VAULT_SECRETS_FILE)
+print("%s\n" % os.getenv('DB_USER'))
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mydb',
-        'USER': 'sayf',
-        'PASSWORD': '1234',
-        'HOST' : 'db',
-        'PORT' : '5432'
+        'NAME':     os.getenv('DB_NAME'),
+        'USER':     os.getenv('DB_USER'),   
+        'PASSWORD': os.getenv('DB_PASSWORD'), 
+        'HOST':     os.getenv('DB_HOST'),
+        'PORT':     os.getenv('DB_PORT'),
     }
 }
 
@@ -116,6 +126,10 @@ SOCIAL_AUTH_42_SECRET = 's-s4t2ud-c027ef3520ff711430a18d8fbed9b490329f361613f434
 FORTY_TWO_REDIRECT_URI = 'http://localhost:8080/authent/42/callback/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+DJANGO_FILE_SC = '/vault/chat/file.env'
+load_dotenv(DJANGO_FILE_SC)
+print("%s\n" % os.getenv('DJANGO_SECRET_KEY'))
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 SIMPLE_JWT = {
 "ACCESS_TOKEN_LIFETIME": timedelta(hours=2), # change as needed

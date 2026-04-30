@@ -9,7 +9,6 @@ export function UserStatCard({ userGameStat, isOwnProfile }: UserStatCardProps) 
 
     const totalGames = (userGameStat?.losses) ?? 0 + (userGameStat?.wins ?? 0);
     const winRate = totalGames > 0 ? Math.round(((userGameStat?.wins ?? 1) / totalGames) * 100) : 0;
-    console.log('User Stat', userGameStat);
     return (
         <div className="bg-[#111A3A]/80 border border-[#2A3A6B] rounded-2xl p-6 md:p-8 backdrop-blur-sm relative overflow-hidden w-full">
             <div className="absolute bottom-0 right-0 bg-emerald-500/5 h-64 w-64 rounded-full  -z-10"></div>

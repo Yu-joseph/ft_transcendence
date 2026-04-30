@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GiTicTacToe } from "react-icons/gi";
 import { useAuth } from "../auth/useAuth";
-import { gameSocket } from "../socket/sock";
+import { chatSocket, gameSocket } from "../socket/sock";
 
 
 function Bar() {
@@ -24,6 +24,7 @@ function Bar() {
   const handleLogout = async () => {
     try {
       await emitLogoutPlaying();
+      chatSocket.disconnect();
       await fetch("/authent/logout/", {
         method: "POST",
         credentials: "include",

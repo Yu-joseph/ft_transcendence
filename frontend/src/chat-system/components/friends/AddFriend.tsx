@@ -7,7 +7,7 @@ export  function AddFriend() {
         setInput,
         input,
         loading,
-        status } = useAddFriend();
+        state } = useAddFriend();
 
     /**____ Component-Style _________ */
 
@@ -41,9 +41,9 @@ export  function AddFriend() {
                         {loading ? 'Sending...' : 'Send Request'}
                     </button>
                 </div>
-                    {status && (
-                        <div className={status.type === 'success' ? 'text-emerald-400 mt-2' : 'text-red-500 mt-2'}>
-                            {status.message}
+                    {state && (
+                        <div className={`font-medium italic ${state?.status === 'success' ? 'text-emerald-400 mt-2' : 'text-red-400 mt-2'}`}>
+                            {state?.message}
                         </div>
                     )}
             </form>

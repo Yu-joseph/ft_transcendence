@@ -6,14 +6,14 @@ export interface AddFriendResponse {
 
 export interface AddFriendRequest {
     requesterId: string | undefined,
-    receiverId: string
+    friendUsername: string
 }
 
 //** __ accept_friend_request __ */
 
 export interface AcceptFriendRequest {
     receiverId: string
-    friendRequestId: number
+    friendRequestId: string
 }
 
 export interface RemoveFriendShip {
@@ -23,18 +23,19 @@ export interface RemoveFriendShip {
 
 export interface CancelFriendRequest {
     userId: string | undefined
-    friendRequestId: number
+    friendRequestId: string
 }
 
 export type RequestType = 'incoming' | 'outgoing';
 
 export  interface PendingFriendType {
-    friendRequestId: bigint
+    friendRequestId: string
     status: string
     userInfo: {
         id: string
         username: string
         avatar: string | null
+        user_status: string
     }
     type: RequestType
 }
@@ -43,4 +44,5 @@ export interface BlockedFriendType {
     id: string
     username: string
     avatar: string | null
+    user_status: string
 }

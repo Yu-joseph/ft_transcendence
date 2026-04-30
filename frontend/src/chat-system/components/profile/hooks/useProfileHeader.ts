@@ -1,6 +1,7 @@
 import  { useEffect, useState } from "react";
 import  { fetchClient } from "../../../utils/fetchClient";
 import  type { AuthUser } from "../../../../auth/auth-context";
+import { chatSocket } from "../../../../socket/sock";
 
 type FriendStat = 'accepted' | 'pending' | 'not';
 
@@ -11,55 +12,62 @@ export interface UserProfileInfo {
     fullname: string
     created_at: Date
     avatar: string | null
-    status: string
+    user_status: string
     bio?: string
     rank?: number
     isFriend: FriendStat
 }
 
 interface UseUserProfileProps {
-    userId: string | null
     user: AuthUser | null
-    setIsOwnProfile: React.Dispatch<React.SetStateAction<boolean>>
+    setUserInfo: React.Dispatch<React.SetStateAction<UserProfileInfo|null>>
+    userInfo: UserProfileInfo | null
 }
 
-export function useProfileHeader({userId, user, setIsOwnProfile} : UseUserProfileProps) {
-    const [userInfo, setUserInfo] = useState<UserProfileInfo | null>(null);
+
+export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfileProps) {
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [gotToChat, setGoToChat] = useState<string | null>(null);
 
     useEffect(() => {
-        if(!userId || !user?.id)
-            return ;
-        setIsOwnProfile(false);
-        console.log("TRhe ID in PARAM:", userId);
-        const loadUserInfo = async () => {
-            try {
-                console.log("TRhe ID in PARAM:", userId);
-                const result = await fetchClient<UserProfileInfo>(`/profile/${userId}`); /** */
-                setIsOwnProfile(result.id === user?.id);
-                setUserInfo(result)
-                console.log("UserInfo result:", result);
-            } catch (err) {
-                console.log('Error in profile header:', err);
-            }
-        }
-        loadUserInfo();
-    }, [user, userId])
 
+        const   handleFriendUpdate = (data: {senderName: string, type: string}) => {
+            if (userInfo?.username === data.senderName) {
+                
+                if (data.type === 'ACCEPT') {
+                    // They accepted our request
+                    setUserInfo(prev => prev ? { ...prev, isFriend: 'accepted' } : null);
+                    
+                } else if (data.type === 'REMOVE' || data.type === 'REJECT' || data.type === 'CANCEL') {
+                    // The friendship or request was destroyed
+                    setUserInfo(prev => prev ? { ...prev, isFriend: 'not' } : null);
+                    
+                } else if (data.type === 'REQUEST') {
+                    // They just sent us a friend request while we are looking at their profile!
+                    setUserInfo(prev => prev ? { ...prev, isFriend: 'pending' } : null);
+                }
+            }
+        };
+        
+        chatSocket.on('notification:friend_update', handleFriendUpdate);
+
+        return () => {
+            chatSocket.off('notification:friend_update', handleFriendUpdate);
+        };
+    }, [userInfo?.username, setUserInfo])
+    
     /** *** Botton Click******/
     const handleAddToFriend = async (username: string) => {
         console.log("In Add button");
 
-        if (!username)
+        if (!username || !user)
             return;
         try {
             const option = {
                 method: 'POST',
-                body: JSON.stringify({ receiverId: username })
+                body: JSON.stringify({ username: username })
             };
             const result = await fetchClient('/friend/request', option);
-            console.log("result adding:", result);
             setUserInfo(prev => prev ? ({ ...prev, isFriend: 'pending' }) : null)
         } catch (err) {
             console.log('error is:', err);
@@ -106,27 +114,30 @@ export function useProfileHeader({userId, user, setIsOwnProfile} : UseUserProfil
     const handleSaveProfile = async (updatedData: any) => {
         console.log('This is the Updated Info:', updatedData);
         try {
-            if(updatedData.bio !== '' && updatedData.bio.length > 50) {
-                console.log('Bio is Too long');
-                return ;
-            }
+            console.log('Handle Save profile data:', updatedData);
+            const   {avatar, ...dataToSend} = updatedData;
             const   result = await fetch('/authent/update_users/', {
                 method: 'PATCH',
                 credentials: 'include',
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(updatedData)
+                body: JSON.stringify(dataToSend)
             });
             if (!result.ok) {
                 throw new Error('Error updating information');
             }
-            console.log('Result of the updated:', result);
+            // console.log('Result of the updated:', result);
             console.log("Prev user info:", userInfo);
             if(updatedData.email.trim() === '')
                 updatedData.email = userInfo?.email;
             if(updatedData.fullname.trim() === '')
                 updatedData.fullname = userInfo?.fullname;
+            if(updatedData.bio.trim() === '')
+                updatedData.bio = userInfo?.bio;
+
+            console.log('AVATAR URL IN HANDLESAVE PROFILE:', avatar);
+
             setUserInfo(prev => prev ? { ...prev, ...updatedData } : null);
             setIsEditing(false);
         } catch (error) {
@@ -142,7 +153,6 @@ export function useProfileHeader({userId, user, setIsOwnProfile} : UseUserProfil
         handleSaveProfile,
         gotToChat,
         isEditing,
-        userInfo,
         setIsEditing
     };
 }

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sleep 5
+sleep 4
 
 python3 manage.py makemigrations
 

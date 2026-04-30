@@ -1,14 +1,20 @@
 import  { IoSend }  from 'react-icons/io5';
 import { useChatInput, type ChatInputPorps } from './hooks/useChatInput';
 
-export  function    ChatInput({setMessages, convId}: ChatInputPorps) {
+export  function    ChatInput({setMessages, convId, friendId}: ChatInputPorps) {
 
-    const { handleChange, handleSendMessage, input } = useChatInput({convId, setMessages});
+    const { handleChange, handleSendMessage, input, messageErrors } = useChatInput({convId, setMessages, friendId});
 
     if(!convId)
         return <div className='h-0 w-0'></div>
     return (
         <footer className="px-6 py-4 border-t-2 border-slate-700/50 bg-slate-900/80 backdrop:blur-md sticky bottom-0 z-0">
+            {messageErrors && (
+                <div id='message-error' role='alert'
+                     className='text-red-400 px-4 pb-2 text-xs font-medium'>
+                    {messageErrors.error}
+                </div>
+            )}
             <div className='flex items-center gap-3'>
             </div>
             <form 
@@ -27,7 +33,6 @@ export  function    ChatInput({setMessages, convId}: ChatInputPorps) {
                     <IoSend size={18} className='translate-x-1'/>
                 </button>
             </form>
-
         </footer>
     );
 }
