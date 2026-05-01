@@ -48,6 +48,9 @@ services:
       - VITE_API_URL=http://localhost:8080/
       - VITE_CHAT_API=https://localhost:8443/api
     build: ../frontend
+    volumes:
+      - ../frontend:/app/
+      - /app/node_modules 
 
   nginx:
     build : ./nginx
