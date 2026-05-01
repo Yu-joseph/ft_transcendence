@@ -87,7 +87,6 @@ def get_sessions(user_id: str = None) -> list:
 
 def update_session_title(session_id: str, title: str):
     try:
-        # session = ChatSession.query.get(session_id)
         session = db.session.get(ChatSession, session_id)
 
         if session:

@@ -11,10 +11,7 @@ chat_bp = Blueprint('chat', __name__, url_prefix='/api')
 
 MAX_INPUT_CHARS = 4000
 
-# def get_chat():
-#     chat = ChatManager()
-#     chat.set_user(get_user_id())
-#     return chat
+
 
 
 @chat_bp.post('/chat/stream')
@@ -43,13 +40,7 @@ def chat_stream():
     
     if not check_session_exist(session_id , user_id):
         return jsonify({'error': 'Session not found or access denied'}), 403
-    
-    # if check_rate_limit(user_id) == False:
-    #     return jsonify({'error': 'limit'}), 403
 
-
-    # chat = get_chat()
-    # chat.set_session(session_id)
 
     chat = ChatManager(session_id=session_id, user_id=user_id)
 
@@ -58,13 +49,6 @@ def chat_stream():
         mimetype='text/event-stream',
         headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'},
     )
-
-    # return Response(
-    #     stream_with_context(chat.chat_stream(message)),
-    #     mimetype='text/event-stream',
-    #     headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'},
-    # )
-
 
 
     
