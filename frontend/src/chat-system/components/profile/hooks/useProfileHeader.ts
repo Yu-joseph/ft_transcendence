@@ -112,11 +112,8 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
     }
 /**_________________________________________________________________________________ */
     const handleSaveProfile = async (updatedData: any) => {
-        console.log('This is the Updated Info:', updatedData);
         try {
-            console.log('Handle Save profile data:', updatedData);
             const   {avatar, ...dataToSend} = updatedData;
-            console.log('what i send:', dataToSend);
             const   result = await fetch('/authent/update_users/', {
                 method: 'PATCH',
                 credentials: 'include',
@@ -128,16 +125,12 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
             if (!result.ok) {
                 throw new Error('Error updating information');
             }
-            // console.log('Result of the updated:', result);
-            console.log("Prev user info:", userInfo);
             if(updatedData.email.trim() === '')
                 updatedData.email = userInfo?.email;
             if(updatedData.fullname.trim() === '')
                 updatedData.fullname = userInfo?.fullname;
             if(updatedData.bio.trim() === '')
                 updatedData.bio = userInfo?.bio;
-
-            console.log('AVATAR URL IN HANDLESAVE PROFILE:', avatar);
 
             setUserInfo(prev => prev ? { ...prev, ...updatedData } : null);
             setIsEditing(false);

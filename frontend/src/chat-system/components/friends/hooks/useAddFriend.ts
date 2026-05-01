@@ -14,7 +14,6 @@ export  function useAddFriend() {
         setState(null);
         const username = input.trim();
         if(username === '' || username.length > 15) {
-            console.log('empty form!!');
             setState({status:'error', message: 'enter a valid username.'});
             return;
         }

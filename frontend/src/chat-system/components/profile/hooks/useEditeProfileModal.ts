@@ -17,7 +17,8 @@ export  function    useEditeProfileModale(initialData: UserProfileInfo, isOpen: 
 
     const validateForm = () => {
         const   newErrors: Record<string, string> = {};
-        const   isAnyFieldEmpty = formData.fullname.trim().length === 0 && formData.email.trim().length === 0 && formData.bio.trim().length === 0;
+        const   isAnyFieldEmpty = formData.fullname.trim().length === 0 
+                    && formData.email.trim().length === 0 && formData.bio.trim().length === 0;
         if(isAnyFieldEmpty) {
             newErrors.fullname = 'Please fill at least one field.';
             setErrors(newErrors);

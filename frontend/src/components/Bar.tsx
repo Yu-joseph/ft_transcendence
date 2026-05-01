@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { GiTicTacToe } from "react-icons/gi";
 import { useAuth } from "../auth/useAuth";
 import { chatSocket, gameSocket } from "../socket/sock";
+import { withMediaPrefix } from "../chat-system/components/shared/sharedUtils";
 
 
 function Bar() {
@@ -10,6 +11,14 @@ function Bar() {
   const { user, setUser } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const [avatar,setAvatar] = useState(withMediaPrefix(user?.avatar || null));
+
+  useEffect(() => {
+    chatSocket.on("update-avatar",(data:string) => {
+      setAvatar(data);
+    })
+
+  },[user?.id])
 
   const emitLogoutPlaying = () =>
   new Promise<void>((resolve) => {
@@ -69,7 +78,6 @@ function Bar() {
 
   const displayName = user?.username ?? "Player";
   const displayInitial = displayName.trim().charAt(0).toUpperCase() || "P";
-  const avatarUrl = user?.avatar ?? undefined;
 
   return (
     <header className="z-50 w-full bg-slate-800 border-b border-black shadow-lg">
@@ -101,9 +109,9 @@ function Bar() {
             onClick={() => setShowMenu((prev) => !prev)}
             className="flex items-center gap-4 rounded-2xl px-4 py-3 border border-transparent hover:border-amber-400/40 hover:bg-slate-800/60 transition"
           >
-            {avatarUrl ? (
+            {avatar ? (
               <img
-                src={avatarUrl}
+                src={avatar || ""}
                 alt={displayName}
                 className="h-11 w-11 rounded-full object-cover border border-amber-400"
               />
@@ -118,9 +126,9 @@ function Bar() {
           {showMenu && (
             <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-slate-700 bg-slate-900/95 p-4 shadow-2xl z-50">
               <div className="flex items-center gap-4 pb-3 border-b border-slate-700">
-                {avatarUrl ? (
+                {avatar ? (
                   <img
-                    src={avatarUrl}
+                    src={avatar}
                     alt={displayName}
                     className="h-12 w-12 rounded-full object-cover border border-amber-400"
                   />

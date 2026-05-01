@@ -72,7 +72,7 @@ export  function BlockedFriend() {
                 )}
             </div>
             {status && (
-                <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl font-bold shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 ${status?.type === 'success' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/20 text-rose-400 border border-rose-500/20'}`}>
+                <div className={`fixed bottom-40 left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl font-bold shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 ${status?.type === 'success' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/20 text-rose-400 border border-rose-500/20'}`}>
                     {status?.message}
                 </div>
             )}

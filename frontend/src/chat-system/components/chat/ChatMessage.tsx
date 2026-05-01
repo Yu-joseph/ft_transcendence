@@ -7,6 +7,7 @@ import { FaCheck, FaExclamation } from 'react-icons/fa';
 import { Clock, MessageCircle } from 'lucide-react';
 import { ErrorMessage, type TypeOfError } from '../shared/ErrorMessage';
 import { chatSocket } from '../../../socket/sock';
+import { withMediaPrefix } from '../shared/sharedUtils';
 
 interface UserInfo {
     id: string
@@ -42,6 +43,7 @@ export function ChatMessage({ messages, friendId, convId, isTyping, isLoading, o
             });
         }, 50);
     }, [messages, isTyping, user?.id])
+
     /**________________________________________________* */
     useEffect(() => {
         const onUpdateStatus = (data: { userId: string, status: string }) => {
@@ -58,7 +60,7 @@ export function ChatMessage({ messages, friendId, convId, isTyping, isLoading, o
         chatSocket.on('status:update', onUpdateStatus);
 
         return () => { chatSocket.off('status:update', onUpdateStatus) }
-    }, [])
+    }, [user?.id])
 
     /********************************************************************* */
     useEffect(() => {
@@ -69,13 +71,14 @@ export function ChatMessage({ messages, friendId, convId, isTyping, isLoading, o
             setError(null);
             try {
                 const result = await fetchClient<UserInfo>(`/friend/${friendId}`, {});
-                if (result && result.id)
+                if (result && result.id) {
+                    result.avatar = withMediaPrefix(result.avatar) ?? '';
                     setFriendInfo(result);
+                }
             } catch (err: any) {
                 console.log(err);
                 setFriendInfo(null);
                 setError(err.message || 'Failed to load user info');
-                // navigate('/');
             } finally {
                 setLoading(false);
             }

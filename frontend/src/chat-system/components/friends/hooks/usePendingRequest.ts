@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { fetchClient } from "../../../utils/fetchClient";
 // import { chatSocket } from "../../../../socket/sock";
 import { useRefresh } from "../../shared/useRefresh";
+import { withMediaPrefix } from "../../shared/sharedUtils";
 
 
 type RequestType = 'incoming' | 'outgoing';
@@ -29,8 +30,12 @@ export  function    usePendingRequest() {
                 setError(null);
                 setLoading(true);
                 const   result: PendingFriendType[] = await fetchClient('/friend/pending', {});
-                if(result)
+                if(result) {
+                    result.map(fr => {
+                        fr.userInfo.avatar = withMediaPrefix(fr.userInfo.avatar) ?? '';
+                    });
                     setPendingFriend(result);
+                }
             } catch (error: any) {
                 setError(error);
                 console.log('error herer:', error);

@@ -4,6 +4,7 @@ import { fetchClient } from "../../../utils/fetchClient";
 import { chatSocket } from "../../../../socket/sock";
 import { useRefresh } from "../../shared/useRefresh";
 import { useAuth } from "../../../../auth/useAuth";
+import { withMediaPrefix } from "../../shared/sharedUtils";
 
 interface UpdatedConversationEvent {
   lastMessage: {
@@ -41,14 +42,17 @@ export  function useConversationList(friendId: string | null){
         return () => { chatSocket.off('status:update', onUpdateStatus) }
     }, [user?.id])
 
+    /** ___________________________________________________________ */
     useEffect(() => {
         const loadConversation = async () => {
             try {
                 setError(null);
                 setLoading(true);
                 const result : ConversationType[] = await fetchClient('/chat/conversations', {});
-                if(result)
+                if(result) {
+                    result.map(conv => conv.otherUser.avatar = withMediaPrefix(conv.otherUser.avatar) ?? '');
                     setConversationList(result ?? []);
+                }
             } catch (error: any) {
                 setError(error);
                 setConversationList([]);
