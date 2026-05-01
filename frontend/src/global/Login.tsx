@@ -6,6 +6,7 @@ import { PasswordField } from "../components/PasswordField";
 // import {  } from "re";
 
 function Login() {
+  const usernameMaxLength = 20;
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -136,6 +137,11 @@ function Login() {
     setSignupError(null);
     setSignupSuccess(null);
 
+    if (signupUsername.length > usernameMaxLength) {
+      setSignupError(`Username must be ${usernameMaxLength} characters or fewer.`);
+      return;
+    }
+
     if (signupPassword !== signupPasswordConfirm) {
       setSignupError("Passwords do not match.");
       return;
@@ -163,7 +169,7 @@ function Login() {
 
       if (!response.ok) {
         if (!isJson) {
-          throw new Error("Signup endpoint returne signup.");
+          throw new Error("somthing went wrong.");
         }
         const message = typeof data?.error === "string" ? data.error : "Sign up failed. Please try again.";
         throw new Error(message);
@@ -326,6 +332,7 @@ function Login() {
                   id="signupUsername"
                   value={signupUsername}
                   onChange={(e) => setSignupUsername(e.target.value)}
+                  maxLength={usernameMaxLength}
                   className="w-full px-3 py-2 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
                   placeholder="Choose a unsername"
                   required

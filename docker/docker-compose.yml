@@ -48,9 +48,6 @@ services:
       - VITE_API_URL=http://localhost:8080/
       - VITE_CHAT_API=https://localhost:8443/api
     build: ../frontend
-    volumes:
-      - ../frontend:/app/
-      - /app/node_modules 
 
   nginx:
     build : ./nginx
@@ -83,6 +80,8 @@ services:
     depends_on:
       auth:
         condition: service_healthy
+    volumes:
+      - vault-ai:/vault/aii
   
   ai_game:
     build: ../backend/ai_service/ai_game
@@ -121,6 +120,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
+      - vault-secrets:/vault/secrets
       - vault-chat:/vault/chat
     environment:
       SECRET_KEY: ${DJANGO_SECRET_KEY}
