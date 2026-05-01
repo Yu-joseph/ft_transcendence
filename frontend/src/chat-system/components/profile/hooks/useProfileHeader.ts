@@ -116,6 +116,7 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
         try {
             console.log('Handle Save profile data:', updatedData);
             const   {avatar, ...dataToSend} = updatedData;
+            console.log('what i send:', dataToSend);
             const   result = await fetch('/authent/update_users/', {
                 method: 'PATCH',
                 credentials: 'include',

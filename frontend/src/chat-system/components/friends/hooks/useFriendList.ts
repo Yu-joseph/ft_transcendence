@@ -33,7 +33,7 @@ export  function    useFriendList() {
         }
         chatSocket.on('status:update', onStatusUpdate);
         return () => { chatSocket.off('status:update', onStatusUpdate); }
-    }, [])
+    }, [user?.id])
     /***________________________________________________________________ */
     useEffect(() => {
         const   fetchUserList = async () => {
@@ -52,7 +52,7 @@ export  function    useFriendList() {
             }
         }
         fetchUserList();
-    }, [user, refresh])
+    }, [user?.id, refresh])
     
     /************************************** */
     const   handleRemoveFriend = async (friendId: string) => {
@@ -100,6 +100,5 @@ export  function    useFriendList() {
         fiteredFriend,
         loading,
         error
-        
     };
 }

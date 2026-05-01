@@ -3,6 +3,7 @@ import type { ConversationType } from "../../../types/conversation.types";
 import { fetchClient } from "../../../utils/fetchClient";
 import { chatSocket } from "../../../../socket/sock";
 import { useRefresh } from "../../shared/useRefresh";
+import { useAuth } from "../../../../auth/useAuth";
 
 interface UpdatedConversationEvent {
   lastMessage: {
@@ -20,6 +21,7 @@ export  function useConversationList(friendId: string | null){
     const   [error, setError] = useState<Error | null>(null);
     const   [loading, setLoading] = useState<boolean>(false);
     const   refresh = useRefresh();
+    const   {user} = useAuth();
     /**____________ Hooks __________ */
 
     useEffect(() => {
@@ -37,7 +39,7 @@ export  function useConversationList(friendId: string | null){
         }
         chatSocket.on('status:update', onUpdateStatus);
         return () => { chatSocket.off('status:update', onUpdateStatus) }
-    }, [])
+    }, [user?.id])
 
     useEffect(() => {
         const loadConversation = async () => {
@@ -56,7 +58,7 @@ export  function useConversationList(friendId: string | null){
             }
         };
         loadConversation();
-    }, [friendId, refresh])
+    }, [friendId, refresh, user?.id])
 
     /**__________ Socket Event For Updating Conversation List Order ________ */
 
@@ -85,7 +87,7 @@ export  function useConversationList(friendId: string | null){
         return () => {
             chatSocket.off('conversation:updated', onConversationUpdate);
         }
-  }, [])
+  }, [user?.id])
   /**____________________________________________________ */
   return {
     conversationList,
