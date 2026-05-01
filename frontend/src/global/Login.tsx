@@ -205,10 +205,7 @@ function Login() {
       <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
         <div className="text-center md:text-left space-y-4">
           <h1 className="text-5xl font-extrabold leading-tight text-white">
-            <span className="bg-linear-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">Tic</span>{" "}
-            <span className="bg-linear-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">Tac</span>{" "}
-            <span className="bg-linear-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">Toe</span>{" "}
-            <span className="bg-linear-to-r from-amber-500 to-indigo-500 bg-clip-text text-transparent">Arena</span>
+            <span className="bg-linear-to-r text-white bg-clip-text">Tic TAc tOe Arena</span>{" "}
           </h1>
           <p className="text-slate-200 text-lg max-w-lg">
             Sign in to join live matches, climb the ladder, and create tournaments with your friends.
