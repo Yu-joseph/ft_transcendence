@@ -15,6 +15,43 @@ import { getUserRoom, isPlayerInActiveMatch } from '../onevone/lobbyPresence';
 
 export { advanceTournamentBracket } from './tournamentEngine';
 
+async function hydrateWaitingTournaments() {
+  const dbTournaments = await prisma.tournament.findMany({
+    where: { status: 'waiting' },
+    include: {
+      TournamentParticipant: {
+        include: { User: true },
+      },
+    },
+  });
+
+  for (const t of dbTournaments) {
+    if (tournaments.has(t.id)) continue;
+
+    const players = t.TournamentParticipant
+      .slice()
+      .sort((a, b) => a.seed - b.seed)
+      .map((tp) => ({
+        id: tp.userId,
+        username: tp.User?.username ?? 'Unknown',
+        avatar: tp.User?.avatar ?? null,
+        socketId: '',
+        isReady: false,
+      }));
+
+    tournaments.set(t.id, {
+      id: t.id,
+      name: t.name,
+      creatorId: t.creatorId,
+      players,
+      bracket: [],
+      status: 'waiting',
+      currentRound: 1,
+      winner: t.winnerId ?? null,
+    });
+  }
+}
+
 export function setupTournamentHandlers(io: Server) {
   io.on('connection', (socket: Socket) => {
     socket.on(
@@ -400,13 +437,22 @@ export function setupTournamentHandlers(io: Server) {
       console.log(`${caller.username} left tournament \"${tournament.name}\"`);
     });
 
-    socket.on('get-tournaments', () => {
+    socket.on('get-tournaments', async () => {
+      try {
+        await hydrateWaitingTournaments();
+      } catch (err) {
+        console.error('Failed to hydrate tournaments:', err);
+      }
+
       const list = Array.from(tournaments.values())
         .filter((t) => t.status === 'waiting')
         .map((t) => ({
           tournamentId: t.id,
           name: t.name,
-          creatorName: t.players[0]?.username,
+          creatorName:
+            t.players.find((p) => p.id === t.creatorId)?.username ??
+            t.players[0]?.username ??
+            'Unknown',
           playerCount: t.players.length,
           status: t.status,
         }));
@@ -466,3 +512,4 @@ export function setupTournamentHandlers(io: Server) {
     });
   });
 }
+
