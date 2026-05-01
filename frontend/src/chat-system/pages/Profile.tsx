@@ -78,28 +78,45 @@ export function Profile() {
 
     const   type: TypeOfError = 'profile information';
     return (
-        <div className="text-white overflow-y-auto h-full w-full bg-slate-950 p-4 md:p-6 lg:p-8 pb-24">
-            <div className="max-w-4xl mx-auto space-y-8">
-                {
-                    (loadStat || loadHeaderInfo) && (
-                        <SkeletonProfileUi />
-                    )
-                }
-                {
-                    !loadStat && !loadHeaderInfo && (statError || errHeaderInfo) && (<ErrorMessage message={statError ?? null} typeOfError={type} /> )
-                }
-                {
-                    !loadStat && !loadHeaderInfo && !statError && !errHeaderInfo && 
-                    (
-                    <>
-                        <ProfileHeader  userGameStat={userStat} isOwnProfile={isOwnProfile}
-                                        userInfo={userInfo} setUserInfo={setUserInfo}
-                                        />
-                        <UserStatCard userGameStat={userStat} isOwnProfile={isOwnProfile} />
-                    </>
-                    )
-                }
+        <main className="relative h-full w-full bg-slate-950 overflow-y-auto overflow-x-hidden no-scrollbar">
+            {/* Background Decorative Elements */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-full z-0 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 blur-[120px] rounded-full"></div>
+                <div className="absolute bottom-[10%] right-[-5%] w-[30%] h-[30%] bg-blue-500/10 blur-[100px] rounded-full"></div>
             </div>
-        </div>
+
+            <div className="relative z-10 p-4 md:p-8 lg:p-12 pb-24 lg:pb-32">
+                <div className="max-w-5xl mx-auto space-y-8 md:space-y-12">
+                    {
+                        (loadStat || loadHeaderInfo) && (
+                            <SkeletonProfileUi />
+                        )
+                    }
+                    {
+                        !loadStat && !loadHeaderInfo && (statError || errHeaderInfo) && (
+                            <div className="flex justify-center py-12">
+                                <ErrorMessage message={statError ?? errHeaderInfo ?? null} typeOfError={type} />
+                            </div>
+                        )
+                    }
+                    {
+                        !loadStat && !loadHeaderInfo && !statError && !errHeaderInfo && (
+                            <div className="space-y-8 md:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                <ProfileHeader 
+                                    userGameStat={userStat} 
+                                    isOwnProfile={isOwnProfile}
+                                    userInfo={userInfo} 
+                                    setUserInfo={setUserInfo}
+                                />
+                                <UserStatCard 
+                                    userGameStat={userStat} 
+                                    isOwnProfile={isOwnProfile} 
+                                />
+                            </div>
+                        )
+                    }
+                </div>
+            </div>
+        </main>
     );
 }

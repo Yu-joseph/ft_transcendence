@@ -48,107 +48,117 @@ export function ProfileHeader({ userGameStat, isOwnProfile, userInfo, setUserInf
         return <Navigate state={{ selectedFriendId: gotToChat }} to={'/Chat'} />
 
     return (
-        <div className="bg-slate-800/40 border border-white/10 backdrop-blur-lg rounded-3xl p-6 md:p-8
-            flex flex-col md:flex-row items-center gap-6 relative overflow-hidden shadow-xl">
-
-            <div className="absolute top-0 right-0 bg-blue-500/10 h-64 w-64 rounded-full blur-3xl -z-10"></div>
+        <section className="relative group">
+            {/* Decorative background glow */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-[2rem] blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200"></div>
             
-            <div className="relative shrink-0">
-                <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-blue-500/30 p-1">
-                    <img
-                        src={`${userInfo?.avatar}`}
-                        alt="User Avatar"
-                        className="w-full h-full object-cover rounded-full flex items-center justify-center"
-                    />
-                </div>
-                <div className="absolute bottom-2 right-2 bg-green-500 h-5 w-5 rounded-full border-4 border-slate-900 shadow-sm"></div>
-            </div>
-
-            <div className="flex-1 text-center md:text-left">
-                <div className="">
-                    <h1 className="text-3xl font-bold text-white flex items-center gap-2 md:text-4xl">
-                        {userInfo?.username}
-                        {/* <Shield className="text-blue-400 w-6 h-6" /> */}
-                    </h1>
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/30 text-orange-400
-                            px-3 py-1 rounded-lg shadow[0_0_10px_rgba(249, 115, 22, 0.15)]">
-                            <GiPodium className="w-4 h-4" />
-                            <span className="font-bold text-sm tracking-wide">Rank {userGameStat?.rank}</span>
+            <div className="relative bg-slate-900/60 border border-white/10 backdrop-blur-2xl rounded-[2rem] p-6 md:p-10
+                flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-10 overflow-hidden shadow-2xl">
+                
+                {/* Profile Picture Section */}
+                <div className="relative shrink-0">
+                    <div className="relative group/avatar">
+                        <div className="absolute -inset-1.5 bg-gradient-to-tr from-indigo-500 via-purple-500 to-blue-500 rounded-full blur opacity-40 group-hover/avatar:opacity-70 transition duration-500 animate-spin-slow"></div>
+                        <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-slate-900 overflow-hidden bg-slate-800 shadow-2xl">
+                            <img
+                                src={`${userInfo?.avatar}`}
+                                alt={userInfo?.username || 'Avatar'}
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover/avatar:scale-110"
+                            />
                         </div>
-                        <div className="flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/30 text-bule-400
-                            px-3 py-1 rounded-lg shadow[0_0_10px_rgba(59,130,246,0.15)]">
-                            <Zap className="w-4 h-4 text-blue-400"/>
-                            <span className="font-bold text-sm tracking-wide">{userGameStat?.xp}</span>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-4 mt-4 justify-center md:justify-start text-slate-300">
-                        <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 border border-white/5 rounded-full backdrop-blur-sm">
-                            <Fingerprint className="w-4 h-4 text-blue-400" />
-                            <span className="text-sm font-medium">{userInfo?.fullname ?? 'Anonymous User'}</span>
-                        </div>
-                        <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 backdrop-blur-sm">
-                            <Mail className="w-4 h-4 text-purple-400" />
-                            {userInfo?.email}
-                        </div>
-                        <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 backdrop-blur-sm">
-                            <Calendar className="text-emerald-400 w-4 h-4" />
-                            {joinedDate}
+                        {/* Status Indicator */}
+                        <div className={`absolute bottom-2 right-2 h-6 w-6 rounded-full border-4 border-slate-900 shadow-xl
+                            ${userInfo?.user_status === 'Online' ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-slate-500 shadow-slate-500/50'}`}>
+                            <div className={`absolute inset-0 rounded-full animate-ping opacity-20 ${userInfo?.user_status === 'Online' ? 'bg-emerald-400' : 'bg-slate-400'}`}></div>
                         </div>
                     </div>
                 </div>
 
-                <p className="text-slate-400 mt-3 text-sm max-w-xl mx-auto md:mx-0 leading-relaxed">{userInfo?.bio ?? 'No description'}</p>
-            </div>
+                {/* Content Section */}
+                <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left space-y-5">
+                    <div className="space-y-3 w-full">
+                        <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4">
+                            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight drop-shadow-sm">
+                                {userInfo?.username}
+                            </h1>
+                            <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+                                    <GiPodium className="w-3.5 h-3.5" />
+                                    Rank {userGameStat?.rank || 0}
+                                </div>
+                                <div className="flex items-center gap-1.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+                                    <Zap className="w-3.5 h-3.5" />
+                                    {userGameStat?.xp || 0} XP
+                                </div>
+                            </div>
+                        </div>
 
-            <div className="flex flex-col sm:flex-row w-full gap-3 md:w-auto mt-4 md:mt-0 justify-center">
-                {isOwnProfile ? (
-                    <>
-                        {
-                            !isEditing && 
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-slate-400">
+                            <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-[13px] font-medium backdrop-blur-sm transition-colors hover:bg-white/10">
+                                <Fingerprint className="w-3.5 h-3.5 text-indigo-400" />
+                                {userInfo?.fullname || 'Anonymous'}
+                            </div>
+                            <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-[13px] font-medium backdrop-blur-sm transition-colors hover:bg-white/10">
+                                <Mail className="w-3.5 h-3.5 text-purple-400" />
+                                {userInfo?.email}
+                            </div>
+                            <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-[13px] font-medium backdrop-blur-sm transition-colors hover:bg-white/10">
+                                <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                                Joined {joinedDate}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="w-full max-w-xl">
+                        <p className="text-slate-400 text-sm md:text-[15px] leading-relaxed font-medium">
+                            {userInfo?.bio || 'No bio provided yet. This user prefers to keep a mysterious profile.'}
+                        </p>
+                    </div>
+
+                    {/* Actions Row */}
+                    <div className="flex flex-col sm:flex-row items-center gap-4 w-full pt-2">
+                        {isOwnProfile ? (
                             <button
-                            onClick={() => setIsEditing(true)}
-                            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl
-                            font-medium transition-all duration-300 shadow-lg shadow-blue-500/25 cursor-pointer"
+                                onClick={() => setIsEditing(true)}
+                                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white text-slate-900 hover:bg-slate-200 
+                                px-8 py-3.5 rounded-2xl font-bold transition-all duration-300 shadow-xl shadow-white/10 active:scale-95"
                             >
-                                    <Edit size={16} className="w-4 h-4" />Edit Profile
+                                <Edit size={18} />
+                                Edit Profile
                             </button>
-                        }
-                    </>
-                ) : (
-                    <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                        <button
-                            onClick={() => handleStartConversation(userInfo?.isFriend === 'accepted' ? userInfo?.id : null)}
-                            disabled={userInfo?.isFriend === 'accepted' ? false : true}
-                            title={userInfo?.isFriend !== 'accepted' ? 'You must be friends to send a message' : ''}
-                            className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white
-                                px-5 py-3 rounded-xl font-medium transition-all duration-300 shadow-lg shadow-indigo-500/30 cursor-pointer
-                                disabled:cursor-not-allowed disabled:opacity-50">
-                            <MessageCircle className="w-4 h-4" />
-                            Message
-                        </button>
-                        <button
-                            onClick={currentFriendButtonConf.onClick}
-                            disabled={currentFriendButtonConf.disabled}
-                            className=
-                            {`flex-1 flex items-center justify-center gap-2 ${currentFriendButtonConf.classname}
-                                 px-5 py-3 rounded-xl font-medium transition-all duration-300 backdrop-blur-md cursor-pointer`
-                            }
-                        >
-                            {currentFriendButtonConf.icon}
-                            {currentFriendButtonConf.label}
-                        </button>
+                        ) : (
+                            <div className="flex flex-col sm:flex-row gap-3 w-full">
+                                <button
+                                    onClick={() => handleStartConversation(userInfo?.isFriend === 'accepted' ? userInfo?.id : null)}
+                                    disabled={userInfo?.isFriend !== 'accepted'}
+                                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white
+                                        px-8 py-3.5 rounded-2xl font-bold transition-all duration-300 shadow-xl shadow-indigo-500/20 
+                                        disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                                >
+                                    <MessageCircle size={18} />
+                                    Send Message
+                                </button>
+                                <button
+                                    onClick={currentFriendButtonConf.onClick}
+                                    disabled={currentFriendButtonConf.disabled}
+                                    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl font-bold 
+                                        transition-all duration-300 backdrop-blur-md active:scale-95 shadow-xl ${currentFriendButtonConf.classname}`}
+                                >
+                                    {currentFriendButtonConf.icon}
+                                    {currentFriendButtonConf.label}
+                                </button>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
+
+                <EditProfileModal
+                    isOpen={isEditing} 
+                    onClose={() => setIsEditing(false)} 
+                    initialData={userInfo}
+                    onSave={handleSaveProfile}
+                />
             </div>
-             {/* Edit profile component */}
-            <EditProfileModal
-                isOpen={isEditing} 
-                onClose={() => setIsEditing(false)} 
-                initialData={userInfo}
-                onSave={handleSaveProfile}
-            />
-        </div>
-    )
+        </section>
+    );
 }
