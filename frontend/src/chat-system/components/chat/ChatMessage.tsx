@@ -20,15 +20,16 @@ interface ChatMessageProp {
     messages: MessageItem[]
     convId: string | null
     isTyping: boolean
+    isLoading: boolean
     onBack?: () => void
 }
 
-export function ChatMessage({ messages, friendId, convId, isTyping, onBack }: ChatMessageProp) {
+export function ChatMessage({ messages, friendId, convId, isTyping, isLoading, onBack }: ChatMessageProp) {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [friendInfo, setFriendInfo] = useState<UserInfo | null>(null);
     const { user } = useAuth();
-    const currentUserId = user?.id as string;
+    const currentUserId = user?.id;
     const navigate = useNavigate();
     const scroolToBottomRef = useRef<HTMLDivElement | null>(null);
     /**__________ HOOKS ____________________ */
@@ -175,14 +176,26 @@ export function ChatMessage({ messages, friendId, convId, isTyping, onBack }: Ch
             {/* ***  here messages or history of messages displayed   ** */}
             <div className="flex-1 p-4 md:p-6 overflow-y-auto no-scrollbar flex flex-col gap-4" >
                 {
-                    messages.length === 0 ? (
-                        <div className='flex flex-col items-center justify-center h-full opacity-40'>
-                             <div className="p-4 bg-slate-800/50 rounded-full mb-3">
-                                <MessageCircle size={32} className="text-slate-400" />
-                             </div>
-                             <p className="text-slate-400 font-medium tracking-tight">Say Hello!</p>
+                    isLoading ? (
+                        <div className="flex flex-col gap-4">
+                            {[1, 2, 3, 4].map((i) => (
+                                <div 
+                                    key={i} 
+                                    className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'} animate-pulse`}
+                                >
+                                    <div className="w-2/3 h-12 bg-slate-800/40 rounded-2xl rounded-bl-sm" />
+                                </div>
+                            ))}
                         </div>
-                    ) :
+                    ) : messages.length === 0 ? (
+                        /*  Show empty state if no messages on that conv */
+                        <div className='flex flex-col items-center justify-center h-full opacity-40'>
+                            <div className="p-4 bg-slate-800/50 rounded-full mb-3">
+                                <MessageCircle size={32} className="text-slate-400" />
+                            </div>
+                            <p className="text-slate-400 font-medium tracking-tight">Say Hello!</p>
+                        </div>
+                    ) : (
                         Array.isArray(messages) && messages.map((m, index) => {
                             const isMe = m.User.id === currentUserId;
                             return (
@@ -207,6 +220,7 @@ export function ChatMessage({ messages, friendId, convId, isTyping, onBack }: Ch
                                 </div>
                             );
                         })
+                    )
                 }
                 {/* ** here display the typing indicator animation  * */}
                 {

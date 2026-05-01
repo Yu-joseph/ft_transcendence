@@ -3,6 +3,7 @@ import { useAuth } from "../../../../auth/useAuth";
 import { chatSocket } from '../../../../socket/sock';
 import type { MessageItem, MessageState } from "../../../pages/Chat";
 
+const CHAT_API_BASE = (import.meta.env.VITE_CHAT_API as string) || '';
 
 export interface ChatInputPorps {
     convId: string | null
@@ -77,7 +78,10 @@ export  const   useChatInput = ({convId, setMessages, friendId}: ChatInputPorps)
             tempId: messageToSend.tempId
         }]); // here render new message for the sender before sending http-req
         try {
-            const   response = await fetch((import.meta.env.VITE_CHAT_API as string ?? 'http://localhost:80/api') + `/chat/conversations/${convId}/message`, {
+            if (!CHAT_API_BASE) {
+                console.error("VITE_CHAT_API is not defined in the environment!");
+            }
+            const   response = await fetch(`${CHAT_API_BASE}/chat/conversations/${convId}/message`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {

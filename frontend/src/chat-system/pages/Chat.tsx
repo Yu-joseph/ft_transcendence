@@ -39,6 +39,7 @@ export function Chat() {
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(friendIdFromLocation);
   const [isBlocked, setIsblocked] = useState<boolean>(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false); //when switching conversations, this state it stop jumping
 
   const loadedConvIdRef = useRef<string | null>(null);
   const loadedFriendIdRef = useRef<string | null>(null);
@@ -84,6 +85,9 @@ export function Chat() {
     }
   }, [user?.id, selectedConvId]);
 
+
+  /** ____________ Fetch History ________________ */
+
   useEffect(() => {
     if (!user?.id)
       return;
@@ -100,6 +104,7 @@ export function Chat() {
     const abortController = new AbortController();
 
     const fetchHistory = async () => {
+      setIsLoadingHistory(true);
       try {
         if (selectedConvId) {
           setMessages([]);
@@ -135,6 +140,8 @@ export function Chat() {
         if (!selectedConvId)
           setSelectedFriendId(null);
         console.error(err);
+      } finally {
+        setIsLoadingHistory(false);
       }
     };
 
@@ -161,6 +168,7 @@ export function Chat() {
           friendId={selectedFriendId}
           convId={selectedConvId}
           isTyping={isTyping}
+          isLoading={isLoadingHistory}
           onBack={() => {
             setSelectedFriendId(null);
             setSelectedConvId(null);
