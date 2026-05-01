@@ -85,7 +85,7 @@ export  const   useChatInput = ({convId, setMessages, friendId}: ChatInputPorps)
                 },
                 body: JSON.stringify(messageToSend)
             });
-
+            console.log('error on send:', response);
             let result: any;
             try {
                 result = await response.json();

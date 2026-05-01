@@ -1,6 +1,6 @@
 import  {rateLimit}  from 'express-rate-limit';
 
-const MAX_REQ = 5
+const MAX_REQ = 10
 
 export  const friendRequestLimiter = rateLimit({
   windowMs: 60 * 60 * 100,

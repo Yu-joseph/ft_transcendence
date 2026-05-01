@@ -3,13 +3,14 @@ import { ErrorMessage, type TypeOfError } from "../shared/ErrorMessage";
 import { useNavigate } from "react-router-dom";
 
 interface ConversationListProps {
-    setConvId: React.Dispatch<React.SetStateAction<string | null>>;
+    onSelectConversation: (convId: string, friendId: string) => void;
+    // setConvId: React.Dispatch<React.SetStateAction<string | null>>;
     convId: string | null
-    selectFriendId: React.Dispatch<React.SetStateAction<string | null>>
+    // selectFriendId: React.Dispatch<React.SetStateAction<string | null>>
     friendId: string | null
 }
 
-export function ConversationList({ setConvId, convId, selectFriendId, friendId }: ConversationListProps) {
+export function ConversationList({ onSelectConversation, convId, friendId }: ConversationListProps) {
     /**______ Costume Hooks _______________ */
     const { loading, error, conversationList } = useConversationList(friendId);
     const navigate = useNavigate();
@@ -86,8 +87,9 @@ export function ConversationList({ setConvId, convId, selectFriendId, friendId }
                         conversationList.map((conv) => (
                             <li
                                 onClick={() => {
-                                    setConvId(conv.id);
-                                    selectFriendId(conv.otherUser.id as string);
+                                    onSelectConversation(conv.id, conv.otherUser.id as string)
+                                    // setConvId(conv.id);
+                                    // selectFriendId(conv.otherUser.id as string);
                                 }}
                                 key={conv.id}
                                 className={`group flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-200 ${
