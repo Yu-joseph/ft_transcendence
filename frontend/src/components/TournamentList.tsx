@@ -14,6 +14,7 @@ type TournamentEntry = {
 type JoinedTournamentEntry = {
   tournamentId: string;
   status: string;
+  eliminated: boolean;
 };
 
 export default function TournamentList() {
@@ -49,7 +50,7 @@ export default function TournamentList() {
         const active = getStoredActiveTournament();
         if (active?.tournamentId) {
           const stillActive = data.some(
-            (entry) => entry.tournamentId === active.tournamentId && entry.status !== "finished",
+            (entry) => entry.tournamentId === active.tournamentId && entry.eliminated == false,
           );
           if (!stillActive) {
             sessionStorage.removeItem("activeTournament");

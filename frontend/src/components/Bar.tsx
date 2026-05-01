@@ -5,11 +5,29 @@ import { useAuth } from "../auth/useAuth";
 import { chatSocket, gameSocket } from "../socket/sock";
 
 
+const MEDIA_PREFIX = "/authent/media";
+
+export function withMediaPrefix(avatar: string | null): string | null {
+  if (!avatar) return null;
+  if (avatar.startsWith("http://") || avatar.startsWith("https://")) return avatar;
+  if (avatar.startsWith(MEDIA_PREFIX)) return avatar;
+  if (avatar.startsWith("/")) return `${MEDIA_PREFIX}${avatar}`;
+  return `${MEDIA_PREFIX}/${avatar}`;
+}
+
 function Bar() {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const [avatar,setAvatar] = useState(withMediaPrefix(user?.avatar || null));
+
+  useEffect(() => {
+    chatSocket.on("update-avatar",(data:string) => {
+      setAvatar(data);
+    })
+
+  },[user?.id])
 
   const emitLogoutPlaying = () =>
   new Promise<void>((resolve) => {
@@ -106,9 +124,9 @@ function Bar() {
             onClick={() => setShowMenu((prev) => !prev)}
             className="flex items-center gap-4 rounded-2xl px-4 py-3 border border-transparent hover:border-amber-400/40 hover:bg-slate-800/60 transition"
           >
-            {avatarUrl ? (
+            {avatar ? (
               <img
-                src={avatarUrl}
+                src={avatar || ""}
                 alt={displayName}
                 className="h-11 w-11 rounded-full object-cover border border-amber-400"
               />
@@ -123,9 +141,9 @@ function Bar() {
           {showMenu && (
             <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-slate-700 bg-slate-900/95 p-4 shadow-2xl z-50">
               <div className="flex items-center gap-4 pb-3 border-b border-slate-700">
-                {avatarUrl ? (
+                {avatar ? (
                   <img
-                    src={avatarUrl}
+                    src={avatar}
                     alt={displayName}
                     className="h-12 w-12 rounded-full object-cover border border-amber-400"
                   />
