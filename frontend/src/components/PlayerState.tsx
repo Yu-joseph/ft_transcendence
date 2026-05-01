@@ -7,6 +7,7 @@ type PlayerStats = {
   losses: number;
   xp: number;
   rank: number;
+  tournamentWins: number;
 };
 
 type PlayerStateProps = {
@@ -87,6 +88,14 @@ export default function PlayerState({ previewStats }: PlayerStateProps) {
             <div className="flex flex-col items-center bg-slate-900/60 hover:bg-slate-700/40 rounded-lg py-4">
               <span className="text-2xl font-bold text-amber-300">#{stats.rank}</span>
               <span className="text-xs text-gray-400 mt-1 uppercase tracking-wide">Rank</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2 flex flex-col items-center bg-slate-900/60 hover:bg-slate-700/40 rounded-lg py-4">
+              <span className="text-2xl font-bold text-violet-300">{stats.tournamentWins}</span>
+              <span className="text-xs text-gray-400 mt-1 uppercase tracking-wide">
+                Tournament Wins
+              </span>
             </div>
           </div>
 

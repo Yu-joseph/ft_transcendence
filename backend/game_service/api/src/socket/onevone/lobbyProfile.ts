@@ -5,6 +5,16 @@ type UserProfile = {
   avatar: string | null;
 };
 
+const MEDIA_PREFIX = "/authent/media";
+
+function withMediaPrefix(avatar: string | null): string | null {
+  if (!avatar) return null;
+  if (avatar.startsWith("http://") || avatar.startsWith("https://")) return avatar;
+  if (avatar.startsWith(MEDIA_PREFIX)) return avatar;
+  if (avatar.startsWith("/")) return `${MEDIA_PREFIX}${avatar}`;
+  return `${MEDIA_PREFIX}/${avatar}`;
+}
+
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -15,6 +25,6 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 
   return {
     username: user.username,
-    avatar: user.avatar ?? null,
+    avatar: withMediaPrefix(user.avatar ?? null),
   };
 }

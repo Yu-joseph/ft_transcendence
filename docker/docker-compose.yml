@@ -46,8 +46,11 @@ services:
       - app-network
     environment:
       - VITE_API_URL=http://localhost:8080/
-      - VITE_CHAT_API=https://10.30.234.188:8443/api
+      - VITE_CHAT_API=https://localhost:8443/api
     build: ../frontend
+    volumes:
+      - ../frontend:/app/
+      - /app/node_modules 
 
   nginx:
     build : ./nginx
