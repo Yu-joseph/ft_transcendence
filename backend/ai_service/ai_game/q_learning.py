@@ -1,9 +1,11 @@
 import json
 import random
 from utils import check_winner, get_state, get_available_actions, action_to_key
+import os
 
 try:
-    with open("q_table.json", "r") as f:
+    BASE_DIR = os.path.dirname(os.abspath(__file__))
+    with open(os.path.join(BASE_DIR , "q_table.json") , "r") as f:
         content = f.read().strip()
         q_table = json.loads(content) if content else {}
 except Exception:

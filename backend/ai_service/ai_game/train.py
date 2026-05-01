@@ -6,7 +6,7 @@ from utils import check_winner, get_state, get_available_actions, action_to_key
 
 LEARNING_RATE = 0.1
 GAMMA = 0.95
-TRAINING_GAMES = 5000000
+TRAINING_GAMES = 50000
 EPSILON_START = 0.3
 EPSILON_END = 0.01
 EPSILON_DECAY = (EPSILON_START - EPSILON_END) / TRAINING_GAMES
@@ -37,25 +37,6 @@ def init_q_state(state, actions):
 
 
 #Q(s, a)            = Q(s, a) + α * (reward + γ * max(Q(s', a')) - Q(s, a))
-def update_q_value(state, action, reward, next_state, next_actions):
-    key = action_to_key(action)
-    if state not in q_table or key not in q_table[state]:
-        return
-
-    if next_state in q_table and next_actions:
-        max_next_q = max(
-            (q_table[next_state].get(action_to_key(a), 0.0) for a in next_actions), default=0.0)
-    else:
-        max_next_q = 0.0
-
-    current_q = q_table[state][key]
-    q_table[state][key] = current_q + LEARNING_RATE * (
-        reward + GAMMA * max_next_q - current_q
-    )
-
-
-
-
 
 def count_pieces(board, player):
     count = 0
@@ -204,7 +185,7 @@ def play_training_game():
             player = 'X'
     
     epsilon = max(EPSILON_END, epsilon - EPSILON_DECAY)
-            
+
                     
 
 
@@ -217,7 +198,7 @@ def train():
     for game in range(1, TRAINING_GAMES + 1):
         play_training_game()
 
-        if game % 100000 == 0:
+        if game % 5000 == 0:
             pct = game * 100 // TRAINING_GAMES
             print(f"  {game:>9,} / {TRAINING_GAMES:,} ({pct:>3}%) | states: {len(q_table):,} | e: {epsilon:.4f}")
 

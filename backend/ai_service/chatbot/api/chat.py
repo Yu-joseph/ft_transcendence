@@ -31,18 +31,22 @@ def chat_stream():
     message    = data.get('message', '').strip()
     session_id = data.get('session_id')
 
+    if not message:
+        return jsonify({'error': 'Empty message'}), 400
 
     if len(message) > MAX_INPUT_CHARS:
         return jsonify({"error" : f"Message too long (max {MAX_INPUT_CHARS} characters)" }) , 400
 
-    if not message:
-        return jsonify({'error': 'Empty message'}), 400
 
     if not session_id:
         return jsonify({'error': 'session_id is required'}), 400
     
     if not check_session_exist(session_id , user_id):
         return jsonify({'error': 'Session not found or access denied'}), 403
+    
+    # if check_rate_limit(user_id) == False:
+    #     return jsonify({'error': 'limit'}), 403
+
 
     # chat = get_chat()
     # chat.set_session(session_id)

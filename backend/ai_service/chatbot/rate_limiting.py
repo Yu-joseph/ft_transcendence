@@ -6,8 +6,8 @@ from database.models import UserUsage
 
 r = redis.Redis(host="redis", port=6379, decode_responses=True)
 
-LIMIT_PER_MINUTE = 10
-LIMIT_PER_DAY    = 1000
+LIMIT_PER_MINUTE = 5
+LIMIT_PER_DAY    = 500
 SYNC_EVERY       = 10
 SAFETY_ZONE      = 50 
 
@@ -15,7 +15,6 @@ SAFETY_ZONE      = 50
 
 def sync_to_postgres(user_id: str, daily_count: int):
     try:
-        # usage = UserUsage.query.get(user_id)
         usage = db.session.get(UserUsage, user_id)
 
         if not usage:
@@ -38,7 +37,6 @@ def seconds_until_midnight():
 
 
 def restore_from_postgres(user_id  : str) -> int:
-    # usage = UserUsage.query.get(user_id)
     usage = db.session.get(UserUsage, user_id)
 
     today = datetime.utcnow().date()
@@ -54,7 +52,6 @@ def restore_from_postgres(user_id  : str) -> int:
 
 def check_rate_limit_postgres_only(user_id: str):
     try:
-        # usage = UserUsage.query.get(user_id)
         usage = db.session.get(UserUsage, user_id)
 
         today = datetime.utcnow().date()
@@ -119,7 +116,6 @@ def check_rate_limit(user_id : str):
         
         return True
 
-    
     
     except redis.RedisError as e:
         print(f"[REDIS DOWN] {e} — falling back to Postgres")
