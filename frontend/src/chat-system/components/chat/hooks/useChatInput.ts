@@ -175,7 +175,7 @@ export  const   useChatInput = ({convId, setMessages, friendId}: ChatInputPorps)
             });
         }
     };
-}, [convId, friendId])
+}, [convId, friendId, user?.id])
 /************************************************************************************ */
     return {
         handleChange,

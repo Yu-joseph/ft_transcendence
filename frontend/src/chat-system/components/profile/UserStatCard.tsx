@@ -15,7 +15,7 @@ export function UserStatCard({ userGameStat, isOwnProfile }: UserStatCardProps) 
             <h1 className="text-orange-400 text-xl font-bold mb-1 md:text-2xl">{isOwnProfile ? 'You Progress' : 'Arena Progress'}</h1>
             <p className="text-slate-400 text-sm mb-8">Match statictics</p>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 grid-colse gap-4 md:gap-8 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-3 grid-colse gap-4 md:gap-8 mb-8">
                 <div className="bg-[#1A2542] rounded-xl p-6 md:p-8 flex flex-col items-center justify-center border border-emerald-500/10
                 hover:border-emerald-500/30 transition-colors shadow-inner">
                     <span className="text-emerald-400 text-5xl font-black mb-2 md:text-6xl drop-shadow-[0_0_15px_rgba(52,211,153,0.2)]">{userGameStat?.wins}</span>
@@ -33,12 +33,6 @@ export function UserStatCard({ userGameStat, isOwnProfile }: UserStatCardProps) 
                     <span className="text-rose-400 text-5xl font-black mb-2 md:text-6xl drop-shadow-[0_0_15px_rgba(244,63,94,0.2)]">
                         {userGameStat?.tournamentWins}</span>
                     <span className="text-slate-400 text-xs md:text-sm font-bold tracking-[0.2em]">Tour Wins</span>
-                </div>
-                <div className="bg-[#1A2542] rounded-xl p-6 md:p-8 flex flex-col items-center justify-center border border-rose-500/10
-                hover:border-rose-500/30 transition-colors shadow-inner">
-                    <span className="text-rose-400 text-5xl font-black mb-2 md:text-6xl drop-shadow-[0_0_15px_rgba(244,63,94,0.2)]">
-                        {userGameStat?.tournamentJoined}</span>
-                    <span className="text-slate-400 text-xs md:text-sm font-bold tracking-[0.2em]">Tour Joined</span>
                 </div>
             </div>
             <div className="bg-[#1A2542]/50 p-5 rounded-xl border border-[#2A3A6B]/50">

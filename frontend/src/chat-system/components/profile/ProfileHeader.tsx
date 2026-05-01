@@ -68,7 +68,7 @@ export function ProfileHeader({ userGameStat, isOwnProfile, userInfo, setUserInf
                 <div className="">
                     <h1 className="text-3xl font-bold text-white flex items-center gap-2 md:text-4xl">
                         {userInfo?.username}
-                        <Shield className="text-blue-400 w-6 h-6" />
+                        {/* <Shield className="text-blue-400 w-6 h-6" /> */}
                     </h1>
                     <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/30 text-orange-400

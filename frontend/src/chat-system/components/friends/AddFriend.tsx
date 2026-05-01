@@ -20,37 +20,44 @@ export  function AddFriend() {
                 </h1>
                 <p className="text-slate-400 mt-1">You can add friends wiht their exact username.</p>
             </div>
-            <form className="mb-8" onSubmit={handleSubmit}>
-                <div className="relative group flex items-center">
-                    <div className="absolute left-4 flex items-center pointer-events-none">
-                        <Search className="text-slate-400 group-focus-within:text-blue-400 transition-all" size={20}/>
+            <form className="mb-12 max-w-2xl mx-auto w-full" onSubmit={handleSubmit}>
+                <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full group">
+                    <div className="relative flex-1 flex items-center">
+                        <div className="absolute left-5 flex items-center pointer-events-none">
+                            <Search className="text-slate-500 group-focus-within:text-indigo-400 transition-colors duration-300" size={20}/>
+                        </div>
+                        <input
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            type="text"
+                            placeholder="Enter username to add..."
+                            className="w-full bg-slate-800/40 border border-white/5 rounded-2xl text-slate-100 py-4 pl-14 pr-4 placeholder-slate-500
+                            focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all duration-300 shadow-inner"
+                        />
                     </div>
-                    <input
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        type="text"
-                        placeholder="enter username"
-                        className="w-full bg-slate-900 border border-slate-700/50 rounded-xl text-white py-4 pl-12 pr-36 placeholder-slate-500
-                        focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-inner"
-                    />
                     <button
                         type="submit"
                         disabled={loading || input.trim().length === 0}
-                        className="bg-blue-600 absolute right-2 px-6 py-2 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors
-                        disabled:opacity-50 disabled:cursor-not-allowed">
+                        className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-800/50 disabled:text-slate-600 text-white px-8 py-4 rounded-2xl font-bold transition-all duration-300
+                        shadow-lg shadow-indigo-500/20 active:scale-95 shrink-0">
                         {loading ? 'Sending...' : 'Send Request'}
                     </button>
                 </div>
-                    {state && (
-                        <div className={`font-medium italic ${state?.status === 'success' ? 'text-emerald-400 mt-2' : 'text-red-400 mt-2'}`}>
-                            {state?.message}
-                        </div>
-                    )}
+                {state && (
+                    <div className={`text-sm font-bold mt-4 px-2 animate-in fade-in slide-in-from-top-2 ${state?.status === 'success' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {state?.message}
+                    </div>
+                )}
             </form>
-            <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-slate-700/50 rounded-2xl bg-slate-800/20">
-                <UserPlus className="text-slate-500 mb-4" size={48}/>
-                <h3 className="text-slate-300 text-lg font-medium">Looking to connect?</h3>
-                <p className="text-slate-500 text-sm mt-2">Enter a username above to send friend request.</p>
+
+            <div className="flex flex-col items-center justify-center py-16 px-6 border border-dashed border-white/5 rounded-[2.5rem] bg-slate-800/20 max-w-2xl mx-auto w-full">
+                <div className="p-6 rounded-full bg-slate-800/50 mb-6">
+                    <UserPlus className="text-slate-500" size={40}/>
+                </div>
+                <h3 className="text-slate-200 text-xl font-bold tracking-tight">Looking to connect?</h3>
+                <p className="text-slate-500 text-center max-w-sm mt-3 leading-relaxed">
+                    Expand your social circle. Enter a teammate's username to start chatting and playing together.
+                </p>
             </div>
         </div>
     );
