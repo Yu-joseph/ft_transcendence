@@ -3,17 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { GiTicTacToe } from "react-icons/gi";
 import { useAuth } from "../auth/useAuth";
 import { chatSocket, gameSocket } from "../socket/sock";
+import { withMediaPrefix } from "../chat-system/components/shared/sharedUtils";
 
-
-const MEDIA_PREFIX = "/authent/media";
-
-export function withMediaPrefix(avatar: string | null): string | null {
-  if (!avatar) return null;
-  if (avatar.startsWith("http://") || avatar.startsWith("https://")) return avatar;
-  if (avatar.startsWith(MEDIA_PREFIX)) return avatar;
-  if (avatar.startsWith("/")) return `${MEDIA_PREFIX}${avatar}`;
-  return `${MEDIA_PREFIX}/${avatar}`;
-}
 
 function Bar() {
   const navigate = useNavigate();

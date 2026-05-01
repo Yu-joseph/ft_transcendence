@@ -7,6 +7,7 @@ import { fetchClient } from "../utils/fetchClient";
 import type { UserProfileInfo } from "../components/profile/hooks/useProfileHeader";
 import { useAuth } from '../../auth/useAuth';
 import { useParams } from "react-router-dom";
+import { withMediaPrefix } from "../components/shared/sharedUtils";
 
 export interface UserStatGame {
     rank: number
@@ -40,9 +41,11 @@ export function Profile() {
             setErrHeaderInfo(null);
             try {
                 const result = await fetchClient<UserProfileInfo>(`/profile/${userId}`); /** */
-                setIsOwnProfile(result.id === user?.id);
-                setUserInfo(result)
-                console.log("UserInfo result:", result);
+                if(result) {
+                    setIsOwnProfile(result.id === user?.id);
+                    result.avatar = withMediaPrefix(result.avatar) ?? '';
+                    setUserInfo(result)
+                }
             } catch (err:any) {
                 console.log('Error in profile header:', err);
                 setErrHeaderInfo(err?.message || 'Failed to load profile');

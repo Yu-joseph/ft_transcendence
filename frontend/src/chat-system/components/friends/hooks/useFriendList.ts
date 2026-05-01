@@ -3,6 +3,7 @@ import { fetchClient } from "../../../utils/fetchClient";
 import { useAuth } from "../../../../auth/useAuth";
 import { useRefresh } from "../../shared/useRefresh";
 import { chatSocket } from "../../../../socket/sock";
+import { withMediaPrefix } from "../../shared/sharedUtils";
 
 export interface FriendsListType {
     id: string
@@ -41,8 +42,10 @@ export  function    useFriendList() {
                 setError(null);
                 setLoading(true);
                 const   result  = await fetchClient<FriendsListType[]>('/friend', {});
-                if(result)
+                if(result) {
+                    result.map(fr => fr.avatar = withMediaPrefix(fr.avatar || null) ?? '')
                     setFriendList(result ?? []);
+                }
             } catch (err: any) {
                 setError(err);
                 console.log(err);

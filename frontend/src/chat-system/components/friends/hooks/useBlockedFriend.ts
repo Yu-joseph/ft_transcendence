@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchClient } from "../../../utils/fetchClient";
 import { useRefresh } from "../../shared/useRefresh";
+import { withMediaPrefix } from "../../shared/sharedUtils";
 
 interface BlockedFriendType {
     id: string
@@ -22,8 +23,10 @@ export  function    useBlockedFriend() {
                 setError(null);
                 setLoading(true);
                 const result : BlockedFriendType[] = await fetchClient('/friend/rejected', {});
-                if(result)
+                if(result) {
+                    result.map(fr => fr.avatar = withMediaPrefix(fr.avatar) ?? '');
                     setBlocked(result);
+                }
             } catch (error: any) {
                 setError(error);
                 console.log(error);
