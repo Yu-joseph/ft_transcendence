@@ -6,7 +6,7 @@ from utils import check_winner, get_state, get_available_actions, action_to_key
 
 LEARNING_RATE = 0.1
 GAMMA = 0.95
-TRAINING_GAMES = 50000
+TRAINING_GAMES = 500000
 EPSILON_START = 0.3
 EPSILON_END = 0.01
 EPSILON_DECAY = (EPSILON_START - EPSILON_END) / TRAINING_GAMES
@@ -21,6 +21,7 @@ def choose_action(state, actions, force_greedy=False):
     init_q_state(state, actions)
 
     if not force_greedy and random.random() < epsilon:
+        # print("---------++++++++++++++++-------------<<<<>>>>>>>>>>>>>>>\n\n" , flush=True)
         return random.choice(actions)
 
     return max(actions, key=lambda a: q_table[state][action_to_key(a)])
@@ -37,6 +38,7 @@ def init_q_state(state, actions):
 
 
 #Q(s, a)            = Q(s, a) + α * (reward + γ * max(Q(s', a')) - Q(s, a))
+#epsilon = EPSILON_END + (EPSILON_START - EPSILON_END) * exp(-k * game)
 
 def count_pieces(board, player):
     count = 0
@@ -103,7 +105,7 @@ def play_training_game():
     moves = []
     player = 'X'
     turn = 0
-    max_turns = 200
+    max_turns = 20 #200
 
     while turn < max_turns:
         turn +=1
@@ -186,6 +188,7 @@ def play_training_game():
     
     epsilon = max(EPSILON_END, epsilon - EPSILON_DECAY)
 
+
                     
 
 
@@ -216,7 +219,7 @@ def save_q_table(filename='q_table.json'):
 
 if __name__ == "__main__":
     train()
-    save_q_table()
+    save_q_table()en acds
 
 
 
