@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import type { UserProfileInfo } from "./useProfileHeader";
+import { withMediaPrefix } from "../../shared/sharedUtils";
 
 export  function    useEditeProfileModale(initialData: UserProfileInfo, isOpen: boolean) {
 
@@ -17,8 +18,9 @@ export  function    useEditeProfileModale(initialData: UserProfileInfo, isOpen: 
 
     const validateForm = () => {
         const   newErrors: Record<string, string> = {};
-        const   isAnyFieldEmpty = formData.fullname.trim().length === 0 && formData.email.trim().length === 0 && formData.bio.trim().length === 0;
-        if(isAnyFieldEmpty) {
+        const   isAnyFieldEmpty = formData.fullname.trim().length === 0 
+                    && formData.email.trim().length === 0 && formData.bio.trim().length === 0;
+        if(isAnyFieldEmpty && !avatar) {
             newErrors.fullname = 'Please fill at least one field.';
             setErrors(newErrors);
             return false;
@@ -79,23 +81,30 @@ export  function    useEditeProfileModale(initialData: UserProfileInfo, isOpen: 
         const fd = new FormData();
         console.log('before append:', fd);
         fd.append('avatar', file);
-        console.log('After append:', fd);
-        try {
-            const res = await fetch('/authent/update_avatar/', {
-                method: 'POST',
-                body: fd,
-                credentials: 'include'
-            });
-            if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
-            const data = await res.json();
-            console.log('response of upload avatar:', data);
-            setPreviewUrl(data.url);
-            setFormData({...formData, avatar: data.url as string});
-            console.log('AVATAR URL IN UPLOAD:', data.url);
-            return data.url;
-        } catch (err) {
-            console.error(err);
+        /** ________________ upload avatr _____________________ */
+        const res = await fetch('/authent/update_avatar/', {
+            method: 'POST',
+            body: fd,
+            credentials: 'include'
+        });
+        if (res.status === 401) { // wheen token expired
+            window.location.href = '/';
+            return;
         }
+        if (!res.ok) {
+            const contentType = res.headers.get("content-type");
+            let errorMessage = `Upload failed (${res.status})`;
+            if (contentType && contentType.includes("application/json")) {
+                const errorData = await res.json();
+                errorMessage = errorData.error || errorMessage;
+            }
+            throw new Error(errorMessage);
+        }
+        const data = await res.json();
+        const fullUrl = withMediaPrefix(data.url) || data.url;
+        setPreviewUrl(fullUrl);
+        setFormData({...formData, avatar: fullUrl});
+        return fullUrl;
     }
     /**___________________________________________ */
     return {

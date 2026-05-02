@@ -3,17 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { GiTicTacToe } from "react-icons/gi";
 import { useAuth } from "../auth/useAuth";
 import { chatSocket, gameSocket } from "../socket/sock";
+import { withMediaPrefix } from "../chat-system/components/shared/sharedUtils";
 
-
-const MEDIA_PREFIX = "/authent/media";
-
-export function withMediaPrefix(avatar: string | null): string | null {
-  if (!avatar) return null;
-  if (avatar.startsWith("http://") || avatar.startsWith("https://")) return avatar;
-  if (avatar.startsWith(MEDIA_PREFIX)) return avatar;
-  if (avatar.startsWith("/")) return `${MEDIA_PREFIX}${avatar}`;
-  return `${MEDIA_PREFIX}/${avatar}`;
-}
 
 function Bar() {
   const navigate = useNavigate();
@@ -22,11 +13,24 @@ function Bar() {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [avatar,setAvatar] = useState(withMediaPrefix(user?.avatar || null));
 
+  /**__________ Event listener for update avatar _____________ */
   useEffect(() => {
-    chatSocket.on("update-avatar",(data:string) => {
-      setAvatar(data);
-    })
 
+    const handleUpdateAvatar = (event: Event) => {
+      const detail = (event as CustomEvent<{ avatarUrl: string, userId: string | null }>).detail;
+      if(detail && detail?.userId !== user?.id)
+        return;
+      const newAvatar = detail.avatarUrl;
+      setAvatar(newAvatar || '');
+      if (user) {
+        setUser({ ...user, avatar: newAvatar });
+      }
+    }
+    window.addEventListener("avatar:update", handleUpdateAvatar);
+
+    return () => {
+      window.removeEventListener('avatar:update', handleUpdateAvatar);
+    }
   },[user?.id])
 
   const emitLogoutPlaying = () =>

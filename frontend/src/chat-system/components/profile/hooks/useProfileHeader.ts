@@ -28,22 +28,22 @@ interface UseUserProfileProps {
 export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfileProps) {
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [gotToChat, setGoToChat] = useState<string | null>(null);
+    const [serverError, setServerError] = useState<string | null>(null);
+    const [isSaving, setIsSaving] = useState<boolean>(false); 
 
     useEffect(() => {
 
+        /**________ friend update event ___________________ */
         const   handleFriendUpdate = (data: {senderName: string, type: string}) => {
             if (userInfo?.username === data.senderName) {
                 
                 if (data.type === 'ACCEPT') {
-                    // They accepted our request
                     setUserInfo(prev => prev ? { ...prev, isFriend: 'accepted' } : null);
                     
                 } else if (data.type === 'REMOVE' || data.type === 'REJECT' || data.type === 'CANCEL') {
-                    // The friendship or request was destroyed
                     setUserInfo(prev => prev ? { ...prev, isFriend: 'not' } : null);
                     
                 } else if (data.type === 'REQUEST') {
-                    // They just sent us a friend request while we are looking at their profile!
                     setUserInfo(prev => prev ? { ...prev, isFriend: 'pending' } : null);
                 }
             }
@@ -55,6 +55,19 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
             chatSocket.off('notification:friend_update', handleFriendUpdate);
         };
     }, [userInfo?.username, setUserInfo])
+
+    // Listen for status updates and update userInfo when it matches
+    useEffect(() => {
+        const onStatusUpdate = (data: { userId: string, status: string }) => {
+            if (!data || !data.userId) return;
+            if (userInfo?.id && data.userId === userInfo.id) {
+                setUserInfo(prev => prev ? { ...prev, user_status: data.status } : prev);
+            }
+        };
+
+        chatSocket.on('status:update', onStatusUpdate);
+        return () => { chatSocket.off('status:update', onStatusUpdate); };
+    }, [userInfo?.id, setUserInfo]);
     
     /** *** Botton Click******/
     const handleAddToFriend = async (username: string) => {
@@ -91,7 +104,6 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
 /**_____________________________________________________________________________ */
     const handleStartConversation = async (userId: string | null) => {
         if (userInfo?.isFriend !== 'accepted') {
-            alert('You must be friends to message')
             return;
         }
         if (!userId || !user?.id)
@@ -111,38 +123,58 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
         }
     }
 /**_________________________________________________________________________________ */
-    const handleSaveProfile = async (updatedData: any) => {
-        console.log('This is the Updated Info:', updatedData);
+    const handleSaveProfile = async (updatedData: any, isUserInfoChanged: boolean) => {
+        setServerError(null);
+        setIsSaving(true); // Disable buttons while saving
         try {
-            console.log('Handle Save profile data:', updatedData);
-            const   {avatar, ...dataToSend} = updatedData;
-            console.log('what i send:', dataToSend);
-            const   result = await fetch('/authent/update_users/', {
-                method: 'PATCH',
-                credentials: 'include',
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(dataToSend)
-            });
-            if (!result.ok) {
-                throw new Error('Error updating information');
+            if(isUserInfoChanged) { // we only run the fetch if the user info changed
+
+                const   {avatar, ...dataToSend} = updatedData;
+                const   result = await fetch('/authent/update_users/', {
+                    method: 'PATCH',
+                    credentials: 'include',
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(dataToSend)
+                });
+                if (result.status === 401) {
+                    window.location.href = '/'; // Redirect to login when session expired
+                    return;
+                }
+                if (!result.ok) {
+                    const contentType = result.headers.get("content-type");
+                    let errorMessage = 'Error updating information';
+
+                    if (contentType && contentType.includes("application/json")) {
+                        const errorData = await result.json();
+                        errorMessage = errorData?.error || errorMessage;
+                    } else {
+                        // this means its html error from backend
+                        errorMessage = `Server Error (${result.status}): The server returned an invalid response.`;
+                    }
+                    throw new Error(errorMessage || 'Error updating information');
+                }
             }
-            // console.log('Result of the updated:', result);
-            console.log("Prev user info:", userInfo);
+            /**__________________________________ */
             if(updatedData.email.trim() === '')
                 updatedData.email = userInfo?.email;
             if(updatedData.fullname.trim() === '')
                 updatedData.fullname = userInfo?.fullname;
             if(updatedData.bio.trim() === '')
                 updatedData.bio = userInfo?.bio;
-
-            console.log('AVATAR URL IN HANDLESAVE PROFILE:', avatar);
-
+            // Update UI State with updatedData (handles both info and new avatar url)
             setUserInfo(prev => prev ? { ...prev, ...updatedData } : null);
             setIsEditing(false);
-        } catch (error) {
+        } catch (error: any) {
+            if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+                setServerError("Network error: Please check your internet connection.");
+            } else {
+                setServerError(error.message || 'Failed to save profile');
+            }
             console.error("Failed to save profile:", error);
+        } finally {
+            setIsSaving(false); //reenable button
         }
     }
 /**__________________________________________________________________________________ */
@@ -154,6 +186,9 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
         handleSaveProfile,
         gotToChat,
         isEditing,
-        setIsEditing
+        setIsEditing,
+        serverError,
+        setServerError,
+        isSaving
     };
 }
