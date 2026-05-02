@@ -3,11 +3,16 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useEditeProfileModale } from './hooks/useEditeProfileModal';
 import type { UserProfileInfo } from './hooks/useProfileHeader';
+import { useState } from 'react';
+import { useAuth } from '../../../auth/useAuth';
 interface EditProfileModalProps {
     isOpen: boolean;
     onClose: () => void;
     initialData: any;
-    onSave: (updatedData: any) => void;
+    onHandleSaveInfo: (updatedData: any, isUserInfoChanged: boolean) => Promise<void>;
+    serverError: string | null;
+    setServerError: React.Dispatch<React.SetStateAction<string | null>>;
+    isSavingProfile: boolean
 }
 
 /**
@@ -15,8 +20,10 @@ interface EditProfileModalProps {
  * @returns 
  */
 
-export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditProfileModalProps) {
+export function EditProfileModal({ isOpen, onClose, initialData, onHandleSaveInfo, serverError, setServerError, isSavingProfile }: EditProfileModalProps) {
     const   navigate = useNavigate();
+    const [isUploading, setIsUploading] = useState<boolean>(false);
+    const {user} = useAuth();
     /**_______________ Costume Hook __________________ */
     const   hook = useEditeProfileModale(initialData as UserProfileInfo, isOpen);
     if(hook === null)
@@ -37,14 +44,37 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
 
     const handleSaveInfo = async () => {
         if(validateForm()) {
-            const finalData = { ...formData };
-            if(avatar) {
-                const newAvatarUrl = await uploadAvatar(avatar);
-                if (newAvatarUrl) {
-                    finalData.avatar = newAvatarUrl;
+            setIsUploading(true);
+            setServerError(null);
+            try {
+                const finalData = { ...formData };
+                // Check if user info was modified by checking against initialData
+                const isUserInfoChanged = 
+                    formData.fullname !== initialData?.fullname ||
+                    formData.email !== initialData?.email ||
+                    formData.bio !== initialData?.bio;
+                /**________  */
+                // If they opened the modal and hit Save without touching ANYTHING, so just close the model
+                if (!avatar && !isUserInfoChanged) {
+                    setIsUploading(false);
+                    onClose();
+                    return;
                 }
+                /** __________ Call avatr uplaod if the avatar changed/exist */
+                if(avatar) {
+                    console.log('Im saving the avatar ....')
+                    const newAvatarUrl = await uploadAvatar(avatar); // if this fails it throws an error and stop 
+                    finalData.avatar = newAvatarUrl;
+                    window.dispatchEvent(new CustomEvent<{avatarUrl: string, userId: string | null}>("avatar:update", {detail: {avatarUrl: newAvatarUrl, userId: user?.id ?? null}})); // emit event for updating avatar in the bar component
+                }
+                console.log('saving the user infooooo_____________');
+                await onHandleSaveInfo(finalData, isUserInfoChanged);
+            } catch (error: any) {
+                console.log('the errorr ', error)
+                setServerError(error.message);
+            } finally {
+                setIsUploading(false);
             }
-            onSave(finalData);
         }
     }
 
@@ -129,6 +159,15 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
                             />
                         {errors?.bio && <p className="text-red-400 text-sm">{errors.bio}</p>}
                     </div>
+                    {/* /** error update profile */ }
+                    <div className='space-y-6'>
+                        {serverError && (
+                            <div className='bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 rounded-xl text-sm font-medium animate-in fade-in zoom-in duration-300'>
+                                {serverError}
+                            </div>
+                        )}
+    
+                    </div>
                 </div>
                 <button
                 onClick={() => {navigate('/profile/setting')}}
@@ -145,9 +184,14 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
                     </button>
                     <button 
                         onClick={handleSaveInfo}
-                        className="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+                        disabled={isSavingProfile || isUploading}
+                        className="disabled:opacity-50 disabled:cursor-not-allowed flex-1 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
                         >
-                        <Save size={18} /> Save Changes
+                        {!(isSavingProfile || isUploading) ? (
+                            <>
+                                <Save size={18} /> Save Changes
+                            </>
+                            ) : ('Saving Changes...')}
                     </button>
                 </div>
             </div>

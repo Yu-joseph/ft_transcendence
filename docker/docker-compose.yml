@@ -3,8 +3,6 @@ services:
     image: postgres:16
     restart: always
     container_name : db
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_USER: ${ft_user}
       POSTGRES_PASSWORD: ${ft_password}
@@ -78,8 +76,6 @@ services:
     environment:
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
       SECRET_KEY: ${DJANGO_SECRET_KEY}
-    ports:
-      - "1339:3000"
     depends_on:
       auth:
         condition: service_healthy
@@ -97,8 +93,6 @@ services:
   chatbot:
     build: ../backend/ai_service/chatbot
     container_name: chatbot
-    ports:
-      - "5000:5000"
     depends_on:
       chat_db:
         condition: service_healthy    
@@ -120,8 +114,6 @@ services:
     depends_on:
       auth:
         condition: service_healthy
-    ports:
-      - "3000:3000"
     volumes:
       - vault-secrets:/vault/secrets
       - vault-chat:/vault/chat
@@ -139,8 +131,6 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "5433:5432"
     volumes:
       - pp_data:/var/lib/postgresql/data
     networks:
