@@ -1,6 +1,7 @@
-const   BASE_URL = import.meta.env.VITE_CHAT_API ?? 'https://localhost:8443/api';
+const   BASE_URL = `/api`;
 
 export async function    fetchClient<T>(endpoint: string, option: RequestInit = {}) : Promise<T> {
+    console.log('VITE CAHT API:', `${BASE_URL}${endpoint}`);
     const   headers = {
         'Content-Type': 'application/json',
         ...(option.headers as Record<string, string> || {})
@@ -14,7 +15,7 @@ export async function    fetchClient<T>(endpoint: string, option: RequestInit = 
     let   data: any;
     try {
         data = await response.json();
-    } catch (e) {
+    } catch (e: any) {
         data = {message: 'Server unreachable. Try again later...'};
     }
 

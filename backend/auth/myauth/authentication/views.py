@@ -290,7 +290,6 @@ def logout(request):
 
     if tmp_user:
         tmp_user.status = "offline"
-        tmp_user.user_status = "Offline"
         tmp_user.save()
         response = JsonResponse({"message": "Logged out"})
         response.delete_cookie("access_token", path="/")

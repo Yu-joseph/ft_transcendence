@@ -1,9 +1,6 @@
 import { io } from "socket.io-client";
 
-const HOST = window.location.hostname;
-const EDGE = "https://" + HOST + ":8443";
-
-export const socket = io(EDGE, {
+export const socket = io("/", {
   autoConnect: false,
   withCredentials: true,
   path: "/game-socket",
