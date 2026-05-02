@@ -3,20 +3,33 @@ import type { AuthUser } from './auth-context';
 // Cache the fetch promise so repeated component loads do not cause duplicate requests
 let fetchUserPromise: Promise<AuthUser | null> | null = null;
 
-// Fetches the authenticated user from the backend and normalizes the response shape.
-// Uses a shared in-flight promise to avoid duplicate network requests.
 export function fetchAuthUser(): Promise<AuthUser | null> {
   if (fetchUserPromise) {
     return fetchUserPromise;
   }
 
-  fetchUserPromise = fetch('/authent/getuser/', {
-    method: 'GET',
-    credentials: 'include',
-  })
-    .then(async (response) => {
+  fetchUserPromise = (async () => {
+    try {
+      // First check if user is authorized using protected endpoint
+      const protectedResponse = await fetch('/authent/protected/', {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      const protectedData = await protectedResponse.json();
+
+      // If not authorized, return null
+      if (protectedData.message !== 'Authorized') {
+        return null;
+      }
+
+      // If authorized, fetch full user data
+      const response = await fetch('/authent/getuser/', {
+        method: 'GET',
+        credentials: 'include',
+      });
+
       if (!response.ok) {
-        // 401 or other error - user is not authenticated
         return null;
       }
 
@@ -28,14 +41,34 @@ export function fetchAuthUser(): Promise<AuthUser | null> {
         email: userData.email ?? userData.user?.email,
         avatar: userData.avatar ?? userData.profile?.avatar,
       };
-    })
-    .catch(() => null)
-    .finally(() => {
-      fetchUserPromise = null;
-    });
+    } catch {
+      return null;
+    }
+  })();
 
   return fetchUserPromise;
 }
+
+// Fetches user from the protected endpoint
+export async function fetchProtectedUser(): Promise<{ authorized: boolean; userId?: string }> {
+  try {
+    const response = await fetch('/authent/protected/', {
+      method: 'GET',
+      credentials: 'include',
+    });
+
+    const data = await response.json();
+
+    if (data.message === 'Authorized') {
+      return { authorized: true, userId: String(data.user_id) };
+    }
+
+    return { authorized: false };
+  } catch {
+    return { authorized: false };
+  }
+}
+
 
 // Internal ref to allow handleUnauthorized to reach into the provider.
 let setUserGlobal: (user: AuthUser | null) => void = () => {};
