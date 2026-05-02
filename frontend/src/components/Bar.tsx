@@ -20,7 +20,11 @@ function Bar() {
       const detail = (event as CustomEvent<{ avatarUrl: string, userId: string | null }>).detail;
       if(detail && detail?.userId !== user?.id)
         return;
-      setAvatar(detail?.avatarUrl ?? '');
+      const newAvatar = detail.avatarUrl;
+      setAvatar(newAvatar || '');
+      if (user) {
+        setUser({ ...user, avatar: newAvatar });
+      }
     }
     window.addEventListener("avatar:update", handleUpdateAvatar);
 
