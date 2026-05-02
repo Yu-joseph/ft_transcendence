@@ -305,13 +305,13 @@ def protected_view(request):
     token = request.COOKIES.get("access_token")
 
     if not token:
-        return JsonResponse({"error": "Authentication required"}, status=401)
+        return JsonResponse({"message": "Authentication required"})
 
     try:
         access  = AccessToken(token)
         user_id = access["user_id"]
     except TokenError:
-        return JsonResponse({"error": "Invalid token"}, status=401)
+        return JsonResponse({"message": "Invalid token"})
 
     return JsonResponse({"message": "Authorized", "user_id": user_id})
 
