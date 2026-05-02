@@ -1,6 +1,32 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-LOCAL_IP=$(hostname -I | awk '{print $1}')
+get_local_ip() {
+  local ipaddr
+  # Prefer `ip` (iproute2)
+  if command -v ip >/dev/null 2>&1; then
+    ipaddr=$(ip -4 addr show scope global | awk '/inet /{print $2}' | cut -d/ -f1 | head -n1 || true)
+  fi
+  # Fallback to `hostname -I` if available and returns something
+  if [ -z "${ipaddr:-}" ] && command -v hostname >/dev/null 2>&1; then
+    ipaddr=$(hostname -I 2>/dev/null | awk '{print $1}' || true)
+  fi
+  # NetworkManager fallback
+  if [ -z "${ipaddr:-}" ] && command -v nmcli >/dev/null 2>&1; then
+    ipaddr=$(nmcli -g IP4.ADDRESS device show | sed -n '1p' | cut -d/ -f1 || true)
+  fi
+  # getent fallback using hostname lookup
+  if [ -z "${ipaddr:-}" ]; then
+    ipaddr=$(getent hosts "$(hostname)" 2>/dev/null | awk '{print $1}' | head -n1 || true)
+  fi
+  # final fallback
+  if [ -z "${ipaddr:-}" ]; then
+    ipaddr="127.0.0.1"
+  fi
+  printf '%s' "$ipaddr"
+}
+
+LOCAL_IP=$(get_local_ip)
 
 cat > ./docker/.env.local <<EOF
 VITE_CHAT_API=https://${LOCAL_IP}:8443/api
