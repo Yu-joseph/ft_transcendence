@@ -123,7 +123,7 @@ SOCIAL_AUTH_URL_NAMESPACE = 'social'
 FORTY_TWO_REDIRECT_URI = 'http://localhost:8080/authent/42/callback/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-DJANGO_FILE_SC = '/vault/chat/file.env'
+DJANGO_FILE_SC = '/vault/secrets/apiss.env'
 load_dotenv(DJANGO_FILE_SC)
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 SOCIAL_AUTH_42_KEY    = os.getenv('SOCIAL_AUTH_42_KEY')

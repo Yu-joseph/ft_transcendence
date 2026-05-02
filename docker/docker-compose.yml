@@ -3,6 +3,8 @@ services:
     image: postgres:16
     restart: always
     container_name : db
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: ${ft_user}
       POSTGRES_PASSWORD: ${ft_password}
@@ -26,7 +28,8 @@ services:
     volumes:
       - ../backend/auth/myauth:/app
       - vault-secrets:/vault/secrets
-      - vault-chat:/vault/chat
+    env_file:
+      - .env.local
     depends_on:
       db:
         condition: service_healthy
@@ -42,9 +45,8 @@ services:
     restart: always
     networks:
       - app-network
-    environment:
-      - VITE_API_URL=http://localhost:8080/
-      - VITE_CHAT_API=https://localhost:8443/api
+    env_file:
+      - .env.local
     build: ../frontend
     volumes:
       - ../frontend:/app/
@@ -80,13 +82,12 @@ services:
       auth:
         condition: service_healthy
     volumes:
-      - vault-ai:/vault/aii
+      - vault-game:/vault/game
+      - vault-secrets:/vault/secrets
   
   ai_game:
     build: ../backend/ai_service/ai_game
     container_name: ai_game
-    ports:
-      - "5001:5001"
     networks:
       - app-network
 
@@ -114,9 +115,13 @@ services:
     depends_on:
       auth:
         condition: service_healthy
+    ports:
+      - "3000:3000"
     volumes:
       - vault-secrets:/vault/secrets
       - vault-chat:/vault/chat
+      - ../backend/chat/backend:/app
+      - /app/node_modules 
     environment:
       SECRET_KEY: ${DJANGO_SECRET_KEY}
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
@@ -131,6 +136,8 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5433:5432"
     volumes:
       - pp_data:/var/lib/postgresql/data
     networks:
@@ -250,6 +257,7 @@ services:
       - vault-secrets:/vault/secrets
       - vault-ai:/vault/aii
       - vault-chat:/vault/chat
+      - vault-game:/vault/game
       - ./vault/userconfig/tls/ca.crt:/vault/certs/ca.crt
       - ./vault/userconfig/:/vault/userconfig/
     networks:
@@ -266,7 +274,8 @@ networks:
 volumes:
   pgdata:
   pp_data:
-  vault-secrets:
   approle-creds:
+  vault-secrets:
   vault-ai:
   vault-chat:
+  vault-game:
