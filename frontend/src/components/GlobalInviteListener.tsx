@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { gameSocket } from "../socket/sock";
+import { ensureSocketConnected, gameSocket } from "../socket/sock";
 import { useAuth } from "../auth/useAuth";
 import type { AuthUser } from "../auth/auth-context";
 
@@ -30,7 +30,6 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
   const { id, username } = user;
 
   useEffect(() => {
-    gameSocket.connect();
 
     const handleConnect = () => {
       gameSocket.emit("join-lobby");
@@ -61,7 +60,9 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
     gameSocket.on("match-found", handleMatchFound);
     gameSocket.on("invite-declined", handleInviteDeclined);
 
-    if (gameSocket.connected) {
+    if (!gameSocket.connected) {
+      ensureSocketConnected(gameSocket);
+    } else {
       handleConnect();
     }
 
@@ -71,7 +72,6 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
       gameSocket.off("receive-invite", handleReceiveInvite);
       gameSocket.off("match-found", handleMatchFound);
       gameSocket.off("invite-declined", handleInviteDeclined);
-      gameSocket.disconnect();
     };
   }, [navigate]);
 

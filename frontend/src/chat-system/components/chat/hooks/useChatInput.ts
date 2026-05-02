@@ -3,7 +3,7 @@ import { useAuth } from "../../../../auth/useAuth";
 import { chatSocket } from '../../../../socket/sock';
 import type { MessageItem, MessageState } from "../../../pages/Chat";
 
-const CHAT_API_BASE = (import.meta.env.VITE_CHAT_API as string) || '';
+const CHAT_API_BASE = `/api`;
 
 export interface ChatInputPorps {
     convId: string | null

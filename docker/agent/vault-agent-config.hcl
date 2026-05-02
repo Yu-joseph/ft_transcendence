@@ -35,8 +35,25 @@ template {
 }
 
 template {
-  source      = "/vault/templates/apis.tpl"
-  destination = "/vault/chat/file.env"
+  source      = "/vault/templates/ai.tpl"
+  destination = "/vault/aii/apiss.env"
   perms       = 0644
 }
 
+template {
+  source      = "/vault/templates/auth.tpl"
+  destination = "/vault/secrets/apiss.env"
+  perms       = 0644
+}
+
+template {
+  source      = "/vault/templates/game.tpl"
+  destination = "/vault/game/apiss.env"
+  perms       = 0644
+}
+
+template {
+  source      = "/vault/templates/chat.tpl"
+  destination = "/vault/chat/apiss.env"
+  perms       = 0644
+}
