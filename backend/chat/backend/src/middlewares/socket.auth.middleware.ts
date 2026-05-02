@@ -6,12 +6,9 @@ import { JwtPayload } from "./auth.middleware.js";
 
 export const socketAuthenticate = async (socket: Socket, next: (err?: Error) => void) => {
     try {
-        console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<,In Shoucjer authebticat');
         const   rawCookie = socket.handshake.headers.cookie ?? '';
-        console.log('socket.handshake.headers.cookie:', rawCookie);
         const   cookies = cookie.parse(rawCookie);
         const   token = cookies['access_token'];
-        console.log('cookie IS:', token);
 
         if(!token)
             return next(new AppError('Authentication error: no cookie', 401));

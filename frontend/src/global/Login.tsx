@@ -3,8 +3,10 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import { PasswordField } from "../components/PasswordField";
+// import {  } from "re";
 
 function Login() {
+  const usernameMaxLength = 20;
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -20,13 +22,15 @@ function Login() {
   const [signupLoading, setSignupLoading] = useState(false);
   const intraLoginUrl = "/authent/42/login/";
   const { user, loading: authLoading, setUser } = useAuth();
+  // const ref = useRef(null);
+  // const [flagArrow, setFlagArrow] = useState<boolean>(false);
   const navigate = useNavigate();
 
   
 
   // Show loading state while auth context is still fetching
   if (authLoading) {
-    return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><p className="text-white">Loading...</p></div>;
+    return <div className="min-h-screen bg-slate-900 flex items-center justify-center"><p className="text-white">Loading...</p></div>;
   }
 
   if (user) {
@@ -133,6 +137,11 @@ function Login() {
     setSignupError(null);
     setSignupSuccess(null);
 
+    if (signupUsername.length > usernameMaxLength) {
+      setSignupError(`Username must be ${usernameMaxLength} characters or fewer.`);
+      return;
+    }
+
     if (signupPassword !== signupPasswordConfirm) {
       setSignupError("Passwords do not match.");
       return;
@@ -160,7 +169,7 @@ function Login() {
 
       if (!response.ok) {
         if (!isJson) {
-          throw new Error("Signup endpoint returne signup.");
+          throw new Error("somthing went wrong.");
         }
         const message = typeof data?.error === "string" ? data.error : "Sign up failed. Please try again.";
         throw new Error(message);
@@ -192,14 +201,11 @@ function Login() {
     signupPasswordConfirm.length > 0 && signupPassword !== signupPasswordConfirm;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-950 via-blue-950 to-slate-900 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
         <div className="text-center md:text-left space-y-4">
           <h1 className="text-5xl font-extrabold leading-tight text-white">
-            <span className="bg-linear-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">Tic</span>{" "}
-            <span className="bg-linear-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">Tac</span>{" "}
-            <span className="bg-linear-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">Toe</span>{" "}
-            <span className="bg-linear-to-r from-amber-500 to-indigo-500 bg-clip-text text-transparent">Arena</span>
+            <span className="bg-linear-to-r text-white bg-clip-text">Tic TAc tOe Arena</span>{" "}
           </h1>
           <p className="text-slate-200 text-lg max-w-lg">
             Sign in to join live matches, climb the ladder, and create tournaments with your friends.
@@ -294,11 +300,11 @@ function Login() {
 
       {showSignup && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center px-4 py-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
           onClick={() => setShowSignup(false)}
         >
           <div
-            className="w-full max-w-md rounded-xl bg-slate-950/90 border border-amber-400/30 shadow-2xl shadow-amber-900/30 p-5"
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl bg-slate-950/90 border border-amber-400/30 shadow-2xl shadow-amber-900/30 p-5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
@@ -323,6 +329,7 @@ function Login() {
                   id="signupUsername"
                   value={signupUsername}
                   onChange={(e) => setSignupUsername(e.target.value)}
+                  maxLength={usernameMaxLength}
                   className="w-full px-3 py-2 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
                   placeholder="Choose a unsername"
                   required

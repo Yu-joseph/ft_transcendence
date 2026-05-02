@@ -8,6 +8,7 @@ type Player = {
   id: string;
   username: string;
   socketId: string;
+  avatar: string | null;
   status?: "online" | "playing";
 };
 
@@ -36,20 +37,20 @@ export default function PlayerList() {
     navigate(`/profile/${userId}`);
   };
 
-  const handleSendInvite = (targetSocketId: string, username: string) => {
-    gameSocket.emit("send-invite", targetSocketId);
-    setSentToast(`Invite sent to ${username}!`);
+  const handleSendInvite = (targetUserId: string, username: string) => {
+    gameSocket.emit('send-invite', { targetUserId });
+    setSentToast('Invite sent to ' + username + '!');
     setTimeout(() => setSentToast(null), 3000);
   };
 
-  const otherPlayers = players.filter((p) => p.socketId !== gameSocket.id);
+  const otherPlayers = players.filter((p) => p.id !== user?.id);
 
   return (
     <>
-      <div className="bg-slate-800 border border-blue-700 rounded-xl p-5 w-full max-w-lg">
+      <div className="bg-slate-800 border border-black rounded-xl p-5 w-full hover:border-amber-500 hover:scale-102 transition-all duration-300">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-amber-500 text-xl font-semibold">Online Players</h2>
-          <span className="text-green-400 text-sm">{players.length - 1} online</span>
+          <span className="text-green-400 text-sm">{players.length === 0 ? 0 : players.length - 1} online</span>
         </div>
 
         {otherPlayers.length === 0 ? (
@@ -61,8 +62,8 @@ export default function PlayerList() {
 
               return (
                 <li
-                  key={p.socketId}
-                  className="flex items-center justify-between bg-slate-700 rounded-lg px-4 py-2"
+                  key={p.id}
+                  className="flex items-center justify-between bg-slate-700 hover:bg-slate-700/70 rounded-lg px-4 py-2"
                 >
                   <span className="text-white inline-flex items-center gap-2 cursor-pointer group" onClick={() => openProfile(p.id)} >
                     <div className="" > 
@@ -79,7 +80,7 @@ export default function PlayerList() {
                   </span>
 
                   <button
-                    onClick={() => handleSendInvite(p.socketId, p.username)}
+                    onClick={() => handleSendInvite(p.id, p.username)}
                     disabled={isPlaying}
                     className={`px-3 py-1 text-sm rounded-lg text-white transition ${
                       isPlaying

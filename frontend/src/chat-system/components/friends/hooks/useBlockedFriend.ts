@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchClient } from "../../../utils/fetchClient";
+import { useRefresh } from "../../shared/useRefresh";
+import { withMediaPrefix } from "../../shared/sharedUtils";
 
 interface BlockedFriendType {
     id: string
@@ -11,33 +13,36 @@ export  function    useBlockedFriend() {
     const   [loading, setLoading] = useState(false);
     const   [error, setError] = useState(null);
     const   [blocked, setBlocked] = useState<BlockedFriendType[]>([]);
-
+    const   refresh = useRefresh();
     const   [status, setStatus] = useState<{type: 'success' | 'error'; message: string} | null>(null);
 
     
     useEffect(() => {
         const   getBlockedRequest = async () => {
             try {
-                setLoading(false);
+                setError(null);
+                setLoading(true);
                 const result : BlockedFriendType[] = await fetchClient('/friend/rejected', {});
-                setBlocked(result);
+                if(result) {
+                    result.map(fr => fr.avatar = withMediaPrefix(fr.avatar) ?? '');
+                    setBlocked(result);
+                }
             } catch (error: any) {
                 setError(error);
                 console.log(error);
             } finally {
-                setLoading(true);
+                setLoading(false);
             }
         }
-
         getBlockedRequest();
-    }, [])
+    }, [refresh])
 
     const   handleUnblock = async (receiverName: string) => {
         try {
             setStatus(null);
             const   result = await fetchClient('/friend/request', {
                 method: 'POST',
-                body: JSON.stringify({receiverId: receiverName})
+                body: JSON.stringify({username: receiverName})
             });
             setBlocked(prev => prev.filter(u => u.username !== receiverName));
             setStatus({type: 'success', message: 'Friend Unblocked successfuly'});
@@ -47,7 +52,6 @@ export  function    useBlockedFriend() {
             console.log(error);
         }
     }
-
     /**_________________ */
     return {
         handleUnblock,

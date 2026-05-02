@@ -7,8 +7,9 @@ import type { AuthUser } from "../auth/auth-context";
 type Invite = {
   inviteId: string;
   from: {
-    socketId: string;
+    id: string;
     username: string;
+    avatar: string | null;
   };
 };
 
@@ -32,9 +33,13 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
     gameSocket.connect();
 
     const handleConnect = () => {
-      gameSocket.emit("join-lobby", {
-        id,
-        username: username ?? "Guest",
+      gameSocket.emit("join-lobby");
+    };
+
+    const handleInviteResolved = (data: { inviteId: string; status: 'accepted' | 'declined' }) => {
+      setPendingInvite((curr) => {
+        if (!curr) return curr;
+        return curr.inviteId === data.inviteId ? null : curr;
       });
     };
 
@@ -51,6 +56,7 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
     };
 
     gameSocket.on("connect", handleConnect);
+    gameSocket.on("invite-resolved", handleInviteResolved);
     gameSocket.on("receive-invite", handleReceiveInvite);
     gameSocket.on("match-found", handleMatchFound);
     gameSocket.on("invite-declined", handleInviteDeclined);
@@ -58,15 +64,16 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
     if (gameSocket.connected) {
       handleConnect();
     }
- 
+
     return () => {
       gameSocket.off("connect", handleConnect);
+      gameSocket.off("invite-resolved", handleInviteResolved);
       gameSocket.off("receive-invite", handleReceiveInvite);
       gameSocket.off("match-found", handleMatchFound);
       gameSocket.off("invite-declined", handleInviteDeclined);
       gameSocket.disconnect();
     };
-  }, [id, username, navigate]);
+  }, [navigate]);
 
   useEffect(() => {
     if (!declinedBy) return;
@@ -81,10 +88,9 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
     if (!pendingInvite) return;
     const invite = pendingInvite;
     const timeoutId = window.setTimeout(() => {
-      gameSocket.emit("decline-invite", {
-        inviteId: invite.inviteId,
-        fromSocketId: invite.from.socketId,
-      });
+      gameSocket.emit('decline-invite', {
+          inviteId: invite.inviteId,
+        });
       setPendingInvite(null);
     }, 10000);
 
@@ -95,7 +101,6 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
     if (!pendingInvite) return;
     gameSocket.emit("accept-invite", {
       inviteId: pendingInvite.inviteId,
-      fromSocketId: pendingInvite.from.socketId,
     });
     setPendingInvite(null);
   };
@@ -104,7 +109,6 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
     if (!pendingInvite) return;
     gameSocket.emit("decline-invite", {
       inviteId: pendingInvite.inviteId,
-      fromSocketId: pendingInvite.from.socketId,
     });
     setPendingInvite(null);
   };
@@ -117,13 +121,17 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
     <div className="fixed top-4 right-4 z-[60] w-72 max-w-[calc(100vw-2rem)] space-y-3">
       {pendingInvite && (
         <div className="bg-slate-800 rounded-xl p-4 shadow-lg border border-slate-700">
-          <h3 className="text-white text-base font-semibold mb-2">Game Invite</h3>
-          <p className="text-slate-300 text-sm mb-4">
-            <span className="text-emerald-400 font-semibold">
+          <div className="flex flex-col justify-center items-center gap-1">
+            <h3 className="text-white text-base font-semibold mb-2">Game Invite</h3>
+            <img src={pendingInvite.from.avatar} className="w-10 h-10 object-cover rounded-full" alt="" /> 
+            <p className="text-emerald-400 font-semibold">
               {pendingInvite.from.username}
-            </span>{" "}
-            wants to play with you!
-          </p>
+            </p>
+            <p className="text-slate-300 text-sm mb-4">
+              wants to play with you!
+            </p>
+
+          </div>
           <div className="flex gap-2">
             <button
               onClick={handleAcceptInvite}

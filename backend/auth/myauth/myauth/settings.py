@@ -4,11 +4,12 @@ from pathlib import Path
 import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-4vkpyy2bkd3(%hi=nhqdr(yx5j71%*zf!o!ej2kfnivhbno!%n'
 
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
+load_dotenv()
+FORTY_TWO_REDIRECT_URI = os.environ.get('FORTY_TWO_REDIRECT_URI')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -67,11 +68,12 @@ WSGI_APPLICATION = 'myauth.wsgi.application'
 
 VAULT_SECRETS_FILE = '/vault/secrets/database.env'
 
-if os.path.exists(VAULT_SECRETS_FILE):
-    load_dotenv(VAULT_SECRETS_FILE)
-    print("%s\n", os.getenv('DB_USER'))
-else:
-    print("⚠️  Vault secrets file not found, using environment variables")
+while True:
+    if os.path.exists(VAULT_SECRETS_FILE):
+        break
+        
+
+load_dotenv(VAULT_SECRETS_FILE)
 
 DATABASES = {
     'default': {
@@ -118,13 +120,21 @@ MEDIA_URL = '/media/'
 STATIC_URL = 'static/'
 
 STATIC_ROOT = '/app/static'
+
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
-SOCIAL_AUTH_42_KEY    = 'u-s4t2ud-ded6e687b26b0218e9a66fafb8ed15c58b5d355add51059bbaea360d342f4143'
-SOCIAL_AUTH_42_SECRET = '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'
-FORTY_TWO_REDIRECT_URI = 'http://localhost:8080/authent/42/callback/'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+DJANGO_FILE_SC = '/vault/secrets/apiss.env'
+
+load_dotenv(DJANGO_FILE_SC)
+
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+
+SOCIAL_AUTH_42_KEY    = os.getenv('SOCIAL_AUTH_42_KEY')
+
+SOCIAL_AUTH_42_SECRET = os.getenv('SOCIAL_AUTH_42_SECRET')
 
 SIMPLE_JWT = {
 "ACCESS_TOKEN_LIFETIME": timedelta(hours=2), # change as needed

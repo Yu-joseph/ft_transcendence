@@ -6,12 +6,16 @@ import { Server } from "socket.io";
 import prisma from "./lib/prisma";
 import {
   setupSocketHandlers,
-  getRankedUsers,
-  isPlayerInActiveMatch,
-  players,
 } from "./socket/handlers";
-import { setupTournamentHandlers } from "./socket/tournament";
+import { setupTournamentHandlers } from "./socket/tournament/tournament";
+import { setupTournamentHandlers } from "./socket/tournament/tournament";
 import { getUserIdFromToken } from "./auth/identity";
+import { getRankedUsers } from "./socket/onevone/leaderboardService";
+import { isPlayerInActiveMatch } from "./socket/onevone/lobbyPresence";
+import { players } from "./socket/onevone/onevoneState";
+import { getRankedUsers } from "./socket/onevone/leaderboardService";
+import { isPlayerInActiveMatch } from "./socket/onevone/lobbyPresence";
+import { players } from "./socket/onevone/onevoneState";
 
 const app = express();
 const PORT = 3000;
@@ -19,7 +23,10 @@ const PORT = 3000;
 const corsOptions = {
   origin: [
     "http://localhost:8080",
+    "http://localhost:5173",
+    "http://localhost:5173",
     "https://localhost:8443",
+    "https://10.30.246.78:8443"
   ],
   methods: ["GET", "POST"],
   credentials: true,
@@ -73,17 +80,26 @@ app.get("/api/leaderboard", async (_req, res) => {
 
 // Private routes (no :id from client)
 app.get("/api/me/stats", requireAuth, async (req, res) => {
-    try {
+  try {
     const userId = (req as AuthedRequest).userId;
     if (!userId) {
       return res.status(401).json({ error: "Authentication required" });
     }
 
-    const ranked = await getRankedUsers();
-    const me = ranked.find((u) => u.id === userId);
+    const [ranked, tournamentWins] = await Promise.all([
+      getRankedUsers(),
+      prisma.tournament.count({
+        where: { winnerId: userId, status: "finished" },
+      }),
+    ]);
 
+    const me = ranked.find((u) => u.id === userId);
     if (!me) return res.status(404).json({ error: "User not found" });
-    return res.json(me);
+
+    return res.json({
+      ...me,
+      tournamentWins,
+    });
   } catch {
     return res.status(500).json({ error: "Internal server error" });
   }
@@ -176,7 +192,7 @@ app.get("/api/users/:id/status", async (req, res) => {
     const ranked = rankedUsers.find((u) => u.id === userId);
 
     const isPlaying = isPlayerInActiveMatch(userId);
-    const isOnline = Array.from(players.values()).some((p) => p.id === userId);
+    const isOnline = players.has(userId);
 
     const status = isPlaying
       ? "playing"

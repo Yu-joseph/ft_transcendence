@@ -2,7 +2,7 @@ import { X, Save, Camera, User, FileText, Mail, LockIcon } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useEditeProfileModale } from './hooks/useEditeProfileModal';
-
+import type { UserProfileInfo } from './hooks/useProfileHeader';
 interface EditProfileModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -18,21 +18,37 @@ interface EditProfileModalProps {
 export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditProfileModalProps) {
     const   navigate = useNavigate();
     /**_______________ Costume Hook __________________ */
-    const   hook = useEditeProfileModale(initialData, isOpen);
+    const   hook = useEditeProfileModale(initialData as UserProfileInfo, isOpen);
     if(hook === null)
         return;
 
     const   {
         fileInputRef,
         handleImageChange,
-        // uploadAvatar,
+        uploadAvatar,
         previewUrl,
         setFormData,
-        inputError,
-        // avatar,
+        avatar,
         formData,
-        // setInputError
+        validateForm,
+        errors,
+        setErrors
     } = hook;
+
+    const handleSaveInfo = async () => {
+        if(validateForm()) {
+            const finalData = { ...formData };
+            if(avatar) {
+                const newAvatarUrl = await uploadAvatar(avatar);
+                if (newAvatarUrl) {
+                    finalData.avatar = newAvatarUrl;
+                }
+            }
+            onSave(finalData);
+        }
+    }
+
+
     /**__________________________________________________________________ */
     return createPortal(
 
@@ -71,19 +87,14 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
                             type="text"
                             value={formData.fullname}
                             onChange={(e) => {
-                                    const   fullname: string = e.target.value.trim();
-                                    // if(fullname === '' || fullname.length < 3 || fullname.length > 255) {
-                                    //     setInputError({inputType: 'fullname', errorMessage: 'Full-name must be greather than 3 and less that 255 characters.'})
-                                    //     // return;
-                                    // }
-                                    setFormData({...formData, fullname: fullname});
+                                    setFormData({...formData, fullname: e.target.value});
+                                    if(errors?.fullname) setErrors({...errors, fullname: ''});
                                 }
                             } 
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-colors"
                             placeholder="Enter your full name"
                             />
-                        {inputError?.inputType === 'fullname' && <div className=''>{inputError.errorMessage}</div>} 
-                        
+                        {errors?.fullname && <p className="text-red-400 text-sm">{errors.fullname}</p>}
                     </div>
                     <div className='space-y-2'>
                         <label className='text-sm font-medium text-slate-400 flex items-center gap-2'>
@@ -93,18 +104,14 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
                             type="email"
                             value={formData.email}
                             onChange={(e) => {
-                                    const   email: string = e.target.value.trim();
-                                    // if(!validateEmail(email)) {
-                                    //     setInputError({inputType: 'email', errorMessage: 'Invalid email address.'})
-                                    //     // return;
-                                    // }
-                                    setFormData({...formData, email: email});
+                                    setFormData({...formData, email: e.target.value});
+                                    if(errors?.email) setErrors({...errors, email: ''});
                                 }
                             }
                             placeholder='Enter your email'
                             className='w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-colors'
                         />
-                        {inputError?.inputType === 'email' && <div className=''>{inputError.errorMessage}</div>}
+                        {errors?.email && <p className="text-red-400 text-sm">{errors.email}</p>}
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-400 flex items-center gap-2">
@@ -113,19 +120,14 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
                         <textarea 
                             value={formData.bio}
                             onChange={(e) => {
-                                    const   bio: string = e.target.value.trim();
-                                    // if(bio === '' || bio.length > 255) {
-                                    //     setInputError({inputType: 'bio', errorMessage: 'Bio too long.'})
-                                    //     // return;
-                                    // }
-                                    setFormData({...formData, bio: bio});
+                                    setFormData({...formData, bio: e.target.value});
+                                    if(errors?.bio) setErrors({...errors, bio: ''});
                                 }
-
                             }
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-colors h-32 resize-none"
                             placeholder="Tell us about yourself..."
                             />
-                        {inputError?.inputType === 'email' && <div className=''>{inputError.errorMessage}</div>}
+                        {errors?.bio && <p className="text-red-400 text-sm">{errors.bio}</p>}
                     </div>
                 </div>
                 <button
@@ -142,7 +144,7 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
                         Cancel
                     </button>
                     <button 
-                        onClick={() => onSave(formData)}
+                        onClick={handleSaveInfo}
                         className="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
                         >
                         <Save size={18} /> Save Changes

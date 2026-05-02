@@ -6,6 +6,7 @@ type Cell = "X" | "O" | null;
 type Phase = "place" | "move";
 type Player = "X" | "O";
 type ApiCell = "X" | "O" | "";
+type Difficulty = "" | "easy" | "medium" | "hard";
 
 interface AiAction {
   oldindex?: number;
@@ -18,7 +19,7 @@ interface AiResponse {
   action?: AiAction;
   error?: string;
 }
-// add near your types
+
 interface PersistedAiState {
   board: Cell[];
   myTurn: boolean;
@@ -26,32 +27,47 @@ interface PersistedAiState {
   status: string;
 }
 
+interface PersistedAiMatchState extends PersistedAiState {
+  savedAt: number;
+}
+
 const STORAGE_KEY = "ai-challenge-state-v1";
+const LEVEL_STORAGE_KEY = "ai-challenge-level-v1";
+const MATCH_STORAGE_KEY = "ai-challenge-match-v1";
+const MATCH_TTL_MS = 24 * 60 * 60 * 1000;
 
 const makeEmptyBoard = (): Cell[] => Array(9).fill(null);
 
-function loadPersistedAiState (): PersistedAiState  {
-  if (typeof window === "undefined") {
-    return {
-      board: makeEmptyBoard(),
-      myTurn: true,
-      pieceToRemove: null,
-      status: "Your turn",
-    };
-  }
+const makeDefaultAiState = (): PersistedAiState => ({
+  board: makeEmptyBoard(),
+  myTurn: true,
+  pieceToRemove: null,
+  status: "Your turn",
+});
+
+const loadPersistedLevel = (): Difficulty => {
+  if (typeof window === "undefined") return "";
+  const raw = localStorage.getItem(LEVEL_STORAGE_KEY);
+  return raw === "easy" || raw === "medium" || raw === "hard" ? raw : "";
+};
+
+function loadPersistedAiState(): PersistedAiState {
+  if (typeof window === "undefined") return makeDefaultAiState();
 
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return {
-        board: makeEmptyBoard(),
-        myTurn: true,
-        pieceToRemove: null,
-        status: "Your turn",
-      };
-    }
+    const raw = localStorage.getItem(MATCH_STORAGE_KEY);
+    if (!raw) return makeDefaultAiState();
 
-    const parsed = JSON.parse(raw) as Partial<PersistedAiState>;
+    const parsed = JSON.parse(raw) as Partial<PersistedAiMatchState>;
+
+    const isExpired =
+      typeof parsed.savedAt !== "number" ||
+      Date.now() - parsed.savedAt > MATCH_TTL_MS;
+
+    if (isExpired) {
+      localStorage.removeItem(MATCH_STORAGE_KEY);
+      return makeDefaultAiState();
+    }
 
     const validBoard =
       Array.isArray(parsed.board) &&
@@ -68,15 +84,9 @@ function loadPersistedAiState (): PersistedAiState  {
       status: typeof parsed.status === "string" ? parsed.status : "Your turn",
     };
   } catch {
-    return {
-      board: makeEmptyBoard(),
-      myTurn: true,
-      pieceToRemove: null,
-      status: "Your turn",
-    };
+    return makeDefaultAiState();
   }
-};
-
+}
 
 const HUMAN_PLAYER: Player = "X";
 const AI_PLAYER: Player = "O";
@@ -150,6 +160,11 @@ export function AiChallange() {
   const [pieceToRemove, setPieceToRemove] = useState<number | null>(initialState.pieceToRemove);
   const [status, setStatus] = useState<string>(initialState.status);
 
+  const [level, setLevel] = useState<Difficulty>(() => loadPersistedLevel());
+
+  const allLevels: Exclude<Difficulty, "">[] = ["easy", "medium", "hard"];
+  const visibleLevels = level === "" ? allLevels : [level];
+
   const winner = useMemo(() => getWinner(board), [board]);
   const gameOver = winner !== null;
 
@@ -171,13 +186,26 @@ export function AiChallange() {
     }
   }, [winner, myTurn]);
 
-  const handlePlayAgain = () => {
+  const resetMatch = (resetLevel: boolean) => {
     setBoard(makeEmptyBoard());
     setPhase("place");
     setMyTurn(true);
     setPieceToRemove(null);
     setStatus("Your turn");
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(MATCH_STORAGE_KEY);
+
+    if (resetLevel) {
+      setLevel("");
+      localStorage.removeItem(LEVEL_STORAGE_KEY);
+    }
+  };
+
+  const handlePlayAgain = () => {
+    resetMatch(true); // keep same AI level
+  };
+
+  const handleGiveUp = () => {
+    resetMatch(true); // reset board + reset AI level
   };
 
   const sendHumanMove = (oldindex: number, newindex: number) => {
@@ -199,7 +227,7 @@ export function AiChallange() {
   };
 
   const handleCellClick = (index: number) => {
-    if (!myTurn || winner) return;
+    if (!myTurn || winner || level === '') return;
 
     const currentPhase = getPhaseForPlayer(board, HUMAN_PLAYER);
 
@@ -234,13 +262,14 @@ export function AiChallange() {
       try {
         const aiPhase = getPhaseForPlayer(board, AI_PLAYER);
 
-        const res = await fetch("/game_br/", {
+        const res = await fetch("/ai_game/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             board: toApiBoard(board),
             phase: aiPhase,
             player: AI_PLAYER,
+            difficulty: level
           }),
         });
 
@@ -252,6 +281,9 @@ export function AiChallange() {
         if (!data.action) {
           throw new Error(data.error || "No AI action");
         }
+
+        // Add delay here (in milliseconds)
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         const oldindex =
           typeof data.action.oldindex === "number"
@@ -303,65 +335,112 @@ export function AiChallange() {
     };
   }, [board, myTurn, status, winner]);
 
-  const makeEmptyBoard = (): Cell[] => Array(9).fill(null);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (level) {
+      localStorage.setItem(LEVEL_STORAGE_KEY, level);
+    } else {
+      localStorage.removeItem(LEVEL_STORAGE_KEY);
+    }
+  }, [level]);
 
   useEffect(() => {
-    loadPersistedAiState();
-  }, []);
+    if (typeof window === "undefined") return;
 
-  useEffect(() => {
-    const payload: PersistedAiState = { board, myTurn, pieceToRemove, status };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  }, [board, myTurn, pieceToRemove, status]);
+    if (gameOver) {
+      localStorage.removeItem(MATCH_STORAGE_KEY); // finished game should not be restored
+      return;
+    }
+
+    const payload: PersistedAiMatchState = {
+      board,
+      myTurn,
+      pieceToRemove,
+      status,
+      savedAt: Date.now(),
+    };
+
+    localStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify(payload));
+  }, [board, myTurn, pieceToRemove, status, gameOver]);
 
 return (
   <div className="min-h-screen bg-slate-900">
-    <header className="min-h-screen flex flex-col items-center justify-start gap-10 pt-12">
+    <header className="min-h-screen flex flex-col items-center justify-start gap-8 pt-12 px-4">
       <h1 className="text-5xl font-bold text-center">
-        <span className="bg-linear-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
-          Tic
-        </span>{" "}
-        <span className="bg-linear-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
-          Tac
-        </span>{" "}
-        <span className="bg-linear-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
-          Toe
-        </span>{" "}
-        <span className="bg-linear-to-r from-purple-500 to-indigo-500 bg-clip-text text-transparent">
+        <span className="bg-linear-to-r from-amber-600 to-amber-800 bg-clip-text text-transparent">
           Game
         </span>
       </h1>
+      <p className="text-white -mb-4">  { level ==='' ? "Select the AI level" : ""}</p>
+      <div className={`w-full max-w-md grid ${level === "" ? "grid-cols-3" : "grid-cols-1"} gap-2 `}>
+        {visibleLevels.map((d) => (
+          <button
+            key={d}
+            onClick={() => setLevel(d)}
+            className={`px-3 py-2 rounded-lg border transition font-semibold capitalize
+              ${
+                level === d
+                  ? d === "hard"
+                    ? "bg-red-600 border-red-500 text-white"
+                    : d === "medium"
+                    ? "bg-emerald-600 border-emerald-500 text-white"
+                    : "bg-slate-100 border-slate-200 text-slate-900"
+                  : d === "hard"
+                  ? "border-red-500/60 text-slate-200 hover:bg-red-600 hover:text-white"
+                  : d === "medium"
+                  ? "border-emerald-500/60 text-slate-200 hover:bg-emerald-600 hover:text-white"
+                  : "border-slate-500 text-slate-200 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+          >
+            {d}
+          </button>
+        ))}
+      </div>
 
       <p className="text-white text-xl">{status}</p>
 
       {phase === "move" && myTurn && pieceToRemove === null && !winner && (
-        <p className="text-yellow-400 text-sm">Click one of your pieces to remove it first</p>
+        <p className="text-yellow-400 text-sm">
+          Click one of your pieces to remove it first
+        </p>
       )}
       {pieceToRemove !== null && (
-        <p className="text-green-400 text-sm">Now click an empty cell to place your piece</p>
+        <p className="text-green-400 text-sm">
+          Now click an empty cell to place your piece
+        </p>
       )}
 
       <div className="grid grid-cols-3 gap-3 mt-2">
         {board.map((cell, index) => {
           const isSelectedForRemoval = pieceToRemove === index;
           const isMyPiece = cell === HUMAN_PLAYER;
-          const needsToSelectPiece = myTurn && phase === "move" && pieceToRemove === null && !winner;
+          const needsToSelectPiece =
+            myTurn && phase === "move" && pieceToRemove === null && !winner;
 
-          const tileClass =
-            "w-20 h-20 text-3xl font-bold rounded-lg text-white transition " +
-            (isSelectedForRemoval
-              ? "bg-red-600 ring-4 ring-red-400 "
+          const cellColor =
+            cell === HUMAN_PLAYER
+              ? "bg-rose-700"
+              : cell === AI_PLAYER
+              ? "bg-cyan-700"
+              : "bg-slate-800";
+
+          const baseColor =
+            isSelectedForRemoval
+              ? "bg-red-600 ring-4 ring-red-400"
               : needsToSelectPiece && isMyPiece
-                ? "bg-yellow-700 hover:bg-yellow-600 "
-                : "bg-slate-800 ") +
-            (myTurn && !winner ? "hover:bg-slate-700 cursor-pointer" : "cursor-not-allowed opacity-80");
+              ? "bg-yellow-700 hover:bg-yellow-600"
+              : cellColor;
+
+          const hoverClass = myTurn && !winner && !cell ? "hover:bg-slate-700" : "";
+          const cursorClass = myTurn && !winner ? "cursor-pointer" : "cursor-not-allowed opacity-80";
 
           return (
             <button
               key={index}
               onClick={() => handleCellClick(index)}
               disabled={!myTurn || gameOver}
-              className={tileClass}
+              className={`w-20 h-20 text-3xl font-bold rounded-lg text-white transition ${baseColor} ${hoverClass} ${cursorClass}`}
             >
               {cell}
             </button>
@@ -369,8 +448,28 @@ return (
         })}
       </div>
 
+      {!gameOver && (
+         <div className="mt-6 flex flex-col items-center gap-3">
+          {(board.some(cell => cell !== null) || (level !== "")) && (
+          <button
+            onClick={handleGiveUp}
+            className="px-6 py-2 rounded-lg bg-rose-700 text-white hover:bg-rose-600 transition font-semibold"
+          >
+            Give Up
+          </button>
+          )}
+          <button
+            onClick={() => navigate("/Dashboard")}
+            className="px-6 py-2 rounded-lg bg-slate-600 text-white hover:bg-slate-500 transition font-semibold"
+          >
+            Back to Dashboard
+          </button>
+         </div>
+        
+      )}
+
       {gameOver && (
-        <div className="mt-6 flex items-center gap-3">
+        <div className="mt-6 flex flex-col items-center gap-3">
           <button
             onClick={handlePlayAgain}
             className="px-6 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition font-semibold"
@@ -391,3 +490,4 @@ return (
   </div>
 );
 }
+

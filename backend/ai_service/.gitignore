@@ -4,3 +4,6 @@ __pycache__/
 test/
 uploads/*
 Claude_Courses/
+README.md
+tmp_q_table.json
+setup_env.sh

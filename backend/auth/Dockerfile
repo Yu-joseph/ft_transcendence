@@ -1,20 +1,11 @@
-FROM python:3.13-slim 
-
+FROM python:3.13-slim
 WORKDIR /app
-
 COPY myauth/ /app/
-# COPY migrations.sh /app/
-
 ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1 
-
-RUN pip install --upgrade pip 
+ENV PYTHONUNBUFFERED=1
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
-
 RUN chmod +x /app/migrations.sh
-
-
 ENTRYPOINT ["/app/migrations.sh"]
-
-CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
-
+CMD ["gunicorn", "myauth.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "9"]

@@ -11,6 +11,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework_simplejwt.exceptions import TokenError
 from .auth_utils import get_user_from_request
+import os
+from PIL import Image
 from .permissions import role_required
 import uuid
 import requests
@@ -124,7 +126,6 @@ def register(request):
         email=email,
         password=make_password(password),
         fullname=fullname,
-        role="user"
     )
     return JsonResponse({"message": "User created"}, status=201)
 
@@ -213,31 +214,30 @@ def update_users(request):
     tmp_user = get_user_from_request(request)
     if not tmp_user:
         return JsonResponse({"error": "Not authenticated"}, status=401)
-    fields_to_update = [] 
+
+    fields_to_update = []
     try:
-        body     = json.loads(request.body)
-        email    = body.get("email")
-        bio      = body.get("bio")
-        fullname = body.get("fullname")
+        body = json.loads(request.body)
+        email    = body.get("email", "").strip()
+        bio      = body.get("bio", "").strip()
+        fullname = body.get("fullname", "").strip()
     except json.JSONDecodeError:
-        return JsonResponse({"error": "invalid JSON"}, status=400)
+        return JsonResponse({"error": "invalid JSON"}, status=401)
 
     if not email and not bio and not fullname:
-        return JsonResponse({"Find a job hhh" : "Ta sir 9lab ela stage onta katbdl liya f profile awdy awdy"}, status = 400)
+        return JsonResponse({"No changes": "No fields to update"}, status=200)
 
-    if email and email is not None and email.strip() != "":
-        # if email.strip() == "":
-            # return JsonResponse({"error": "Invalid email"}, status=400)
+    if email:
         validator = EmailValidator()
         try:
             validator(email)
         except ValidationError:
-            return JsonResponse({"error": "Invalid email"}, status=400)
+            return JsonResponse({"error": "Invalid email"}, status=402)
         tmp_user.email = email
         fields_to_update.append("email")
 
-    if fullname :
-        if not all(part.isalpha() for part in fullname.split()):
+    if fullname:
+        if not all(part.replace("-", "").isalpha() for part in fullname.split()):
             return JsonResponse({"error": "Invalid name"}, status=400)
         tmp_user.fullname = fullname
         fields_to_update.append("fullname")
@@ -247,9 +247,7 @@ def update_users(request):
         fields_to_update.append("bio")
 
     tmp_user.save(update_fields=fields_to_update)
-
-    return JsonResponse({"message" : "profile updated"} , status=200)
-
+    return JsonResponse({"message": "profile updated", "email": tmp_user.email, "fullname": tmp_user.fullname, "bio": tmp_user.bio}, status=200)
 
 @csrf_exempt
 def changing_password(request):
@@ -293,6 +291,7 @@ def logout(request):
 
     if tmp_user:
         tmp_user.status = "offline"
+        tmp_user.user_status = "Offline"
         tmp_user.save()
         response = JsonResponse({"message": "Logged out"})
         response.delete_cookie("access_token", path="/")
@@ -369,7 +368,6 @@ def forty_two_callback(request):
             username=user_data['login'],
             email=user_data.get('email', ''),
             fullname=f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip(),
-            role='user',
             avatar=avatar_url,
         )
         redirect_url = "/ChangeIntra"
@@ -380,7 +378,7 @@ def forty_two_callback(request):
     access  = refresh.access_token
 
     response = redirect(redirect_url)
-    response.set_cookie(key='access_token',  value=str(access),  max_age=600,    httponly=True, secure=False, samesite='Lax', path='/')
+    response.set_cookie(key='access_token',  value=str(access),  max_age=604800,    httponly=True, secure=False, samesite='Lax', path='/')
     response.set_cookie(key='refresh_token', value=str(refresh), max_age=604800, httponly=True, secure=False, samesite='Lax', path='/')
     return response
 
@@ -426,30 +424,44 @@ def get_user(request):
 
     return JsonResponse(user)
 
+ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png'}
+ALLOWED_MIME_TYPES = {"image/jpeg", "image/png"}
+
+def is_valid_image(file):
+    try:
+        img = Image.open(file)
+        img.verify()  # checks it's a real image
+        file.seek(0)  # reset pointer after verify
+        return True
+    except Exception:
+        return False
+
 @csrf_exempt
 def update_avatar(request):
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
-
     try:
-        content_type = request.content_type or ""
+        avatar_file = request.FILES.get("avatar")
+        if not avatar_file:
+            return JsonResponse({"error": "avatar file is required"}, status=400)
+        ext = os.path.splitext(avatar_file.name)[1].lower()
+        if ext not in ALLOWED_EXTENSIONS:
+            return JsonResponse(
+                {"error": f"Invalid file type '{ext}'. Allowed: jpg, jpeg, png"},
+                status=400
+            )
 
-        if "application/json" in content_type:
-            data = json.loads(request.body)
-            avatar_url = data.get("avatar_url")
-        else:
-            avatar_url = request.POST.get("avatar_url")
-
-        if not avatar_url:
-            return JsonResponse({"error": "avatar_url is required"}, status=400)
+        if not is_valid_image(avatar_file):
+            return JsonResponse(
+                {"error": "File is not a valid image"},
+                status=400
+            )
 
         tmp_user = get_user_from_request(request)
-        tmp_user.avatar = avatar_url
+        tmp_user.avatar = avatar_file
         tmp_user.save()
+        avatar_url = tmp_user.avatar.url
+        return JsonResponse({"message": "Avatar updated successfully", "url": avatar_url}, status=200)
 
-        return JsonResponse({"message": "Avatar updated successfully", "avatar": avatar_url}, status=200)
-
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)

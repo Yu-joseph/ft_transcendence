@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { fetchClient } from "../../../utils/fetchClient";
 import { useAuth } from "../../../../auth/useAuth";
-// import  { useAuth 
+import { useRefresh } from "../../shared/useRefresh";
+import { chatSocket } from "../../../../socket/sock";
+import { withMediaPrefix } from "../../shared/sharedUtils";
+
 export interface FriendsListType {
     id: string
     username: string
-    status: string
+    user_status: string
     avatar: string
-    // created_at: Date
+    created_at: Date
 }
 
 type ActiveTabeType = 'All' | 'Online' | 'Offline';
@@ -17,29 +20,42 @@ export  function    useFriendList() {
     const   [error, setError] = useState(null);
     const   [loading, setLoading] = useState(false);
     const   [activeTab, setActivetab] = useState<ActiveTabeType>('All');
-    // const   [loadingConv, setLoadingConv] = useState(false);
     const   [goChat, setGoChat] = useState<string | null>(null);
-
+    const   refresh = useRefresh();
     const   {user} = useAuth();
 
+    /******************************* */
+
+    useEffect(() => {
+        const   onStatusUpdate = (data: {userId: string, status: string}) => {
+            setFriendList(prev => prev.map(f => 
+                f.id === data.userId ? {...f, user_status: data.status} : f
+            ));
+        }
+        chatSocket.on('status:update', onStatusUpdate);
+        return () => { chatSocket.off('status:update', onStatusUpdate); }
+    }, [user?.id])
+    /***________________________________________________________________ */
     useEffect(() => {
         const   fetchUserList = async () => {
             try {
                 setError(null);
-                setLoading(false);
+                setLoading(true);
                 const   result  = await fetchClient<FriendsListType[]>('/friend', {});
-                setFriendList(result);
-                console.log("Friend list:", friendList);
+                if(result) {
+                    result.map(fr => fr.avatar = withMediaPrefix(fr.avatar || null) ?? '')
+                    setFriendList(result ?? []);
+                }
             } catch (err: any) {
                 setError(err);
-                console.log(err);
+                console.log(`fetching errrorrrrrr.`,err);
             }
             finally{
-                setLoading(true);
+                setLoading(false);
             }
         }
         fetchUserList();
-    }, [user])
+    }, [user?.id, refresh])
     
     /************************************** */
     const   handleRemoveFriend = async (friendId: string) => {
@@ -47,9 +63,10 @@ export  function    useFriendList() {
             return;
         try {
             const   result = await fetchClient(`/friend/${friendId}`, { method: 'DELETE' });
-            setFriendList(prev => prev.filter(fr => fr.id !== friendId));
-            console.log(result);
-
+            if(result)
+                setFriendList(prev => prev.filter(fr => fr.id !== friendId));
+            // Broadcast to the rest of the app specialy for my chat.tsx that a friend was removed!
+            window.dispatchEvent(new Event("refresh_friends"));
         } catch (error: any) {
             console.log(error);
         }
@@ -59,26 +76,21 @@ export  function    useFriendList() {
         if(!userId)
             return;
         try {
-            console.log('::::');
-            // setLoadingConv(false);
             setGoChat(null);
             const   result = await fetchClient('/chat/conversations', {
                 method: 'POST',
                 body: JSON.stringify({friendId: userId})
             });
-            console.log("Result of start Conversation:",result);
-            setGoChat(userId);
-
+            if(result)
+                setGoChat(userId);
         } catch (error:any) {
             console.log('errr:', error);
-        } finally {
-            // setLoadingConv(true);
         }
     }
 
     const fiteredFriend = friendList.filter((friend) => {
         if (activeTab === 'All') return true;
-        return activeTab === friend.status;
+        return activeTab === friend.user_status;
     });
 
     /**__________________ */
@@ -91,6 +103,5 @@ export  function    useFriendList() {
         fiteredFriend,
         loading,
         error
-        
     };
 }

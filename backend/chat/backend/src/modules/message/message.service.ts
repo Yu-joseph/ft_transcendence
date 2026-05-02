@@ -1,5 +1,4 @@
 
-import { off } from "node:cluster";
 import { prisma } from "../../lib/prisma.js";
 import { getIo } from "../../socket/index.js";
 import { AppError } from "../../utils/AppError.js";
@@ -9,10 +8,10 @@ import { SendMessageType, MessagesWithConvId } from "./message.types.js";
 export  class MessagesServices {
     /** @function getMessages getting all messages from single conversation by conversation ID*/
     static async getMessagesByConvId(data: GetMessagesProps) {
-        console.log('User ID', data.currentUserId);
+
         const   conversationExist = await prisma.conversation.findUnique({
             where: {
-                id: data.conversationId
+                id: BigInt(data.conversationId)
             },
             include: {
                 User_Conversation_user1IdToUser: {select: {id: true}},
@@ -22,6 +21,17 @@ export  class MessagesServices {
         if (!conversationExist) {
             throw new AppError('Conversation Not found', 404);
         }
+        const   isFriend = await prisma.friend.findFirst({
+            where: {
+                OR: [
+                        { requesterId: conversationExist.user1Id, receiverId: conversationExist.user2Id },
+                        { requesterId: conversationExist.user2Id, receiverId: conversationExist.user1Id }
+                    ],
+                status: 'ACCEPTED'
+            }
+        });
+        // if (!isFriend)
+        //     throw new AppError('Access denied: You are no longer friends.', 403);
         const   isParticipant = conversationExist.User_Conversation_user1IdToUser.id === data.currentUserId || conversationExist.User_Conversation_user2IdToUser.id === data.currentUserId;
         if(!isParticipant)
             throw new AppError('You are not member of this conversation', 403);
@@ -40,7 +50,11 @@ export  class MessagesServices {
         if (!messages) {
             throw new AppError('Messages of this conversation not found', 404);
         }
-        return messages?.Message ?? [] as MessagesPayload[];
+        return {
+            messages: (messages?.Message ?? []).map(m => ({ ...m, id: m.id.toString() })) as MessagesPayload[],
+            status: !isFriend ? 'NOT FRIEND' : 'FRIEND'
+        } 
+        
     }
     /** @function getMessages getting all messages from single conversation by friend ID*/
     static async getMessagesByFriendId(data: {currentUserId: string, friendId: string}): Promise<MessagesWithConvId> {
@@ -86,17 +100,17 @@ export  class MessagesServices {
                 },
             },
         });
-        return {convId: conversationExist.id, messages: messages?.Message ?? [] as MessagesPayload[]};
+        return {convId: conversationExist.id.toString(), messages: (messages?.Message ?? []).map(m => ({ ...m, id: m.id.toString() })) as MessagesPayload[]};
     }
     /** @function sendMessage getting all messages from single conversation */
-    static async sendMessage(senderId: string, conversationId: number, content: string) {
+    static async sendMessage(senderId: string, conversationId: string, content: string, tempId: string) {
         const   convExist = await prisma.conversation.findUnique({
             where: {
-                id: conversationId
+                id: BigInt(conversationId)
             },
             include: {
-                User_Conversation_user1IdToUser: {select: {id: true}},
-                User_Conversation_user2IdToUser: {select: {id: true}}
+                User_Conversation_user1IdToUser: {select: {id: true, username: true}},
+                User_Conversation_user2IdToUser: {select: {id: true, username: true}}
             }
         });
         if (!convExist)
@@ -107,7 +121,7 @@ export  class MessagesServices {
         const   newMessage: SendMessageType = {
             senderId: senderId,
             content: content,
-            conversationId: conversationId,
+            conversationId: BigInt(conversationId),
             created_at: new Date
         };
         const   isFriend = await prisma.friend.findFirst({
@@ -119,33 +133,43 @@ export  class MessagesServices {
             }
         });
         if(isFriend === null) {
-            const   rmConv = await prisma.$transaction([
-                prisma.message.deleteMany({
-                    where: {conversationId: convExist.id}
-                }),
-                prisma.conversation.delete({
-                    where: { id: convExist.id }
-                })
-            ]);
-            throw new AppError('You are not friends anymore!', 403);
+            throw new AppError('You are not friends anymore! Message cannot be sent.', 403);
         }
         const   [saveMessage, updateConv] = await prisma.$transaction([
             prisma.message.create({ data: newMessage, include: { User: {select: {id: true, username: true}} }}),
             prisma.conversation.update({
-            where: { id: conversationId }, data: { updated_at: new Date() }})
+            where: { id: BigInt(conversationId) }, data: { updated_at: new Date() }})
         ]);
 
         const   io = getIo();
-        console.log(`Sending message to room ${conversationId}`);
-        io.to(convExist.user1Id === senderId ? convExist.user2Id : convExist.user1Id)
-            .emit('message:new', saveMessage);
+        /** **** emit message to member on channel */
+        io.to(`ROOM_${conversationId.toString()}`)
+            .emit('message:new', {
+                ...saveMessage, 
+                id: saveMessage.id.toString(), 
+                tempId: tempId, 
+                convId: conversationId.toString()
+            });
+        /**Update conversation list for both sender and receiver */
         io.to(convExist.user1Id).to(convExist.user2Id)
             .emit('conversation:updated',
             {
                 lastMessage: {
-                    id: saveMessage.id, created_at: saveMessage.created_at, content: saveMessage.content, senderId: saveMessage.User.id
-                } 
-                , updated_at: updateConv.updated_at, convId: updateConv.id});
+                    id: saveMessage.id.toString(), 
+                    created_at: saveMessage.created_at, 
+                    content: saveMessage.content, 
+                    senderId: saveMessage.User.id
+                },
+                updated_at: updateConv.updated_at,
+                convId: updateConv.id.toString()
+            });
+        /** get the recever and emit a notification for it */
+        const   recever = convExist.user1Id === senderId ? convExist.User_Conversation_user2IdToUser: convExist.User_Conversation_user1IdToUser;
+        io.to(recever.id)
+            .emit('notification:new_message',{
+                senderName: saveMessage.User.username,
+                content: newMessage.content
+            });
         return saveMessage;
     }
 }

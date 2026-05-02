@@ -1,61 +1,26 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { AuthContext, type AuthUser } from './auth-context';
-
-// Cache the fetch promise so repeated component loads do not cause duplicate requests
-let fetchUserPromise: Promise<AuthUser | null> | null = null;
-
-// Fetches the authenticated user from the backend and normalizes the response shape.
-// Uses a shared in-flight promise to avoid duplicate network requests.
-function fetchAuthUser(): Promise<AuthUser | null> {
-  // Return cached promise if already in flight
-  if (fetchUserPromise) {
-    return fetchUserPromise;
-  }
-
-  fetchUserPromise = fetch('/authent/getuser/', {
-    method: 'GET',
-    credentials: 'include',
-  })
-    .then(async (response) => {
-      if (!response.ok) {
-        // 401 or other error - user is not authenticated
-        return null;
-      }
-
-      const userData = await response.json();
-      return {
-        id: String(userData.id ?? userData.user?.id ?? ''),
-        username: userData.username ?? userData.user?.username ?? 'Player',
-        fullName: userData.fullname ?? userData.fullName ?? userData.user?.fullname,
-        email: userData.email ?? userData.user?.email,
-        avatar: userData.avatar ?? userData.profile?.avatar,
-      };
-    })
-    .catch(() => {
-      // Network error or parsing error
-      return null;
-    })
-    .finally(() => {
-      // Clear cache after request completes so next app load can re-fetch
-      fetchUserPromise = null;
-    });
-
-  return fetchUserPromise;
-}
+import { fetchAuthUser, exposeSetUser, clearSetUser } from './auth-utils';
 
 // Provides auth state to the app and initializes user data once when it first loads.
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Expose setUser globally so handleUnauthorized() can clear it from outside React.
   useEffect(() => {
-    // Prevent state updates if this provider closes before fetch completes.
+    exposeSetUser(setUser);
+    return () => {
+      clearSetUser();
+    };
+  }, [setUser]);
+
+  // Initialize auth state once on mount.
+  useEffect(() => {
     let isActive = true;
 
-    // Loads current session user and flips loading off when finished.
     const initializeAuth = async () => {
       const userData = await fetchAuthUser();
-      
       if (isActive) {
         setUser(userData);
         setLoading(false);
@@ -66,6 +31,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       isActive = false;
+    };
+  }, []);
+
+  // Revalidate session on tab focus/visibility change (no polling).
+  useEffect(() => {
+    let isActive = true;
+
+    const refreshAuthUser = async () => {
+      const userData = await fetchAuthUser();
+      if (isActive) {
+        setUser(userData);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshAuthUser();
+      }
+    };
+
+    window.addEventListener('focus', refreshAuthUser);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      isActive = false;
+      window.removeEventListener('focus', refreshAuthUser);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  // Sync logout across browser tabs via localStorage event.
+  useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== 'auth:logout') return;
+      setUser(null);
+      setLoading(false);
+      sessionStorage.removeItem('activeTournament');
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
     };
   }, []);
 

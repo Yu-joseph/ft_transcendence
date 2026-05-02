@@ -16,7 +16,6 @@ export  class   ConversationService {
                 id: userId
             }
         });
-        console.log(exist);
         if(!exist)
             throw new AppError('Unauthorized', 401);
         const   conversations = await prisma.conversation.findMany({
@@ -27,8 +26,8 @@ export  class   ConversationService {
                 ]
             },
             include: {
-                User_Conversation_user1IdToUser: {select: {id: true, username: true, avatar: true, status: true}},
-                User_Conversation_user2IdToUser: {select: {id: true, username: true, avatar: true, status: true}},
+                User_Conversation_user1IdToUser: {select: {id: true, username: true, avatar: true, user_status: true}},
+                User_Conversation_user2IdToUser: {select: {id: true, username: true, avatar: true, user_status: true}},
                 Message: {
                     take: 1,
                     orderBy: {created_at: 'desc'},
@@ -39,9 +38,9 @@ export  class   ConversationService {
         });
 
         const result : ExistingConversationsT[] = conversations.map(conv => ({
-            id: conv.id,
+            id: conv.id.toString(),
             otherUser: conv.user1Id === userId ? conv.User_Conversation_user2IdToUser : conv.User_Conversation_user1IdToUser,
-            lastMessage: conv.Message?.[0] ?? null,
+            lastMessage: conv.Message?.[0] ? { ...conv.Message[0], id: conv.Message[0].id.toString() } : null,
             updated_at: conv.updated_at
         }));
         console.log('Conversation list:', result);
@@ -62,9 +61,6 @@ export  class   ConversationService {
         });
         if(!friendShipExist)
             throw new AppError("This user is not in your friends list.", 401);
-        // const   user1Id = Math.min(data.userId as string, data.friendId);
-        // const   user2Id = Math.max(data.userId as string, data.friendId);
-
         const   [user1Id, user2Id] = data.userId <= data.friendId ? [data.userId, data.friendId] :
                                      [data.friendId, data.userId];
 
@@ -77,8 +73,8 @@ export  class   ConversationService {
                 // my conversation schema alwayse user1Id < user2Id
             },
             include: {
-                User_Conversation_user1IdToUser: {select: {id: true, username: true, avatar: true, status: true}},
-                User_Conversation_user2IdToUser: {select: {id: true, username: true, avatar: true, status: true}},
+                User_Conversation_user1IdToUser: {select: {id: true, username: true, avatar: true, user_status: true}},
+                User_Conversation_user2IdToUser: {select: {id: true, username: true, avatar: true, user_status: true}},
                 Message: {
                     take: 1,
                     orderBy: {created_at: 'desc'},
@@ -93,9 +89,11 @@ export  class   ConversationService {
                     statusCode: 200,
                     message: 'Conversation Already exist'
                 },
-                id: conversationExist.id,
+                id: conversationExist.id.toString(),
                 otherUser: otherUser,
-                lastMessage: conversationExist.Message?.[0] ?? null,
+                lastMessage: conversationExist.Message?.[0] 
+                    ? { ...conversationExist.Message[0], id: conversationExist.Message[0].id.toString() } 
+                    : null,
                 updated_at: conversationExist.updated_at
             }
             return res;
@@ -108,8 +106,8 @@ export  class   ConversationService {
                 updated_at: new Date
             },
             include: {
-                User_Conversation_user1IdToUser: {select: {id: true, username: true, avatar: true, status: true}},
-                User_Conversation_user2IdToUser: {select: {id: true, username: true, avatar: true, status: true}},
+                User_Conversation_user1IdToUser: {select: {id: true, username: true, avatar: true, user_status: true}},
+                User_Conversation_user2IdToUser: {select: {id: true, username: true, avatar: true, user_status: true}},
             }
         });
         const   otherUser = createdConv.user1Id === data.userId ? createdConv.User_Conversation_user2IdToUser : createdConv.User_Conversation_user1IdToUser;
@@ -118,7 +116,7 @@ export  class   ConversationService {
                 statusCode: 201,
                 message: 'Conversation Created successfuly'
             },
-            id: createdConv.id,
+            id: createdConv.id.toString(),
             otherUser: otherUser,
             lastMessage: null,
             updated_at: createdConv.updated_at
@@ -127,29 +125,30 @@ export  class   ConversationService {
     }
       /**
      * @function deleteConversation userId create new conversation with otherUserId
+     * Next Feature
      */
-    static async deleteConversation(data: DeleteConversation) {
-        const   convExist = await prisma.conversation.findUnique({
-            where: {
-                id: data.conversationId
-            },
-            select: {id: true}
-        });
-        if (!convExist)
-            throw new AppError('Conversation Not Found', 404);
-        const   inConv = await prisma.conversation.findFirst({
-            where: {
-                id: convExist.id,
-                OR: [ {user1Id:  data.currentUserId}, {user2Id: data.currentUserId} ]
-            }
-        });
-        if(!inConv)
-            throw new AppError('You are not member on this conversation',401);
-        const   deletedConv = await prisma.$transaction([
-            prisma.message.deleteMany({where: {conversationId: data.conversationId}}),
-            prisma.conversation.delete({where: {id: data.conversationId}, select: {id: true}})
-        ]);
+    // static async deleteConversation(data: DeleteConversation) {
+    //     const   convExist = await prisma.conversation.findUnique({
+    //         where: {
+    //             id: data.conversationId
+    //         },
+    //         select: {id: true}
+    //     });
+    //     if (!convExist)
+    //         throw new AppError('Conversation Not Found', 404);
+    //     const   inConv = await prisma.conversation.findFirst({
+    //         where: {
+    //             id: convExist.id,
+    //             OR: [ {user1Id:  data.currentUserId}, {user2Id: data.currentUserId} ]
+    //         }
+    //     });
+    //     if(!inConv)
+    //         throw new AppError('You are not member on this conversation',401);
+    //     const   deletedConv = await prisma.$transaction([
+    //         prisma.message.deleteMany({where: {conversationId: data.conversationId}}),
+    //         prisma.conversation.delete({where: {id: data.conversationId}, select: {id: true}})
+    //     ]);
 
-        return deletedConv[1].id;
-    }
+    //     return deletedConv[1].id;
+    // }
 }

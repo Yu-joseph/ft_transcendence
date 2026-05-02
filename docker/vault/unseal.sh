@@ -34,7 +34,10 @@ vault secrets enable -path=secret kv-v2 2>/dev/null || true
 if [ "$INITIALIZED" = "false" ]; then
   vault kv put secret/myapp/apis \
     openai_api_key="${OPENROUTER_API_KEY}" \
-    django_secret_key="${DJANGO_SECRET_KEY}"
+    django_secret_key="${DJANGO_SECRET_KEY}"\
+    grok_secret_key="${GROQ_API_KEY}"\
+    social_secret_fortytwo="${SOCIAL_AUTH_42_SECRET}"\
+    fortytwo_key_auth="${SOCIAL_AUTH_42_KEY}"
 fi
 
 vault secrets enable database 2>/dev/null || true
@@ -141,7 +144,7 @@ if [ "$INITIALIZED" = "false" ]; then
     sleep 2
   done
 
-  PGPASSWORD="${ft_password}" psql -h db -p 5432 -U "${ft_user}" -d mydb <<SQL
+  PGPASSWORD="${ft_password}" psql -h db -p 5432 -U "${ft_user}" -d "${ft_db}" <<SQL
   GRANT ALL ON SCHEMA public TO PUBLIC;
   ALTER DEFAULT PRIVILEGES FOR ROLE ${ft_user} IN SCHEMA public
     GRANT ALL ON TABLES TO PUBLIC;
@@ -150,11 +153,11 @@ if [ "$INITIALIZED" = "false" ]; then
 SQL
 
   echo "Waiting for game postgres..."
-  until pg_isready -h postgres -p 5432 -U "${DB_USER}" 2>/dev/null; do
+  until pg_isready -h chat_db -p 5432 -U "${DB_USER}" 2>/dev/null; do
     sleep 2
   done
 
-  PGPASSWORD="${DB_PASSWORD}" psql -h chat_db -p 5432 -U "${DB_USER}" -d chatbot_db <<SQL
+  PGPASSWORD="${DB_PASSWORD}" psql -h chat_db -p 5432 -U "${DB_USER}" -d "${DB_NAME}" <<SQL
   GRANT ALL ON SCHEMA public TO PUBLIC;
   ALTER DEFAULT PRIVILEGES FOR ROLE ${DB_USER} IN SCHEMA public
     GRANT ALL ON TABLES TO PUBLIC;

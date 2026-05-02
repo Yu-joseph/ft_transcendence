@@ -15,12 +15,27 @@ type Message = {
   text: string;
 };
 
+const parseJsonOrThrow = async <T,>(res: Response, fallback: string): Promise<T> => {
+  if (!res.ok) {
+    let message = fallback + ' (' + res.status + ')';
+    try {
+      const body = (await res.json()) as { message?: string; error?: string; detail?: string };
+      if (body?.message) message = body.message;
+      else if (body?.error) message = body.error;
+      else if (body?.detail) message = body.detail;
+    } catch {}
+    throw new Error(message);
+  }
+  return (await res.json()) as T;
+};
+
 function Chatbot() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [activeSession, setActiveSession] = useState<string | null>(null);
   const [loadedMessages, setLoadedMessages] = useState<Message[]>([]);
   const [chatKey, setChatKey] = useState(0);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
   const pendingSessionRef = useRef<string | null>(null);
   const ACTIVE_SESSION_STORAGE_KEY = 'chatbot_active_session_id';
   const SESSION_CACHE_STORAGE_KEY = 'chatbot_sessions_cache';
@@ -61,7 +76,11 @@ function Chatbot() {
 
     const init = async () => {
       try {
-        const res = await fetch('/chatbot/sessions');
+        const res = await fetch('/chatbot/sessions',{
+          method: 'GET',
+          credentials: 'include',
+          
+        });
         if (!res.ok) throw new Error('sessions request failed: ' + res.status);
 
         const payload: unknown = await res.json();
@@ -106,8 +125,10 @@ function Chatbot() {
 
   const handleNewChat = async () => {
     try {
-      const res = await fetch('/chatbot/new-session', { method: 'POST' });
-      const data: { session_id: string } = await res.json();
+      const res = await fetch('/chatbot/new-session', { method: 'POST', credentials: 'include' });
+      const data = await parseJsonOrThrow<{ session_id?: string }>(res, 'Could not create new session');
+      if (!data.session_id) throw new Error('Invalid new-session payload');
+
       const newSession: Session = {
         session_id: data.session_id,
         title: 'New Chat',
@@ -134,11 +155,15 @@ function Chatbot() {
     try {
       const res = await fetch('/chatbot/set-session', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionId }),
       });
 
-      const data: { messages?: Array<{ role: string; content: string }> } = await res.json();
+      const data = await parseJsonOrThrow<{ messages?: Array<{ role: string; content: string }> }>(
+        res,
+        'Could not load session'
+      );
 
       const messages: Message[] = (data.messages ?? []).map((m) => ({
         role: m.role === 'assistant' ? 'ai' : (m.role as Message['role']),
@@ -167,11 +192,12 @@ function Chatbot() {
   };
 
   const requestNewChat = async () => {
-    if (isStreaming) return
+    if (isStreaming || deletingSessionId) return
     await handleNewChat()
   }
 
   const requestSelectSession = async (sessionId: string) => {
+    if (deletingSessionId) return
     if (isStreaming) {
       pendingSessionRef.current = sessionId
       return
@@ -187,16 +213,62 @@ function Chatbot() {
     }
   }, [isStreaming])
 
+  const handleDeleteSession = async (sessionId: string) => {
+    if (isStreaming || deletingSessionId) return
+
+
+    setDeletingSessionId(sessionId)
+
+    try {
+      
+      const res = await fetch("/chatbot/delete-session", {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId }),
+      })
+
+      if (!res.ok) {
+        throw new Error('Delete session failed: ' + res.status)
+      }
+
+      localStorage.removeItem('chat_stream_' + sessionId)
+
+      const remainingSessions = sessions.filter((s) => s.session_id !== sessionId)
+      setSessions(remainingSessions)
+
+      if (activeSession !== sessionId) return
+
+      if (remainingSessions.length === 0) {
+        localStorage.removeItem(ACTIVE_SESSION_STORAGE_KEY)
+        setActiveSession(null)
+        setLoadedMessages([])
+        await handleNewChat()
+        return
+      }
+
+      await handleSelectSession(remainingSessions[0].session_id)
+    } catch (error) {
+      console.error('Could not delete session', error)
+    } finally {
+      setDeletingSessionId(null)
+    }
+  }
+
+  const isUiLocked = isStreaming || deletingSessionId !== null
+
   return (
-    <div className="flex h-screen overflow-hidden flex-col z-10 bg-slate-950">
+    <div className="flex h-screen overflow-hidden flex-col z-10 bg-slate-900">
       <Bar />
-      <div className="flex flex-1 p-2 pb-20 bg-linear-to-b from-slate-900 via-blue-900 to-slate-950 overflow-hidden">
+      <div className="flex flex-1 p-2 pb-20 bg-slate-900 overflow-hidden">
         <Sidebar
           onNewChat={requestNewChat}
           sessions={sessions}
           activeSession={activeSession}
           onSelectSession={requestSelectSession}
-          disabled={isStreaming}
+          onDeleteSession={handleDeleteSession}
+          disabled={isUiLocked}
+          deletingSessionId={deletingSessionId}
         />
         <div className="flex-1 flex flex-col overflow-hidden px-2">
           <ChatWindow

@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { PasswordField } from "../components/PasswordField";
 
@@ -117,7 +118,7 @@ export default function ChangeIntra() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-linear-to-br from-slate-950 via-blue-950 to-slate-900 px-4 py-10 text-white">
+    <div className="min-h-screen relative overflow-hidden bg-slate-900 px-4 py-10 text-white">
       <div className="relative mx-auto mt-8 w-full max-w-xl rounded-2xl border border-amber-400/20 bg-slate-900/80 p-6 shadow-2xl shadow-amber-900/20 backdrop-blur">
         <div className="mb-5 space-y-2">
           <p className="text-xs uppercase tracking-[0.35em] text-amber-200/70">Intra access</p>

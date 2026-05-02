@@ -1,5 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../../auth/useAuth'
+import { BsRobot } from "react-icons/bs";
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeSanitize from 'rehype-sanitize'
+
+const ERROR_AUTO_HIDE_MS = 8000;
 
 type Message = {
   role: string
@@ -25,6 +31,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [showThinking, setShowThinking] = useState(false)
+  const [errorNotice, setErrorNotice] = useState<string | null>(null)
   const hasSentFirst = useRef(initialMessages.length > 0)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
@@ -76,7 +83,8 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
       void generateTitle(messageText)
       hasSentFirst.current = true
     }
-
+    
+    setErrorNotice(null);
     setInput('')
     setLoading(true)
     setShowThinking(true)
@@ -90,8 +98,9 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
       updatedAt: Date.now(),
     })
     try {
-      const response = await fetch('/chatbot/chat/stream', {
+      const response = await fetch('/chatbot/chat/stream', { 
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'text/event-stream',
@@ -100,8 +109,18 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
         signal: controller.signal,
       })
 
-      if (!response.ok || !response.body) {
-        throw new Error('Stream request failed')
+      if (!response.ok) {
+        const friendly = 
+          response.status === 401 ? 'Session expired. Please sign in again.' :
+          response.status === 403 ? 'This chat is unavailable.' :
+          response.status === 429 ? 'Too many requests. Wait and retry.' :
+          response.status === 400 ? 'Invalid request.' :
+          response.status >= 500 ? 'Server error. Try again.' :
+          'Something went wrong.';
+        throw new Error(friendly);
+      }
+      if (!response.body) {
+        throw new Error('EMPTY_STREAM');
       }
 
       const reader = response.body.getReader()
@@ -126,22 +145,30 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
           for (const line of lines) {
             if (!line.startsWith('data:')) continue
 
-            const payload = line.slice(5).trimStart()
+            let payload = line.slice(5)
+            if (payload.startsWith(' ')) payload = payload.slice(1)
 
             if (payload === '[DONE]') {
-              const current = readDraft()
+              setErrorNotice(null);
+              const current = readDraft();
               if (current) {
-                writeDraft({ ...current, typing: false, updatedAt: Date.now() })
-                // optional: clear finalized draft
-                // writeDraft(null)
+                writeDraft({ ...current, typing: false, updatedAt: Date.now() });
               }
               streamDone = true
               break
             }
 
-            if (firstToken) {
+            if (isErrorChunk(payload)) {
               setShowThinking(false)
-              firstToken = false
+              setErrorNotice(extractFriendlyErrorFromChunk(payload))
+              streamDone = true
+              break
+            }
+
+            if (firstToken) {
+              setShowThinking(false);
+              setErrorNotice(null);
+              firstToken = false;
             }
             const current = readDraft();
             writeDraft({
@@ -158,21 +185,21 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
           if (streamDone) break
         }
       }
-    } catch (err) {
-      const aborted = err instanceof DOMException && err.name === 'AbortError'
 
-      if (aborted) {
-        const current = readDraft()
-        if (current) {
-          writeDraft({ ...current, typing: false, updatedAt: Date.now() })
-        }
-        return
+      const finalDraft = readDraft();
+      if (finalDraft && finalDraft.typing) {
+        writeDraft({ ...finalDraft, typing: false, updatedAt: Date.now() });
       }
+
+    } catch (err) {
+      const fallback = 'Something went wrong. Please try again.'
+      const userMessage = err instanceof Error && err.message ? err.message : fallback
+      setErrorNotice(userMessage)
 
       writeDraft({
         typing: false,
         userText: messageText,
-        partialAi: 'Error connecting to server.',
+        partialAi: userMessage,
         updatedAt: Date.now(),
       })
     } finally {
@@ -198,8 +225,9 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
     try {
       const res = await fetch('/chatbot/generate-title', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
+        body: JSON.stringify({ message, session_id: sessionId })
       })
 
       const data: { title?: string } = await res.json()
@@ -228,7 +256,8 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
   }, [input])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value)
+    if (errorNotice) setErrorNotice(null);
+    setInput(e.target.value);
   }
 
   // Focus when Agent page opens
@@ -324,14 +353,68 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
     const el = scrollContainerRef.current
     if (!el) return
     const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
-    stickToBottomRef.current = distanceFromBottom < 80
+    // consider near-bottom threshold to avoid flipping when user slightly scrolls
+    stickToBottomRef.current = distanceFromBottom < 120
   }
 
   // only auto-scroll if user is already near bottom
   useEffect(() => {
     if (!stickToBottomRef.current) return
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // use rAF to ensure DOM updated before measuring
+    const id = requestAnimationFrame(() => scrollToBottom())
+    return () => cancelAnimationFrame(id)
   }, [messages, showThinking])
+
+  const scrollToBottom = () => {
+    const el = scrollContainerRef.current
+    if (!el) return
+    // snap to bottom to avoid repeated smooth scroll jumps
+    el.scrollTop = el.scrollHeight
+  }
+
+  const isErrorChunk = (chunk: string): boolean => {
+    const lower = chunk.toLowerCase();
+    return (
+      chunk.startsWith('Error:') ||
+      chunk.startsWith('error:') ||
+      lower.includes('invalid_api_key') ||
+      lower.includes('api key') ||
+      lower.includes('quota exceeded') ||
+      lower.includes('rate limit') ||
+      lower.includes('too many requests')
+    );
+  };
+
+  const extractFriendlyErrorFromChunk = (chunk: string): string => {
+    const lower = chunk.toLowerCase();
+    if (lower.includes('invalid_api_key') || lower.includes('api key')) {
+      return 'AI service is temporarily unavailable. Please try again later.';
+    }
+    if (lower.includes('rate limit') || lower.includes('too many requests')) {
+      return 'Too many requests. Please wait a moment and try again, 5/min, 100/day';
+    }
+    if (lower.includes('quota') || lower.includes('exhausted') || lower.includes('credits')) {
+      return 'AI service is unavailable right now. Please try again later.';
+    }
+    if (lower.includes('timed out')) {
+      return 'The AI is taking too long to respond. Please try again.';
+    }
+    return 'Something went wrong. Please try again.';
+  };
+
+  // Auto-hide popup after a few seconds
+  useEffect(() => {
+    if (!errorNotice) return;
+    const id = window.setTimeout(() => setErrorNotice(null), ERROR_AUTO_HIDE_MS);
+    return () => window.clearTimeout(id);
+  }, [errorNotice]);
+
+  // Clear popup when switching sessions
+  useEffect(() => {
+    setErrorNotice(null);
+  }, [sessionId]);
+
+  const normalizeMessage = (text: string) => text.replace(/<br\s*\/?>/gi, '\n')
 
   return (
     <div className="flex flex-1 flex-col bg-slate-900/80 border border-blue-800 rounded-2xl overflow-hidden shadow-2xl">
@@ -344,12 +427,10 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
         {messages.length === 0 && !loading && (
           <div className="text-center pt-16 pb-5">
             <div className="w-13 h-13 rounded-xl bg-slate-800 border border-blue-700 flex items-center justify-center text-[22px] text-amber-400 mx-auto mb-4">
-              #
+              <BsRobot></BsRobot>
             </div>
-            <h1 className="text-[26px] font-bold text-amber-400 mb-2">Hey, Ready to dive in??</h1>
-            <p className="text-[13px] text-slate-300 leading-relaxed max-w-105 mx-auto">
-              ask anything.
-            </p>
+            <h1 className="text-[20px] font-bold  mb-2">Hi<span className="text-amber-400"> {user?.username}</span> </h1>
+            <h1 className="text-[26px] font-bold ">What's on your mind today? </h1>
           </div>
         )}
 
@@ -364,7 +445,29 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
                   <div className="text-[10px] text-amber-300 tracking-widest uppercase">Arena AI</div>
                 </div>
                 <div className="bg-slate-900/90 border border-blue-900 rounded-[2px_14px_14px_14px] px-5 py-4 text-sm leading-7 text-slate-300">
-                  <p className="mb-2 last:mb-0 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: msg.text }} />
+                  <div className="mb-2 last:mb-0 whitespace-pre-wrap text-slate-300">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeSanitize]}
+                      components={{
+                        code({ inline, className, children, ...props }) {
+                          return inline ? (
+                            <code className="rounded bg-slate-800 px-1 py-0.5 text-amber-300" {...props}>
+                              {children}
+                            </code>
+                          ) : (
+                            <pre className="overflow-x-auto rounded-lg bg-slate-950 p-3 text-sm text-slate-100">
+                              <code className={className} {...props}>
+                                {children}
+                              </code>
+                            </pre>
+                          )
+                        },
+                      }}
+                    >
+                      {normalizeMessage(msg.text)}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               </div>
             )}
@@ -403,6 +506,19 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
 
       <div className="px-10 pb-4 pt-3 border-t border-blue-800 bg-slate-900/70">
 
+        {errorNotice && (
+          <div className="mb-3 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-200 whitespace-pre-line flex items-start justify-between gap-3">
+            <span>{errorNotice}</span>
+            <button
+              type="button"
+              onClick={() => setErrorNotice(null)}
+              className="text-red-200/80 hover:text-red-100"
+              aria-label="Dismiss error"
+            >
+              x
+            </button>
+          </div>
+        )}
         <div className="flex items-end bg-slate-900 border border-blue-700 rounded-xl px-3 py-2 gap-3 transition-colors focus-within:border-amber-400/60">
           <textarea
             ref={textareaRef}
@@ -413,7 +529,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             disabled={loading}
-            className="flex-1 bg-transparent border-none text-slate-100 text-left text-sm outline-none font-inherit resize-none placeholder:text-slate-500 leading-6 max-h-[180px] mb-2 overflow-y-hidden disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex-1 bg-transparent border-none text-slate-100 text-left text-sm outline-none font-inherit resize-none placeholder:text-slate-500 leading-6 max-h-45 mb-2 overflow-y-hidden disabled:opacity-60 disabled:cursor-not-allowed"
           />
           <button
             className="w-9 h-9 bg-amber-500 text-slate-900 font-semibold rounded-lg flex items-center justify-center transition-opacity disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed hover:opacity-90"
@@ -423,6 +539,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
             ↑
           </button>
         </div>
+
       </div>
     </div>
   )
