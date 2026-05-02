@@ -5,7 +5,9 @@ from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 from langchain_core.messages import SystemMessage
 
-load_dotenv()
+
+load_dotenv("/vault/aii/file.env")
+load_dotenv("/vault/aii/apiss.env")
 
 
 class Config:

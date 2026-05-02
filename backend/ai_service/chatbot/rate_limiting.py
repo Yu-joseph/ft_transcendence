@@ -9,7 +9,6 @@ r = redis.Redis(host="redis", port=6379, decode_responses=True)
 LIMIT_PER_MINUTE = 5
 LIMIT_PER_DAY    = 500
 SYNC_EVERY       = 10
-SAFETY_ZONE      = 50 
 
 
 
@@ -111,7 +110,7 @@ def check_rate_limit(user_id : str):
 
         new_daily = results[2]
 
-        if new_daily % SYNC_EVERY == 0 or new_daily >= LIMIT_PER_DAY - SAFETY_ZONE:
+        if new_daily % SYNC_EVERY == 0 :
             sync_to_postgres(user_id, new_daily)
         
         return True
