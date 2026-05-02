@@ -219,7 +219,7 @@ def save_q_table(filename='q_table.json'):
 
 if __name__ == "__main__":
     train()
-    save_q_table()en acds
+    save_q_table()
 
 
 
