@@ -118,7 +118,7 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
   }
 
   return (
-    <div className="fixed top-4 right-4 z-[60] w-72 max-w-[calc(100vw-2rem)] space-y-3">
+    <div className="fixed top-4 right-4 z-60 w-72 max-w-[calc(100vw-2rem)] space-y-3">
       {pendingInvite && (
         <div className="bg-slate-800 rounded-xl p-4 shadow-lg border border-slate-700">
           <div className="flex flex-col justify-center items-center gap-1">
