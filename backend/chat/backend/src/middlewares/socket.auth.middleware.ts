@@ -3,6 +3,7 @@ import cookie from 'cookie';
 import { AppError } from "../utils/AppError.js";
 import  jwt   from    'jsonwebtoken'
 import { JwtPayload } from "./auth.middleware.js";
+import prisma from "../lib/prisma.js";
 
 export const socketAuthenticate = async (socket: Socket, next: (err?: Error) => void) => {
     try {
@@ -15,6 +16,15 @@ export const socketAuthenticate = async (socket: Socket, next: (err?: Error) => 
         const   payload = jwt.verify(token, process.env.SECRET_KEY as string) as JwtPayload;
         if(typeof payload === 'string' || payload === null)
             return next(new AppError('Invalid token payload', 401));
+            
+        // Verify user actually exists in the database
+        const userExists = await prisma.user.findUnique({
+            where: { id: payload.user_id }
+        });
+        if (!userExists) {
+            return next(new AppError('User not found in database', 401));
+        }
+
         (socket as any).user = payload;
         next();
     } catch (error) {
