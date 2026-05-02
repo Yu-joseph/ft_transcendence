@@ -378,7 +378,7 @@ def forty_two_callback(request):
     access  = refresh.access_token
 
     response = redirect(redirect_url)
-    response.set_cookie(key='access_token',  value=str(access),  max_age=6000,    httponly=True, secure=False, samesite='Lax', path='/')
+    response.set_cookie(key='access_token',  value=str(access),  max_age=604800,    httponly=True, secure=False, samesite='Lax', path='/')
     response.set_cookie(key='refresh_token', value=str(refresh), max_age=604800, httponly=True, secure=False, samesite='Lax', path='/')
     return response
 

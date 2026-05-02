@@ -87,6 +87,12 @@ function Bar() {
 
   const displayName = user?.username ?? "Player";
   const displayInitial = displayName.trim().charAt(0).toUpperCase() || "P";
+  const avatarPath = user?.avatar?.trim();
+  const avatarUrl = avatarPath
+    ? avatarPath.startsWith("http") || avatarPath.startsWith("/authent/")
+      ? avatarPath
+      : `/authent/media${avatarPath}`
+    : undefined;
 
   return (
     <header className="z-50 w-full bg-slate-800 border-b border-black shadow-lg">
