@@ -13,11 +13,20 @@ function Bar() {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [avatar,setAvatar] = useState(withMediaPrefix(user?.avatar || null));
 
+  /**__________ Event listener for update avatar _____________ */
   useEffect(() => {
-    chatSocket.on("update-avatar",(data:string) => {
-      setAvatar(data);
-    })
 
+    const handleUpdateAvatar = (event: Event) => {
+      const detail = (event as CustomEvent<{ avatarUrl: string, userId: string | null }>).detail;
+      if(detail && detail?.userId !== user?.id)
+        return;
+      setAvatar(detail?.avatarUrl ?? '');
+    }
+    window.addEventListener("avatar:update", handleUpdateAvatar);
+
+    return () => {
+      window.removeEventListener('avatar:update', handleUpdateAvatar);
+    }
   },[user?.id])
 
   const emitLogoutPlaying = () =>

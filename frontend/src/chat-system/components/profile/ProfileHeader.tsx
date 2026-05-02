@@ -1,4 +1,4 @@
-import { Calendar, Clock, Edit, Fingerprint, Mail, MessageCircle, Shield, UserPlus, UserX, Zap } from "lucide-react";
+import { Calendar, Clock, Edit, Fingerprint, Mail, MessageCircle, UserPlus, UserX, Zap } from "lucide-react";
 import { useAuth } from '../../../auth/useAuth';
 import { Navigate } from "react-router-dom";
 import { EditProfileModal } from "./EditProfileModal";
@@ -24,7 +24,10 @@ export function ProfileHeader({ userGameStat, isOwnProfile, userInfo, setUserInf
             handleSaveProfile,
             gotToChat,
             isEditing,
-            setIsEditing
+            setIsEditing,
+            serverError,
+            setServerError,
+            isSaving
         } = useProfileHeader({user: user, setUserInfo: setUserInfo, userInfo: userInfo});
 
     const friendButtonConfig = {
@@ -50,15 +53,15 @@ export function ProfileHeader({ userGameStat, isOwnProfile, userInfo, setUserInf
     return (
         <section className="relative group">
             {/* Decorative background glow */}
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-[2rem] blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200"></div>
+            <div className="absolute -inset-0.5 bg-linear-to-r from-indigo-500 to-blue-600 rounded-4xl blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200"></div>
             
-            <div className="relative bg-slate-900/60 border border-white/10 backdrop-blur-2xl rounded-[2rem] p-6 md:p-10
+            <div className="relative bg-slate-900/60 border border-white/10 backdrop-blur-2xl rounded-4xl p-6 md:p-10
                 flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-10 overflow-hidden shadow-2xl">
                 
                 {/* Profile Picture Section */}
                 <div className="relative shrink-0">
                     <div className="relative group/avatar">
-                        <div className="absolute -inset-1.5 bg-gradient-to-tr from-indigo-500 via-purple-500 to-blue-500 rounded-full blur opacity-40 group-hover/avatar:opacity-70 transition duration-500 animate-spin-slow"></div>
+                        <div className="absolute -inset-1.5 bg-linear-to-tr from-indigo-500 via-purple-500 to-blue-500 rounded-full blur opacity-40 group-hover/avatar:opacity-70 transition duration-900 animate-ping"></div>
                         <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-slate-900 overflow-hidden bg-slate-800 shadow-2xl">
                             <img
                                 src={`${userInfo?.avatar}`}
@@ -66,11 +69,14 @@ export function ProfileHeader({ userGameStat, isOwnProfile, userInfo, setUserInf
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover/avatar:scale-110"
                             />
                         </div>
-                        {/* Status Indicator */}
-                        <div className={`absolute bottom-2 right-2 h-6 w-6 rounded-full border-4 border-slate-900 shadow-xl
-                            ${userInfo?.user_status === 'Online' ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-slate-500 shadow-slate-500/50'}`}>
-                            <div className={`absolute inset-0 rounded-full animate-ping opacity-20 ${userInfo?.user_status === 'Online' ? 'bg-emerald-400' : 'bg-slate-400'}`}></div>
-                        </div>
+                        {/* Status Indicator (hidden on own profile) */}
+                        {!isOwnProfile && (
+                            // console.log('User Status : --->:', userInfo?.user_status);
+                            <div className={`absolute bottom-2 right-2 h-6 w-6 rounded-full border-4 border-slate-900 shadow-xl
+                                ${userInfo?.user_status === 'Online' ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-slate-500 shadow-slate-500/50'}`}>
+                                <div className={`absolute inset-0 rounded-full animate-ping opacity-20 ${userInfo?.user_status === 'Online' ? 'bg-emerald-400' : 'bg-slate-400'}`}></div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -156,7 +162,10 @@ export function ProfileHeader({ userGameStat, isOwnProfile, userInfo, setUserInf
                     isOpen={isEditing} 
                     onClose={() => setIsEditing(false)} 
                     initialData={userInfo}
-                    onSave={handleSaveProfile}
+                    onHandleSaveInfo={handleSaveProfile}
+                    serverError={serverError}
+                    setServerError={setServerError}
+                    isSavingProfile={isSaving}
                 />
             </div>
         </section>
