@@ -8,12 +8,22 @@ import ismailImage from "../Devolopers/eismail_red.jpg";
 import maitTajImage from "../Devolopers/mait-taj.jpg";
 import sahamZaoImage from "../Devolopers/sahamzao.jpg";
 import youssefiImage from "../Devolopers/ysouhail.jpg";
+// import { useEffect } from "react";
 
 
 function LandinPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
 
+  // useEffect(() => {
+
+    if (user) {
+      return <Navigate to="/Dashboard" replace />;
+    }
+  // },[user])
+
+
+  console.log("wwwwwwwwwwwwwwwwwwwwwwwwww");
   const previewStats = {
     id: "preview-player",
     username: "ArenaPilot",
@@ -62,9 +72,6 @@ function LandinPage() {
     );
   }
 
-  if (user) {
-    return <Navigate to="/Dashboard" replace />;
-  }
 
   return (
     <div className="landing-root min-h-screen bg-slate-900 text-white">

@@ -39,6 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let isActive = true;
 
     const refreshAuthUser = async () => {
+      if(user?.id) {
+        return ;
+      }
       const userData = await fetchAuthUser();
       if (isActive) {
         setUser(userData);
@@ -51,12 +54,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    window.addEventListener('focus', refreshAuthUser);
+    // window.addEventListener('focus', refreshAuthUser);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       isActive = false;
-      window.removeEventListener('focus', refreshAuthUser);
+      // window.removeEventListener('focus', refreshAuthUser);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
