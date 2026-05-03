@@ -123,7 +123,7 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
         <div className="bg-slate-800 rounded-xl p-4 shadow-lg border border-slate-700">
           <div className="flex flex-col justify-center items-center gap-1">
             <h3 className="text-white text-base font-semibold mb-2">Game Invite</h3>
-            <img src={pendingInvite.from.avatar} className="w-10 h-10 object-cover rounded-full" alt="" /> 
+            <img src={pendingInvite.from.avatar || "/default-avatar.png"} className="w-10 h-10 object-cover rounded-full" alt="Avatar" /> 
             <p className="text-emerald-400 font-semibold">
               {pendingInvite.from.username}
             </p>
