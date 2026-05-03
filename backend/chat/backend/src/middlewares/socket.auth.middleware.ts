@@ -2,7 +2,7 @@ import { Socket } from "socket.io";
 import cookie from 'cookie';
 import { AppError } from "../utils/AppError.js";
 import  jwt   from    'jsonwebtoken'
-import { JwtPayload } from "./auth.middleware.js";
+import { JWT_SECRET, JwtPayload } from "./auth.middleware.js";
 import prisma from "../lib/prisma.js";
 
 export const socketAuthenticate = async (socket: Socket, next: (err?: Error) => void) => {
@@ -13,7 +13,10 @@ export const socketAuthenticate = async (socket: Socket, next: (err?: Error) => 
 
         if(!token)
             return next(new AppError('Authentication error: no cookie', 401));
-        const   payload = jwt.verify(token, process.env.SECRET_KEY as string) as JwtPayload;
+        const   payload = jwt.verify(token, JWT_SECRET as string) as JwtPayload;
+        console.log(payload);
+        console.log(JWT_SECRET);
+
         if(typeof payload === 'string' || payload === null)
             return next(new AppError('Invalid token payload', 401));
             

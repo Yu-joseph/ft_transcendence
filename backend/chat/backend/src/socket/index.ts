@@ -47,7 +47,9 @@ export const initSocket = (server: HTTPServer) => {
     "http://localhost:5173",
     "http://localhost:5173",
     "https://localhost:8443",
-    "https://10.30.234.188:8443"
+    "https://10.30.234.188:8443",
+    "https://10.30.242.27:8443"
+
 
   ],
   
