@@ -29,16 +29,13 @@ function getOpponent(match: MatchHistoryItem, currentUserId: string): string {
   if (match.playerXId === currentUserId) {
     return match.User_Game_playerOIdToUser?.username ?? "Unknown";
   }
-  if (match.playerOId === currentUserId) {
+  else if (match.playerOId === currentUserId) {
     return match.User_Game_playerXIdToUser?.username ?? "Unknown";
   }
   return "Unknown";
 }
 
-function getOutcome(match: MatchHistoryItem, currentUserId: string): "Win" | "Loss" | "Draw" {
-  const resultText = (match.result ?? "").toLowerCase();
-  const isDraw = !match.winnerId || resultText.includes("draw");
-  if (isDraw) return "Draw";
+function getOutcome(match: MatchHistoryItem, currentUserId: string): "Win" | "Loss" {
   return match.winnerId === currentUserId ? "Win" : "Loss";
 }
 
@@ -94,7 +91,7 @@ export default function UserMatchHistory({ limit = 8, id }: UserMatchHistoryProp
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user?.id) {
+    if (!id) {
       setLoading(false);
       return;
     }
@@ -136,7 +133,7 @@ export default function UserMatchHistory({ limit = 8, id }: UserMatchHistoryProp
     return () => {
       isActive = false;
     };
-  }, [user?.id, id]);
+  }, [id]);
 
   const visibleMatches = useMemo(() => matches.slice(0, limit), [matches, limit]);
 
@@ -167,7 +164,7 @@ export default function UserMatchHistory({ limit = 8, id }: UserMatchHistoryProp
             </thead>
             <tbody>
               {visibleMatches.map((match) => {
-                const outcome = getOutcome(match, user?.id ?? "");
+                const outcome = getOutcome(match, id ?? "");
                 const outcomeClass =
                   outcome === "Win"
                     ? "text-emerald-300"
@@ -180,7 +177,7 @@ export default function UserMatchHistory({ limit = 8, id }: UserMatchHistoryProp
                     <td className="px-5 py-3">
                       <MiniBoardPreview board={match.board} />
                     </td>
-                    <td className="px-5 py-3 text-white">{getOpponent(match, user?.id ?? "")}</td>
+                    <td className="px-5 py-3 text-white">{getOpponent(match, id ?? "")}</td>
                     <td className={`px-5 py-3 font-semibold ${outcomeClass}`}>{outcome}</td>
                     <td className="px-5 py-3 text-cyan-300">
                       {match.tournamentId ? "Tournament" : "1v1"}

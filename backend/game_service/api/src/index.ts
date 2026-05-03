@@ -26,7 +26,6 @@ const corsOptions = {
     "http://localhost:5173",
     "http://localhost:5173",
     "https://localhost:8443",
-    "https://10.30.246.78:8443",
     CORE,
   ],
   methods: ["GET", "POST"],
@@ -106,9 +105,12 @@ app.get("/api/me/stats", requireAuth, async (req, res) => {
   }
 });
 
-app.get("/api/me/games", requireAuth, async (req, res) => {
+app.get("/api/:id/games", requireAuth, async (req, res) => {
   try {
-    const userId = (req as AuthedRequest).userId as string;
+    const userId = req.params.id?.trim();
+    if (!userId) {
+      return res.status(400).json({ error: "User id is required" });
+    }
     const games = await prisma.game.findMany({
       where: {
         OR: [{ playerXId: userId }, { playerOId: userId }],
