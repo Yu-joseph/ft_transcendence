@@ -61,11 +61,16 @@ export function ProfileHeader({ isOwnProfile, userInfo, setUserInfo }: ProfileHe
                     <div className="relative group/avatar">
                         <div className="absolute -inset-1.5 bg-linear-to-tr from-indigo-500 via-purple-500 to-blue-500 rounded-full blur opacity-40 group-hover/avatar:opacity-70 transition duration-900 animate-spin"></div>
                         <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-slate-900 overflow-hidden bg-slate-800 shadow-2xl">
-                            <img
-                                src={`${userInfo?.avatar}`}
-                                alt={userInfo?.username || 'Avatar'}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover/avatar:scale-110"
-                            />
+                            {
+                                userInfo?.avatar && (
+
+                                    <img
+                                    src={`${userInfo?.avatar ?? ''}`}
+                                    alt={userInfo?.username}
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover/avatar:scale-110"
+                                    />
+                                )
+                            }
                         </div>
                         {/* Status Indicator (hidden on own profile) */}
                         {!isOwnProfile && (
