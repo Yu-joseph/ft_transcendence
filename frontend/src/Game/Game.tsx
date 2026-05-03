@@ -323,15 +323,6 @@ function Game() {
     <div className="min-h-screen bg-slate-900"> 
     <header className="min-h-screen flex flex-col items-center justify-start gap-10 pt-12">
       <h1 className="text-5xl font-bold text-center">
-        {/* <span className="bg-linear-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
-          Tic
-        </span>{" "}
-        <span className="bg-linear-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
-          Tac
-        </span>{" "}
-        <span className="bg-linear-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
-          Toe
-        </span>{" "} */}
         <span className="bg-linear-to-r from-amber-600 to-amber-800 bg-clip-text text-transparent">
           Game
         </span>

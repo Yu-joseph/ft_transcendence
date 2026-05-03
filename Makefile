@@ -1,6 +1,7 @@
 up :
 	cd docker && docker compose up 
 build :
+	bash ip.sh
 	cd docker && docker compose up --build
 
 start :

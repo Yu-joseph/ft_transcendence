@@ -67,7 +67,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-blue-950 flex flex-col">
+    <div className="min-h-screen bg-slate-900 flex flex-col">
       <Bar />
       {/* Main Content */}
       <main className="flex-1 w-full max-w-none pl-4 pr-4 pt-8 pb-32 sm:pl-5 sm:pr-6 lg:pl-6 lg:pr-8">
@@ -97,13 +97,13 @@ export default function Dashboard() {
 
             {/* Right column */}
             <div className="flex flex-col gap-6">
-              <PlayerState />
+              <PlayerState id={user.id}/>
               <MyTournamentsTable />
             </div>
 
             <div className="flex flex-col gap-6">
               <Leaderboard />
-              <UserMatchHistory limit={8} />
+              <UserMatchHistory id={user.id} limit={8} />
             </div>
 
 
