@@ -113,7 +113,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
         const friendly = 
           response.status === 401 ? 'Session expired. Please sign in again.' :
           response.status === 403 ? 'This chat is unavailable.' :
-          response.status === 429 ? 'Too many requests. Wait and retry.' :
+          response.status === 429 ? 'Too many requests. Wait and retry.You have 5/min and 500/day' :
           response.status === 400 ? 'Invalid request.' :
           response.status >= 500 ? 'Server error. Try again.' :
           'Something went wrong.';
@@ -450,17 +450,26 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
                       remarkPlugins={[remarkGfm]}
                       rehypePlugins={[rehypeSanitize]}
                       components={{
-                        code({ inline, className, children, ...props }) {
-                          return inline ? (
-                            <code className="rounded bg-slate-800 px-1 py-0.5 text-amber-300" {...props}>
-                              {children}
-                            </code>
-                          ) : (
+                        pre({ children }) {
+                          return (
                             <pre className="overflow-x-auto rounded-lg bg-slate-950 p-3 text-sm text-slate-100">
-                              <code className={className} {...props}>
+                              {children}
+                            </pre>
+                          )
+                        },
+                        code({ inline, className, children, ...props }) {
+                          if (inline) {
+                            return (
+                              <code className="rounded bg-slate-800 px-1 py-0.5 text-amber-300" {...props}>
                                 {children}
                               </code>
-                            </pre>
+                            )
+                          }
+
+                          return (
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
                           )
                         },
                       }}
@@ -523,7 +532,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
           <textarea
             ref={textareaRef}
             autoFocus
-            placeholder={loading ? 'Arena AI is thinking...' : 'ask...'}
+            placeholder={loading ? 'Arena AI is thinking...' : 'Ask arena AI...'}
             rows={1}
             value={input}
             onChange={handleInputChange}

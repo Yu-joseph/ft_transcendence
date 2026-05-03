@@ -45,8 +45,11 @@ def ai_move():
         difficulty = data.get("difficulty" , "hard")
         
 
-        if not isinstance(board, list):
-            return jsonify({"error": "'board' must be a list"}), 400
+        if not isinstance(board, list)  or len(board) != 9:
+            return jsonify({"error": "'board' must be a list of 9 elements "}), 400
+        
+        if any(cell not in ["X", "O" , ""] for cell in board):
+            return jsonify({"error" : "Invalid board values "}), 400
 
         if phase not in ("place", "move"):
             return jsonify({"error": "'phase' must be 'place' or 'move'"}), 400

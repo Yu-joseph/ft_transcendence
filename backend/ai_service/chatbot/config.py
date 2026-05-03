@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+
+load_dotenv("/vault/aii/file.env")
 
 
 class AppConfig:
@@ -18,5 +19,6 @@ class AppConfig:
         'pool_recycle': 1800,
         'pool_pre_ping': True,
     }
+    load_dotenv("/vault/aii/apiss.env")
 
     DJANGO_SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")

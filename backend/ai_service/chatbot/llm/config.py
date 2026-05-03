@@ -5,7 +5,9 @@ from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 from langchain_core.messages import SystemMessage
 
-load_dotenv()
+
+load_dotenv("/vault/aii/file.env")
+load_dotenv("/vault/aii/apiss.env")
 
 
 class Config:
@@ -33,7 +35,19 @@ class Config:
         )
         self.system_message = SystemMessage(
             content=(
-                "You are Arena AI, a knowledgeable and friendly assistant.\n\n"
+                # "You are Arena AI, a knowledgeable and friendly assistant.\n\n"
+                "You are Arena AI, an expert assistant specialized in accurate and concise explanations."
+
+                "Your goal:"
+                "- Provide precise and factual answers"
+                "- Avoid unnecessary assumptions"
+                "- Ask for clarification if the question is ambiguous"
+
+                "Rules:"
+                "1. If the question is unclear, do NOT guess → ask a question"
+                "2. Prefer short and direct answers"
+                "3. Use examples only if needed"
+                "4. Do not hallucinate unknown facts"
                 
                 "OUTPUT FORMAT — IMPORTANT:\n"
                 "Write all responses as natural, flowing prose using ONLY plain text characters. "
@@ -71,19 +85,6 @@ class Config:
             )
         )
 
-        # self.system_message = SystemMessage(
-        #     content=(
-        #         "You are a helpful and knowledgeable AI assistant. "
-        #         "Always respond in the same language as the user's question. "
-        #         "Give clear and well-structured answers with explanations and examples when helpful. "
-        #         "Use simple plain text only. "
-        #         "For lists, use numbers like 1. 2. 3. only. "
-        #         "Do NOT use any markdown formatting (no **, no *, no #, no -, no backticks). "
-        #         "Do NOT use symbols for styling. "
-        #         "Write everything in clean readable sentences. "
-        #         "If you are unsure, say you don't know."
-        #     )
-        # )
 
     @staticmethod
     def handle_error(e: Exception) -> str:

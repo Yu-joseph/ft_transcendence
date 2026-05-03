@@ -1,4 +1,4 @@
-import { Navigate, useNavigate } from "react-router-dom";
+import {  useNavigate, Navigate } from "react-router-dom";
 import Leaderboard from "../components/Leaderboard";
 import PlayerState from "../components/PlayerState";
 import { useAuth } from "../auth/useAuth";
@@ -21,6 +21,7 @@ function LandinPage() {
     losses: 18,
     xp: 1560,
     rank: 7,
+    tournamentWins: 5,
   };
 
 
@@ -135,19 +136,10 @@ function LandinPage() {
               <h3 className="mt-2 text-lg font-semibold text-white">How to Play OUR Tic Tac Toe Online</h3>
               <ul className="mt-3 space-y-2 text-sm text-white">
                 <li>Each player can have only 3 pieces on the board at a time.</li>
-                <li>On your turn, place a piece on an empty square. The AI plays O.</li>
-                <li>When you are about to place a 4th piece, remove one of your own 3 pieces first, then place.</li>
-                <li>Win by aligning 3 in a row: row, column, or diagonal.</li>
+                <li>On your turn, place a piece on an empty squa diagonal.</li>
               </ul>
             </div>
           </div>
-          {/* <div className="hidden lg:flex justify-center">
-            <img
-              src={xoBackground}
-              alt="Tic-tac-toe board"
-              className="h-auto w-80 opacity-70"
-            />
-          </div> */}
         </section>
         <section className="mt-12">
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-500">

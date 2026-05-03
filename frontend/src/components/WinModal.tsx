@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { GiPodiumWinner } from "react-icons/gi";
+// import { GiPodiumWinner } from "react-icons/gi";
 // import { GiTrophy } from "react-icons/gi";
 // import { MdOutlineSentimentVeryDissatisfied } from "react-icons/md";
 // import { IoMdClose } from "react-icons/io";

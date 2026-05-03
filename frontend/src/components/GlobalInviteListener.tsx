@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { gameSocket } from "../socket/sock";
+import { ensureSocketConnected, gameSocket } from "../socket/sock";
 import { useAuth } from "../auth/useAuth";
 import type { AuthUser } from "../auth/auth-context";
 
@@ -30,7 +30,6 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
   const { id, username } = user;
 
   useEffect(() => {
-    gameSocket.connect();
 
     const handleConnect = () => {
       gameSocket.emit("join-lobby");
@@ -61,7 +60,9 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
     gameSocket.on("match-found", handleMatchFound);
     gameSocket.on("invite-declined", handleInviteDeclined);
 
-    if (gameSocket.connected) {
+    if (!gameSocket.connected) {
+      ensureSocketConnected(gameSocket);
+    } else {
       handleConnect();
     }
 
@@ -71,7 +72,6 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
       gameSocket.off("receive-invite", handleReceiveInvite);
       gameSocket.off("match-found", handleMatchFound);
       gameSocket.off("invite-declined", handleInviteDeclined);
-      gameSocket.disconnect();
     };
   }, [navigate]);
 
@@ -118,7 +118,7 @@ function GlobalInviteListenerInner({ user }: { user: AuthUser }) {
   }
 
   return (
-    <div className="fixed top-4 right-4 z-[60] w-72 max-w-[calc(100vw-2rem)] space-y-3">
+    <div className="fixed top-4 right-4 z-60 w-72 max-w-[calc(100vw-2rem)] space-y-3">
       {pendingInvite && (
         <div className="bg-slate-800 rounded-xl p-4 shadow-lg border border-slate-700">
           <div className="flex flex-col justify-center items-center gap-1">
