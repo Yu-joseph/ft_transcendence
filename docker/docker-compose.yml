@@ -48,9 +48,9 @@ services:
     env_file:
       - .env.local
     build: ../frontend
-    # volumes:
-    #   - ../frontend:/app/
-    #   - /app/node_modules 
+    volumes:
+      - ../frontend:/app/
+      - /app/node_modules 
 
   nginx:
     build : ./nginx
