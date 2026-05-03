@@ -116,7 +116,12 @@ export function Chat() {
           if (result && result.messages) {
             setIsblocked(result.status === 'NOT FRIEND');
             result.messages.forEach(m => { m.status = m.User.id === user.id ? 'sent' : null; });
-            setMessages(result.messages);
+            setMessages(prev => {
+              // Filter out duplicates mess in case history and live stream overlapped
+              const existingIds = new Set(prev.map(m => m.id));
+              const newHistory = result.messages.filter(m => !existingIds.has(m.id));
+              return [...newHistory, ...prev]; 
+            });
             loadedConvIdRef.current = selectedConvId; // Mark as loaded
           }
         } else if (selectedFriendId) {
@@ -128,7 +133,12 @@ export function Chat() {
           );
           if (result && result.convId) {
             result.messages.forEach(m => { m.status = m.User.id === user.id ? 'sent' : null; });
-            setMessages(result.messages);
+            setMessages(prev => {
+              // Filter out duplicates mess in case history and live stream overlapped
+              const existingIds = new Set(prev.map(m => m.id));
+              const newHistory = result.messages.filter(m => !existingIds.has(m.id));
+              return [...newHistory, ...prev]; 
+            });
             loadedConvIdRef.current = result.convId; // Mark as loaded
             loadedFriendIdRef.current = selectedFriendId;
             setSelectedConvId(result.convId);

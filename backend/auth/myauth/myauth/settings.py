@@ -8,6 +8,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
+load_dotenv()
+FORTY_TWO_REDIRECT_URI = os.environ.get('FORTY_TWO_REDIRECT_URI')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -118,15 +120,20 @@ MEDIA_URL = '/media/'
 STATIC_URL = 'static/'
 
 STATIC_ROOT = '/app/static'
+
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
-FORTY_TWO_REDIRECT_URI = 'http://localhost:8080/authent/42/callback/'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 DJANGO_FILE_SC = '/vault/secrets/apiss.env'
+
 load_dotenv(DJANGO_FILE_SC)
+
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+
 SOCIAL_AUTH_42_KEY    = os.getenv('SOCIAL_AUTH_42_KEY')
+
 SOCIAL_AUTH_42_SECRET = os.getenv('SOCIAL_AUTH_42_SECRET')
 
 SIMPLE_JWT = {
