@@ -1,20 +1,18 @@
-import { Calendar, Clock, Edit, Fingerprint, Mail, MessageCircle, UserPlus, UserX, Zap } from "lucide-react";
+import { Calendar, Clock, Edit, Fingerprint, Mail, MessageCircle, UserPlus, UserX } from "lucide-react";
 import { useAuth } from '../../../auth/useAuth';
 import { Navigate } from "react-router-dom";
 import { EditProfileModal } from "./EditProfileModal";
 import { useProfileHeader, type UserProfileInfo } from "./hooks/useProfileHeader";
 import type React from "react";
-import type { UserStatGame } from "../../pages/Profile";
-import { GiPodium } from "react-icons/gi";
 
 interface ProfileHeaderProps {
-    userGameStat: UserStatGame | null
+    // userGameStat: UserStatGame | null
     isOwnProfile?: boolean
     setUserInfo: React.Dispatch<React.SetStateAction<UserProfileInfo|null>>
     userInfo: UserProfileInfo | null
 }
 
-export function ProfileHeader({ userGameStat, isOwnProfile, userInfo, setUserInfo }: ProfileHeaderProps) {
+export function ProfileHeader({ isOwnProfile, userInfo, setUserInfo }: ProfileHeaderProps) {
     const { user } = useAuth();
 
     const {
@@ -61,13 +59,18 @@ export function ProfileHeader({ userGameStat, isOwnProfile, userInfo, setUserInf
                 {/* Profile Picture Section */}
                 <div className="relative shrink-0">
                     <div className="relative group/avatar">
-                        <div className="absolute -inset-1.5 bg-linear-to-tr from-indigo-500 via-purple-500 to-blue-500 rounded-full blur opacity-40 group-hover/avatar:opacity-70 transition duration-900 animate-ping"></div>
+                        <div className="absolute -inset-1.5 bg-linear-to-tr from-indigo-500 via-purple-500 to-blue-500 rounded-full blur opacity-40 group-hover/avatar:opacity-70 transition duration-900 animate-spin"></div>
                         <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-slate-900 overflow-hidden bg-slate-800 shadow-2xl">
-                            <img
-                                src={`${userInfo?.avatar}`}
-                                alt={userInfo?.username || 'Avatar'}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover/avatar:scale-110"
-                            />
+                            {
+                                userInfo?.avatar && (
+
+                                    <img
+                                    src={`${userInfo?.avatar ?? ''}`}
+                                    alt={userInfo?.username}
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover/avatar:scale-110"
+                                    />
+                                )
+                            }
                         </div>
                         {/* Status Indicator (hidden on own profile) */}
                         {!isOwnProfile && (
@@ -83,21 +86,10 @@ export function ProfileHeader({ userGameStat, isOwnProfile, userInfo, setUserInf
                 {/* Content Section */}
                 <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left space-y-5">
                     <div className="space-y-3 w-full">
-                        <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4">
-                            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight drop-shadow-sm">
-                                {userInfo?.username}
-                            </h1>
-                            <div className="flex items-center gap-2">
-                                <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md">
-                                    <GiPodium className="w-3.5 h-3.5" />
-                                    Rank {userGameStat?.rank || 0}
-                                </div>
-                                <div className="flex items-center gap-1.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md">
-                                    <Zap className="w-3.5 h-3.5" />
-                                    {userGameStat?.xp || 0} XP
-                                </div>
-                            </div>
-                        </div>
+
+                        <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight drop-shadow-sm">
+                            {userInfo?.username}
+                        </h1>
 
                         <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-slate-400">
                             <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-[13px] font-medium backdrop-blur-sm transition-colors hover:bg-white/10">
