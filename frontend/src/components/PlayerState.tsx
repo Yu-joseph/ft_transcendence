@@ -22,6 +22,8 @@ export default function PlayerState({ previewStats, id }: PlayerStateProps) {
   const [loading, setLoading] = useState(!previewStats);
   const [error, setError] = useState<string | null>(null);
   let isOwnProfile: boolean;
+  if (!id )
+    return;
   if (user?.id === id) {
     isOwnProfile = true;
   } else {
