@@ -71,11 +71,6 @@ def create_app() -> Flask:
 app = create_app()
 
 
-@app.route('/test-error')
-def test_error():
-    return 1 / 0
-
-
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000 )

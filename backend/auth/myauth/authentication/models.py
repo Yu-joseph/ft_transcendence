@@ -19,6 +19,7 @@ class User(models.Model):
     user_status     = models.CharField(max_length=50, default="Offline")    
     status     = models.CharField(max_length=50, default="Online")
     user_status     = models.CharField(max_length=50, default="Offline")
+    role       = models.CharField(max_length=50, default="user") 
     wins       = models.IntegerField(default=0)
     losses     = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)

@@ -11,8 +11,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework_simplejwt.exceptions import TokenError
 from .auth_utils import get_user_from_request
-import os
-from PIL import Image
 from .permissions import role_required
 import uuid
 import requests
@@ -126,6 +124,7 @@ def register(request):
         email=email,
         password=make_password(password),
         fullname=fullname,
+        role="user"
     )
     return JsonResponse({"message": "User created"}, status=201)
 
@@ -291,7 +290,6 @@ def logout(request):
 
     if tmp_user:
         tmp_user.status = "offline"
-        tmp_user.user_status = "Offline"
         tmp_user.save()
         response = JsonResponse({"message": "Logged out"})
         response.delete_cookie("access_token", path="/")
@@ -368,6 +366,7 @@ def forty_two_callback(request):
             username=user_data['login'],
             email=user_data.get('email', ''),
             fullname=f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip(),
+            role='user',
             avatar=avatar_url,
         )
         redirect_url = "/ChangeIntra"
@@ -424,44 +423,22 @@ def get_user(request):
 
     return JsonResponse(user)
 
-ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png'}
-ALLOWED_MIME_TYPES = {"image/jpeg", "image/png"}
-
-def is_valid_image(file):
-    try:
-        img = Image.open(file)
-        img.verify()  # checks it's a real image
-        file.seek(0)  # reset pointer after verify
-        return True
-    except Exception:
-        return False
-
 @csrf_exempt
 def update_avatar(request):
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
     try:
-        avatar_file = request.FILES.get("avatar")
+        avatar_file = request.FILES.get("avatar")  
         if not avatar_file:
             return JsonResponse({"error": "avatar file is required"}, status=400)
-        ext = os.path.splitext(avatar_file.name)[1].lower()
-        if ext not in ALLOWED_EXTENSIONS:
-            return JsonResponse(
-                {"error": f"Invalid file type '{ext}'. Allowed: jpg, jpeg, png"},
-                status=400
-            )
-
-        if not is_valid_image(avatar_file):
-            return JsonResponse(
-                {"error": "File is not a valid image"},
-                status=400
-            )
 
         tmp_user = get_user_from_request(request)
-        tmp_user.avatar = avatar_file
-        tmp_user.save()
-        avatar_url = tmp_user.avatar.url
-        return JsonResponse({"message": "Avatar updated successfully", "url": avatar_url}, status=200)
 
+        tmp_user.avatar = avatar_file  
+        tmp_user.save()
+
+        avatar_url = tmp_user.avatar.url  
+
+        return JsonResponse({"message": "Avatar updated successfully", "url": avatar_url}, status=200)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)

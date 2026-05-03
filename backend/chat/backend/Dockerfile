@@ -7,11 +7,9 @@ COPY *.json ./
 RUN npm install
 
 COPY . .
-
-ENV DATABASE_URL=postgres://sayf:1234@db:5432/mydb
-# Generate client from schema (run `prisma db pull` locally when DB is up, then commit schema)
-# RUN npx prisma generate
+COPY pulling.sh /app/pulling.sh
+RUN chmod +x /app/pulling.sh
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma db pull && npx prisma generate && npm run dev"]
+ENTRYPOINT ["sh", "/app/pulling.sh"]

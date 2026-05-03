@@ -1,7 +1,9 @@
 import os
 from dotenv import load_dotenv
 
+
 load_dotenv("/vault/aii/file.env")
+
 
 class AppConfig:
     SQLALCHEMY_DATABASE_URI = (
@@ -18,4 +20,5 @@ class AppConfig:
         'pool_pre_ping': True,
     }
     load_dotenv("/vault/aii/apiss.env")
+
     DJANGO_SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")

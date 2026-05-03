@@ -48,7 +48,7 @@ export  function    useFriendList() {
                 }
             } catch (err: any) {
                 setError(err);
-                console.log(`fetching errrorrrrrr.`,err);
+                console.log(err);
             }
             finally{
                 setLoading(false);
