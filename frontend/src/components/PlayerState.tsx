@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../auth/useAuth";
 
 type PlayerStats = {
   id: string;
@@ -16,10 +17,17 @@ type PlayerStateProps = {
 };
 
 export default function PlayerState({ previewStats, id }: PlayerStateProps) {
+  const { user } = useAuth();
   const [stats, setStats] = useState<PlayerStats | null>(previewStats ?? null);
   const [loading, setLoading] = useState(!previewStats);
   const [error, setError] = useState<string | null>(null);
-
+  let isOwnProfile: boolean;
+  if (user?.id === id) {
+    isOwnProfile = true;
+  } else {
+    isOwnProfile = false;
+  }
+  
   useEffect(() => {
     if (previewStats) {
       setStats(previewStats);
@@ -57,8 +65,12 @@ export default function PlayerState({ previewStats, id }: PlayerStateProps) {
   return (
     <section className="w-full bg-slate-800 border border-black rounded-xl shadow-lg overflow-hidden h-fit hover:border-amber-500 hover:scale-102 transition-all duration-300">
       <div className="px-6 py-4 border-b border-black">
-        <h3 className="text-xl font-semibold text-amber-500">Your Progress</h3>
-        <p className="text-sm text-gray-400">Your personal match statistics</p>
+        <h3 className="text-xl font-semibold text-amber-500">
+          {isOwnProfile ? "My Progress" : "Player Progress"}
+        </h3>
+        {/* <p className="text-sm text-gray-400">
+          {isOwnProfile ? "My personal match statistics" : "Player match statistics"}
+        </p> */}
       </div>
 
       {loading ? (
