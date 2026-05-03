@@ -15,18 +15,18 @@ const   emitError = (socket: Socket, message: string) => {
 
 const joinChatSchema = z.object({
     room_id: z.string().min(1, 'Invalid room id')
-                        .transform(val => val.trim()),
+                        .transform((val: string) => val.trim()),
     /******************** */
     convId: z.string().regex(/^\d+$/, 'Invalid conversation ID')
-                          .transform(val => val.trim()),
+                          .transform((val: string) => val.trim()),
     /******************* */
     userId: z.string().min(1, 'friend ID is required')
                         .min(3, 'friend ID is too short')
                         .max(255, 'friend ID is too long')
-                        .transform(val => val.trim())
+                        .transform((val: string) => val.trim())
 })
 
-const roomIdSchema = z.string().min(1).transform(val => val.trim());
+const roomIdSchema = z.string().min(1).transform((val: string) => val.trim());
 /** User Othorization helper function */
 const   isUserInConversation = async (convId: string, userId: string) => {
     return await prisma.conversation.findFirst({
@@ -50,14 +50,13 @@ export const initSocket = (server: HTTPServer) => {
     "https://10.30.234.188:8443",
     "https://10.30.242.27:8443"
 
-
   ],
   
             credentials: true
         }
     })
     io.use(socketAuthenticate);
-    io.on('connection', async (socket) => {
+    io.on('connection', async (socket: any) => {
         const   authentUser = (socket as any).user as JwtPayload;
         const userConversationCache = new Set<string>(); // stores convId as string
         /** Update status to Online when connecting  */
@@ -101,13 +100,13 @@ export const initSocket = (server: HTTPServer) => {
             friendId: z.string().min(1, 'friend ID is required')
                         .min(3, 'friend ID is too short')
                         .max(255, 'friend ID is too long')
-                        .transform(val => val.trim()),
+                        .transform((val: string) => val.trim()),
             userId: z.string().min(1, 'friend ID is required')
                         .min(3, 'friend ID is too short')
                         .max(255, 'friend ID is too long')
-                        .transform(val => val.trim()),
+                        .transform((val: string) => val.trim()),
             convId: z.string().regex(/^\d+$/, 'Invalid conversation ID')
-                          .transform(val => val.trim())
+                          .transform((val: string) => val.trim())
         });
 
         const   onTypingStart = async (data: unknown) => {
