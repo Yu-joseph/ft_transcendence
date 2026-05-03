@@ -129,8 +129,8 @@ export function Profile() {
                                     userInfo={userInfo} 
                                     setUserInfo={setUserInfo}
                                 />
-                                <PlayerState  id={userId ?? ''} />
-                                <UserMatchHistory limit={8} id={userId ?? ''} />
+                                <PlayerState  id={isOwnProfile ? userId : userInfo?.id} />
+                                <UserMatchHistory limit={8} id={isOwnProfile ? userId : userInfo?.id} />
                                 {/* <UserStatCard 
                                     userGameStat={userStat} 
                                     isOwnProfile={isOwnProfile} 
