@@ -7,7 +7,7 @@ from utils import check_winner, get_state, get_available_actions, action_to_key
 LEARNING_RATE = 0.1
 GAMMA = 0.95
 TRAINING_GAMES = 500000
-EPSILON_START = 0.3
+EPSILON_START = 0.8
 EPSILON_END = 0.01
 EPSILON_DECAY = (EPSILON_START - EPSILON_END) / TRAINING_GAMES
 
@@ -21,7 +21,8 @@ epsilon = EPSILON_START
 def choose_action(state, actions ):
     init_q_state(state, actions)
 
-    if  random.random() < epsilon:
+
+    if random.random()  < epsilon:
         return random.choice(actions)
 
     best_action = actions[0]
@@ -112,7 +113,7 @@ def play_training_game():
     moves = []
     player = 'X'
     turn = 0
-    max_turns = 20 #200
+    max_turns = 200 
 
     while turn < max_turns:
         turn +=1
@@ -194,6 +195,7 @@ def play_training_game():
             player = 'X'
     
     epsilon = max(EPSILON_END, epsilon - EPSILON_DECAY)
+
 
 
                     

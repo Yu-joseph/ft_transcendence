@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 import os
 from q_learning import  get_difficulty_action
 from utils import get_state, get_available_actions
@@ -16,19 +16,6 @@ except Exception as e:
     q_table = {}
 
 
-# @app.route("/", methods=["GET"])
-# def home():
-#     return jsonify({
-#         "message": "Game AI API is running",
-#         "endpoints": [
-#             "/api/ai-move",
-#             "/q_table.json"
-#         ]
-#     })
-
-# @app.route("/q_table.json", methods=["GET"])
-# def serve_qtable():
-#     return send_from_directory(BASE_DIR, "q_table.json")
 
 
 @app.route("/api/ai-move", methods=["POST"])
@@ -73,7 +60,6 @@ def ai_move():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 
 

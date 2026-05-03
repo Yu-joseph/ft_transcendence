@@ -4,6 +4,8 @@ import '../Game/index.css'
 import Game from '../Game/Game.tsx'
 import Login from './Login.tsx'
 import Dashboard from "./Dashboard.tsx";
+import PrivacyPolicy from "./PrivacyPolicy.tsx";
+import TermsOfService from "./TermsOfService.tsx";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Tournament from '../Game/Tournament.tsx'
 import ProtectedRoute from '../components/ProtectedRoute.tsx'
@@ -17,15 +19,21 @@ import { Profile } from '../chat-system/pages/Profile.tsx'
 import GlobalInviteListener from '../components/GlobalInviteListener.tsx'
 import ChangePassw from '../auth/ChangePassw.tsx'
 import ChangeIntra from './ChangeIntra.tsx'
+import LandinPage from './LandinPage.tsx'
+import { GlobalChatListener } from '../chat-system/GlobalChatListener.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
       <BrowserRouter>
         <GlobalInviteListener />
+        <GlobalChatListener/>
         <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<LandinPage />} />
+          <Route path="/landing" element={<LandinPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
           <Route path="/Dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route element={<ProtectedRoute><ChatSystemLayout/></ProtectedRoute>}>
             <Route path ="/Chat" element={<Chat />} />

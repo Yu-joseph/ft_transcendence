@@ -9,13 +9,26 @@ type LeaderboardPlayer = {
   rank: number
 }
 
-export default function Leaderboard() {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardPlayer[]>([])
-  const [loading, setLoading] = useState(true)
+type LeaderboardProps = {
+  previewData?: LeaderboardPlayer[]
+}
+
+export default function Leaderboard({ previewData }: LeaderboardProps) {
+  const [leaderboard, setLeaderboard] = useState<LeaderboardPlayer[]>(previewData ?? [])
+  const [loading, setLoading] = useState(!previewData)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let isStillOnScreen = true
+
+    if (previewData) {
+      setLeaderboard(previewData)
+      setLoading(false)
+      setError(null)
+      return () => {
+        isStillOnScreen = false
+      }
+    }
 
     const fetchLeaderboard = async () => {
       try {
@@ -40,11 +53,11 @@ export default function Leaderboard() {
 
     fetchLeaderboard()
     return () => { isStillOnScreen = false }
-  }, [])
+  }, [previewData])
 
   return (
-    <section className="w-full bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit">
-      <div className="px-6 py-4 border-b border-blue-800">
+    <section className="w-full bg-slate-800 border border-black rounded-b-sm shadow-lg overflow-hidden h-fit hover:border-amber-500 hover:scale-102 transition-all duration-300">
+      <div className="px-6 py-4 border-b border-black">
         <h3 className="text-xl font-semibold text-amber-500">Leaderboard</h3>
         <p className="text-sm text-gray-400">Top players ranked by the backend</p>
       </div>

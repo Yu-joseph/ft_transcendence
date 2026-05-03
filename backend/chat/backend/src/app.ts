@@ -5,14 +5,22 @@ import  chatRoutes      from    './modules/conversation/conversation.routes.js';
 import  profileRoutes   from    './modules/profile/profile.routes.js';
 import  { Request, Response, NextFunction }   from    'express';
 import cookieParser from "cookie-parser";
-
+import helmet from 'helmet';
 
 const   app = express();
+app.use(helmet());
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
 };
 app.use(cors({
-  origin: '*',
+    origin: [
+    "http://localhost:8080",
+    "http://localhost:5173",
+    "http://localhost:5173",
+    "https://localhost:8443",
+    "https://10.30.234.188:8443"
+  ],
+  
   credentials: true
 }));
 app.use(express.json());
@@ -29,37 +37,17 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     }
     next(err);
 })
-
-// app.get('/', async (req, res) => {
-//     try {
-//         const   result = await prisma.friend.createMany({
-//             data: [
-//                     {receiverId: 1, requesterId: 2},
-//                     {receiverId: 1, requesterId: 3},
-//                     {receiverId: 4, requesterId: 1}
-//                 // {email: 'user1@gmail.com', username: 'mait', password: '1234'},
-//                 // {email: 'user2@gmail.com', username: 'simo', password: '1234'},
-//                 // {email: 'user3@gmail.com', username: 'djant', password: '1234'},
-//                 // {email: 'user4@gmail.com', username: 'alice', password: '1234'}
-//             ]
-//         })
-//         console.log(result);
-//         const users = await prisma.user.findMany();
-    
-//         res.json({users: users});
-//     } catch (error: any) {
-//         console.log(error.message);
-//         return res.status(500).json({error: error.message});
-//     }
-
-
-// })   
-
-
-/*  __ Friend Module API __  */
 app.use('/api/friend', friendRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/profile', profileRoutes);
 
+/** to prevent server for sending HTML content for not found routes */
+app.use((req: Request, res: Response) => {
+    res.status(404).json({
+        success: false,
+        message: `Route ${req.originalUrl} not found`,
+        data: null
+    });
+});
 
 export  default app;

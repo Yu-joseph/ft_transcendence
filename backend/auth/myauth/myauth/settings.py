@@ -1,9 +1,9 @@
 from datetime import timedelta
+from dotenv import load_dotenv
 from pathlib import Path
 import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-4vkpyy2bkd3(%hi=nhqdr(yx5j71%*zf!o!ej2kfnivhbno!%n'
 
 DEBUG = True
 
@@ -64,14 +64,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'myauth.wsgi.application'
 
+VAULT_SECRETS_FILE = '/vault/secrets/database.env'
+
+while True:
+    if os.path.exists(VAULT_SECRETS_FILE):
+        break
+        
+
+load_dotenv(VAULT_SECRETS_FILE)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mydb',
-        'USER': 'sayf',
-        'PASSWORD': '1234',
-        'HOST' : 'db',
-        'PORT' : '5432'
+        'NAME':     os.getenv('DB_NAME'),
+        'USER':     os.getenv('DB_USER'),   
+        'PASSWORD': os.getenv('DB_PASSWORD'), 
+        'HOST':     os.getenv('DB_HOST'),
+        'PORT':     os.getenv('DB_PORT'),
     }
 }
 
@@ -111,11 +120,14 @@ STATIC_URL = 'static/'
 STATIC_ROOT = '/app/static'
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
-SOCIAL_AUTH_42_KEY    = 'u-s4t2ud-ded6e687b26b0218e9a66fafb8ed15c58b5d355add51059bbaea360d342f4143'
-SOCIAL_AUTH_42_SECRET = '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'
 FORTY_TWO_REDIRECT_URI = 'http://localhost:8080/authent/42/callback/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+DJANGO_FILE_SC = '/vault/secrets/apiss.env'
+load_dotenv(DJANGO_FILE_SC)
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+SOCIAL_AUTH_42_KEY    = os.getenv('SOCIAL_AUTH_42_KEY')
+SOCIAL_AUTH_42_SECRET = os.getenv('SOCIAL_AUTH_42_SECRET')
 
 SIMPLE_JWT = {
 "ACCESS_TOKEN_LIFETIME": timedelta(hours=2), # change as needed

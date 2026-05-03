@@ -105,7 +105,7 @@ export default function ChangePassw() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-950 via-blue-950 to-slate-900 px-4 py-10 text-white">
+    <div className="min-h-screen bg-slate-900 px-4 py-10 text-white">
       <div className="mx-auto w-full max-w-xl rounded-2xl border border-amber-400/20 bg-slate-900/80 p-6 shadow-2xl shadow-amber-900/20 backdrop-blur">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-amber-300">Change Password</h1>

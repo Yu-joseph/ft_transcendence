@@ -213,31 +213,30 @@ def update_users(request):
     tmp_user = get_user_from_request(request)
     if not tmp_user:
         return JsonResponse({"error": "Not authenticated"}, status=401)
-    fields_to_update = [] 
+
+    fields_to_update = []
     try:
-        body     = json.loads(request.body)
-        email    = body.get("email")
-        bio      = body.get("bio")
-        fullname = body.get("fullname")
+        body = json.loads(request.body)
+        email    = body.get("email", "").strip()
+        bio      = body.get("bio", "").strip()
+        fullname = body.get("fullname", "").strip()
     except json.JSONDecodeError:
-        return JsonResponse({"error": "invalid JSON"}, status=400)
+        return JsonResponse({"error": "invalid JSON"}, status=401)
 
     if not email and not bio and not fullname:
-        return JsonResponse({"Find a job hhh" : "Ta sir 9lab ela stage onta katbdl liya f profile awdy awdy"}, status = 400)
+        return JsonResponse({"No changes": "No fields to update"}, status=200)
 
-    if email and email is not None and email.strip() != "":
-        # if email.strip() == "":
-            # return JsonResponse({"error": "Invalid email"}, status=400)
+    if email:
         validator = EmailValidator()
         try:
             validator(email)
         except ValidationError:
-            return JsonResponse({"error": "Invalid email"}, status=400)
+            return JsonResponse({"error": "Invalid email"}, status=402)
         tmp_user.email = email
         fields_to_update.append("email")
 
-    if fullname :
-        if not all(part.isalpha() for part in fullname.split()):
+    if fullname:
+        if not all(part.replace("-", "").isalpha() for part in fullname.split()):
             return JsonResponse({"error": "Invalid name"}, status=400)
         tmp_user.fullname = fullname
         fields_to_update.append("fullname")
@@ -247,9 +246,7 @@ def update_users(request):
         fields_to_update.append("bio")
 
     tmp_user.save(update_fields=fields_to_update)
-
-    return JsonResponse({"message" : "profile updated"} , status=200)
-
+    return JsonResponse({"message": "profile updated", "email": tmp_user.email, "fullname": tmp_user.fullname, "bio": tmp_user.bio}, status=200)
 
 @csrf_exempt
 def changing_password(request):
@@ -380,7 +377,7 @@ def forty_two_callback(request):
     access  = refresh.access_token
 
     response = redirect(redirect_url)
-    response.set_cookie(key='access_token',  value=str(access),  max_age=600,    httponly=True, secure=False, samesite='Lax', path='/')
+    response.set_cookie(key='access_token',  value=str(access),  max_age=604800,    httponly=True, secure=False, samesite='Lax', path='/')
     response.set_cookie(key='refresh_token', value=str(refresh), max_age=604800, httponly=True, secure=False, samesite='Lax', path='/')
     return response
 
@@ -425,3 +422,23 @@ def get_user(request):
         return JsonResponse({"error": "User not found"}, status=404)
 
     return JsonResponse(user)
+
+@csrf_exempt
+def update_avatar(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    try:
+        avatar_file = request.FILES.get("avatar")  
+        if not avatar_file:
+            return JsonResponse({"error": "avatar file is required"}, status=400)
+
+        tmp_user = get_user_from_request(request)
+
+        tmp_user.avatar = avatar_file  
+        tmp_user.save()
+
+        avatar_url = tmp_user.avatar.url  
+
+        return JsonResponse({"message": "Avatar updated successfully", "url": avatar_url}, status=200)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

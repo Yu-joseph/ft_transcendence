@@ -18,8 +18,10 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   // Using `replace` prevents navigating back to protected pages after redirect.
 
-  if (!user) 
-    return <Navigate to="/" replace />
+  if (!user) {
+    const redirectTo = isIntraPasswordRoute ? '/login' : '/'
+    return <Navigate to={redirectTo} replace />
+  }
 
   // Keep intra users on the password page until they complete setup.
   if (intraPasswordRequired && !isIntraPasswordRoute)

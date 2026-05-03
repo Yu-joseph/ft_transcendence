@@ -128,3 +128,13 @@ export function checkWinner(board: (string | null)[]): string | null {
   }
   return null;
 }
+
+export async function forfeitAnyActiveMatchForUser(io: Server, userId: string): Promise<void> {
+  for (const [matchId, match] of matches) {
+    if (match.status !== "playing") continue;
+    if (!match.players.some((p) => p.id === userId)) continue;
+
+    await forfeitMatch(io, matchId, userId);
+    return;
+  }
+}

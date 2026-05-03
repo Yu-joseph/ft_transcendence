@@ -1,23 +1,57 @@
 import { useRef, useState } from "react";
+import type { UserProfileInfo } from "./useProfileHeader";
+import { withMediaPrefix } from "../../shared/sharedUtils";
 
-type    InputType = 'fullname' | 'email' | 'bio';
+export  function    useEditeProfileModale(initialData: UserProfileInfo, isOpen: boolean) {
 
-export  function    useEditeProfileModale(initialData: any, isOpen: boolean) {
-
-
-   const fileInputRef = useRef<HTMLInputElement>(null);
+    const   [errors, setErrors] = useState<Record<string, string> | null>(null);
+   const    fileInputRef = useRef<HTMLInputElement>(null);
+   const    [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.avatar ?? null);
+   const    [avatar, setAvatar] = useState<File | null>(null);
 
     const [formData, setFormData] = useState({
         fullname: initialData?.fullname || '' as string,
         bio: initialData?.bio || '' as string,
-        email: initialData?.email || '' as string
+        email: initialData?.email || '' as string,
+        avatar: initialData?.avatar || '' as string
     });
 
-    const   [inputError, setInputError] = useState<{inputType: InputType, errorMessage: string} | null>(null);
+    const validateForm = () => {
+        const   newErrors: Record<string, string> = {};
+        const   isAnyFieldEmpty = formData.fullname.trim().length === 0 
+                    && formData.email.trim().length === 0 && formData.bio.trim().length === 0;
+        if(isAnyFieldEmpty && !avatar) {
+            newErrors.fullname = 'Please fill at least one field.';
+            setErrors(newErrors);
+            return false;
+        }
+        if(formData.fullname.trim().length !== 0 && formData.fullname.trim().length < 3) {
+            newErrors.fullname = 'Full-name must be at least 3 characters.';
+        }
+        else if(formData.fullname.trim().length !== 0 && formData.fullname.trim().length > 50) {
+            newErrors.fullname = 'Full-name must be less than 50 characters.';
+        }
+        else if (formData.fullname.trim().length !== 0 && /[<>]/.test(formData.fullname)) {
+            newErrors.fullname = 'Html tags are not allowed.';
+        }
+        const   emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if(formData.email.trim().length !== 0 && !emailRegex.test(formData.email)) {
+            newErrors.email = 'Invalid email address.';
+        }
 
+        if(formData.bio.trim().length !== 0 && formData.bio.trim().length < 10) {
+            newErrors.bio = 'Bio must be at least 10 characters.';
+        }
+        else if(formData.bio.trim().length !== 0 && formData.bio.trim().length > 100) {
+            newErrors.bio = 'Bio must be less than 100 characters.';
+        }
+        else if (formData.bio.trim().length !== 0 && /[<>]/.test(formData.bio)) {
+            newErrors.bio = 'Html tags are not allowed.';
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
-    const   [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.avatar ?? null);
-    const   [avatar, setAvatar] = useState<File | null>(null);
 
     if (!isOpen)
         return null;
@@ -28,10 +62,9 @@ export  function    useEditeProfileModale(initialData: any, isOpen: boolean) {
             setAvatar(null);
             return;
         }
-        console.log('Changing the avatar........');
-        console.log("file:", file);
         if(!file?.type.startsWith('image/')) {
             console.log('Invalid Image');
+            setErrors({...errors, avatar: 'Invalid Image type.'}); // *****
             setAvatar(null);
             return;
         }
@@ -43,22 +76,35 @@ export  function    useEditeProfileModale(initialData: any, isOpen: boolean) {
     };
 
     const uploadAvatar = async (file: File) => {
+        if(!file)
+            return ;
         const fd = new FormData();
         console.log('before append:', fd);
         fd.append('avatar', file);
-        console.log('After append:', fd);
-        try {
-            const res = await fetch('/api/profile/avatar', {
-                method: 'POST',
-                body: fd,
-                credentials: 'include'
-            });
-            if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
-            const data = await res.json();
-            setPreviewUrl(data.url);
-        } catch (err) {
-            console.error(err);
+        /** ________________ upload avatr _____________________ */
+        const res = await fetch('/authent/update_avatar/', {
+            method: 'POST',
+            body: fd,
+            credentials: 'include'
+        });
+        if (res.status === 401) { // wheen token expired
+            window.location.href = '/';
+            return;
         }
+        if (!res.ok) {
+            const contentType = res.headers.get("content-type");
+            let errorMessage = `Upload failed (${res.status})`;
+            if (contentType && contentType.includes("application/json")) {
+                const errorData = await res.json();
+                errorMessage = errorData.error || errorMessage;
+            }
+            throw new Error(errorMessage);
+        }
+        const data = await res.json();
+        const fullUrl = withMediaPrefix(data.url) || data.url;
+        setPreviewUrl(fullUrl);
+        setFormData({...formData, avatar: fullUrl});
+        return fullUrl;
     }
     /**___________________________________________ */
     return {
@@ -67,9 +113,10 @@ export  function    useEditeProfileModale(initialData: any, isOpen: boolean) {
         uploadAvatar,
         previewUrl,
         setFormData,
-        inputError,
+        validateForm,
         avatar,
         formData,
-        setInputError
+        errors,
+        setErrors
     };
 }

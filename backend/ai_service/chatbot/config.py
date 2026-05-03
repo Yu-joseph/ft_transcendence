@@ -22,3 +22,4 @@ class AppConfig:
     load_dotenv("/vault/aii/apiss.env")
 
     DJANGO_SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+

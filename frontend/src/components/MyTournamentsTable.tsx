@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { socket } from "../Game/socket/sock";
+import { gameSocket } from "../socket/sock";
 
 type TournamentOwner = {
   id: string;
@@ -59,13 +60,13 @@ export default function MyTournamentsTable() {
     };
 
     fetchMyTournaments();
-    socket.on("tournament-created", refresh);
-    socket.on("tournament-update", refresh);
+    gameSocket.on("tournament-created", refresh);
+    gameSocket.on("tournament-update", refresh);
 
     return () => {
       mounted = false;
-      socket.off("tournament-created", refresh);
-      socket.off("tournament-update", refresh);
+      gameSocket.off("tournament-created", refresh);
+      gameSocket.off("tournament-update", refresh);
     };
   }, []);
 
@@ -78,8 +79,8 @@ export default function MyTournamentsTable() {
   };
 
   return (
-    <section className="w-full bg-slate-800 border border-blue-700 rounded-xl shadow-lg overflow-hidden h-fit">
-      <div className="px-6 py-4 border-b border-blue-800">
+    <section className="w-full bg-slate-800 border border-black rounded-xl shadow-lg overflow-hidden h-fit hover:border-amber-500 hover:scale-102 transition-all duration-300">
+      <div className="px-6 py-4 border-b border-black">
         <h3 className="text-xl font-semibold text-amber-500">My Tournaments</h3>
         <p className="text-sm text-gray-400">Your tournament progress and status</p>
       </div>
@@ -89,7 +90,7 @@ export default function MyTournamentsTable() {
       ) : error ? (
         <div className="px-6 py-8 text-red-300">{error}</div>
       ) : rows.length === 0 ? (
-        <div className="px-6 py-8 text-gray-300">You have not joined any tournament yet.</div>
+        <div className="px-6 py-8 text-gray-300 hover:bg-slate-700/40">You have not joined any tournament yet.</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full table-fixed text-left">
