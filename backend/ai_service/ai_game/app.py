@@ -16,19 +16,19 @@ except Exception as e:
     q_table = {}
 
 
-@app.route("/", methods=["GET"])
-def home():
-    return jsonify({
-        "message": "Game AI API is running",
-        "endpoints": [
-            "/api/ai-move",
-            "/q_table.json"
-        ]
-    })
+# @app.route("/", methods=["GET"])
+# def home():
+#     return jsonify({
+#         "message": "Game AI API is running",
+#         "endpoints": [
+#             "/api/ai-move",
+#             "/q_table.json"
+#         ]
+#     })
 
-@app.route("/q_table.json", methods=["GET"])
-def serve_qtable():
-    return send_from_directory(BASE_DIR, "q_table.json")
+# @app.route("/q_table.json", methods=["GET"])
+# def serve_qtable():
+#     return send_from_directory(BASE_DIR, "q_table.json")
 
 
 @app.route("/api/ai-move", methods=["POST"])

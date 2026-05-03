@@ -17,14 +17,26 @@ epsilon = EPSILON_START
 
 
 
-def choose_action(state, actions, force_greedy=False):
+
+def choose_action(state, actions ):
     init_q_state(state, actions)
 
-    if not force_greedy and random.random() < epsilon:
-        # print("---------++++++++++++++++-------------<<<<>>>>>>>>>>>>>>>\n\n" , flush=True)
+    if  random.random() < epsilon:
         return random.choice(actions)
 
-    return max(actions, key=lambda a: q_table[state][action_to_key(a)])
+    best_action = actions[0]
+    best_value = q_table[state][action_to_key(best_action)]
+
+    for action in actions:
+        key = action_to_key(action)
+        value = q_table[state][key]
+
+        if value > best_value:
+            best_value = value
+            best_action = action
+
+    return best_action
+
 
 
 def init_q_state(state, actions):
@@ -36,9 +48,6 @@ def init_q_state(state, actions):
             q_table[state][key] = 0.0
 
 
-
-#Q(s, a)            = Q(s, a) + α * (reward + γ * max(Q(s', a')) - Q(s, a))
-#epsilon = EPSILON_END + (EPSILON_START - EPSILON_END) * exp(-k * game)
 
 def count_pieces(board, player):
     count = 0
@@ -61,8 +70,6 @@ def get_winning_move_tuples(board, actions, player):
         if check_winner(temp, player):
             return action
     return None
-
-
 
 
 
