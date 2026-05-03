@@ -26,7 +26,6 @@ const corsOptions = {
     "http://localhost:5173",
     "http://localhost:5173",
     "https://localhost:8443",
-    "https://10.30.246.78:8443",
     CORE,
   ],
   methods: ["GET", "POST"],

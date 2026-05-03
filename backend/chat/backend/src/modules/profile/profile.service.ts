@@ -16,7 +16,7 @@ export  class ProfileService {
                 fullname: true,
                 created_at: true,
                 avatar: true,
-                status: true
+                user_status: true
             }
         }) as UserProfileInfo;
         if (!user)

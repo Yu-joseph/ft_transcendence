@@ -19,15 +19,15 @@ export const socketAuthenticate = async (socket: Socket, next: (err?: Error) => 
 
         if(typeof payload === 'string' || payload === null)
             return next(new AppError('Invalid token payload', 401));
-        const  exist = await prisma.user.findUnique({
-            where:{
-                id: payload.user_id
-            }
-        })
-        if(!exist)
-        {
-            return next(new AppError('Invalid user in Database', 401));
+            
+        // Verify user actually exists in the database
+        const userExists = await prisma.user.findUnique({
+            where: { id: payload.user_id }
+        });
+        if (!userExists) {
+            return next(new AppError('User not found in database', 401));
         }
+
         (socket as any).user = payload;
         next();
     } catch (error) {
