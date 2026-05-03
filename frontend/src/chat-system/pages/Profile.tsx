@@ -8,6 +8,7 @@ import type { UserProfileInfo } from "../components/profile/hooks/useProfileHead
 import { useAuth } from '../../auth/useAuth';
 import { useParams } from "react-router-dom";
 import { withMediaPrefix } from "../components/shared/sharedUtils";
+import { chatSocket } from "../../socket/sock";
 
 export interface UserStatGame {
     rank: number
@@ -31,6 +32,21 @@ export function Profile() {
     const [statError, setStatError] = useState<string | null>(null);
     const [loadHeaderInfo, setLoadHeaderInfo] = useState<boolean>(false);// this for load header info in 'ProfileHeader' component
     const [errHeaderInfo, setErrHeaderInfo] = useState<string|null>(null);// this for load header info in 'ProfileHeader' component
+
+
+        // Listen for status updates and update userInfo when it matches
+    useEffect(() => {
+        const onStatusUpdate = (data: { userId: string, status: string }) => {
+            if (!data || !data.userId)
+                return;
+            if (userInfo?.id && data.userId === userInfo.id) {
+                setUserInfo(prev => prev ? { ...prev, user_status: data.status } : prev);
+            }
+        };
+
+        chatSocket.on('status:update', onStatusUpdate);
+        return () => { chatSocket.off('status:update', onStatusUpdate); };
+    }, [userInfo?.id, setUserInfo]);
 
     useEffect(() => {
         if(!user?.id || !userId)
