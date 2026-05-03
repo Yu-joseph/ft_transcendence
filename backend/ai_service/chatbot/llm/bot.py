@@ -24,10 +24,8 @@ class ChatBot:
         except Exception as e:
             if self.history and isinstance(self.history[-1] , HumanMessage):
                 self.history.pop()
-            
             self.error = True
-            # self.reset()
-            yield Config.handle_error(e)
+            yield "ERROR" ,  Config.handle_error(e)
 
     def reset(self):
         self.history = [self.config.system_message]
@@ -51,13 +49,3 @@ class ChatBot:
         except Exception:
             return "New Chat"
 
-
-# per-user bot register
-
-# _bots: dict = {}
-
-
-# def get_bot(session_id: str) -> ChatBot:
-#     if session_id not in _bots:
-#         _bots[session_id] = ChatBot()
-#     return _bots[session_id]

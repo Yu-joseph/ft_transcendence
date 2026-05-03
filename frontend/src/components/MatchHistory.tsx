@@ -22,6 +22,7 @@ type MatchHistoryItem = {
 
 type UserMatchHistoryProps = {
   limit?: number;
+  id?: string;
 };
 
 function getOpponent(match: MatchHistoryItem, currentUserId: string): string {
@@ -86,7 +87,7 @@ function MiniBoardPreview({ board }: { board: string[] }) {
   );
 }
 
-export default function UserMatchHistory({ limit = 8 }: UserMatchHistoryProps) {
+export default function UserMatchHistory({ limit = 8, id }: UserMatchHistoryProps) {
   const { user } = useAuth();
   const [matches, setMatches] = useState<MatchHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,8 +105,9 @@ export default function UserMatchHistory({ limit = 8 }: UserMatchHistoryProps) {
       try {
         setLoading(true);
         setError(null);
-
-        const response = await fetch("/game-api/api/me/games", {
+        
+        // const userId = id || user?.id;
+        const response = await fetch(`/game-api/api/${id}/games`, {
           method: "GET",
           credentials: "include",
         });
@@ -134,7 +136,7 @@ export default function UserMatchHistory({ limit = 8 }: UserMatchHistoryProps) {
     return () => {
       isActive = false;
     };
-  }, [user?.id]);
+  }, [user?.id, id]);
 
   const visibleMatches = useMemo(() => matches.slice(0, limit), [matches, limit]);
 
