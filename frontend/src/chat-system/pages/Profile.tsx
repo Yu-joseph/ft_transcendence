@@ -9,6 +9,8 @@ import { useAuth } from '../../auth/useAuth';
 import { useParams } from "react-router-dom";
 import { withMediaPrefix } from "../components/shared/sharedUtils";
 import { chatSocket } from "../../socket/sock";
+import PlayerState from "../../components/PlayerState";
+import UserMatchHistory from "../../components/MatchHistory";
 
 export interface UserStatGame {
     rank: number
@@ -127,10 +129,12 @@ export function Profile() {
                                     userInfo={userInfo} 
                                     setUserInfo={setUserInfo}
                                 />
-                                <UserStatCard 
+                                <PlayerState  id={userId ?? ''} />
+                                <UserMatchHistory limit={8} id={userId ?? ''} />
+                                {/* <UserStatCard 
                                     userGameStat={userStat} 
                                     isOwnProfile={isOwnProfile} 
-                                />
+                                /> */}
                             </div>
                         )
                     }

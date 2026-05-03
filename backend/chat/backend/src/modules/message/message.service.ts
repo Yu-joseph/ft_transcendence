@@ -129,7 +129,8 @@ export  class MessagesServices {
                 OR: [
                     {receiverId: convExist.user1Id, requesterId: convExist.user2Id},
                     {receiverId: convExist.user2Id, requesterId: convExist.user1Id}
-                ]
+                ],
+                status: 'ACCEPTED'
             }
         });
         if(isFriend === null) {
