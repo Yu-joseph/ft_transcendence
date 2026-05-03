@@ -19,14 +19,15 @@ import { players } from "./socket/onevone/onevoneState";
 
 const app = express();
 const PORT = 3000;
-
+const CORE = process.env.SECRET_KEY;
 const corsOptions = {
   origin: [
     "http://localhost:8080",
     "http://localhost:5173",
     "http://localhost:5173",
     "https://localhost:8443",
-    "https://10.30.246.78:8443"
+    "https://10.30.246.78:8443",
+    CORE,
   ],
   methods: ["GET", "POST"],
   credentials: true,
