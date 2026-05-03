@@ -1,3 +1,4 @@
+import { withMediaPrefix } from '../chat-system/components/shared/sharedUtils';
 import type { AuthUser } from './auth-context';
 
 // Cache the fetch promise so repeated component loads do not cause duplicate requests
@@ -39,7 +40,7 @@ export function fetchAuthUser(): Promise<AuthUser | null> {
         username: userData.username ?? userData.user?.username ?? 'Player',
         fullName: userData.fullname ?? userData.fullName ?? userData.user?.fullname,
         email: userData.email ?? userData.user?.email,
-        avatar: userData.avatar ?? userData.profile?.avatar,
+        avatar: withMediaPrefix(userData.avatar) ?? userData.profile?.avatar,
       };
     } catch {
       return null;

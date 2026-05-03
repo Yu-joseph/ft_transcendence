@@ -12,7 +12,7 @@ import youssefiImage from "../Devolopers/ysouhail.jpg";
 
 function LandinPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   const previewStats = {
     id: "preview-player",
@@ -54,13 +54,13 @@ function LandinPage() {
   ];
 
 
-  // if (loading) {
-  //   return (
-  //     <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
-  //       <p className="text-white text-lg">Loading session...</p>
-  //     </div>
-  //   );
-  // }
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
+        <p className="text-white text-lg">Loading session...</p>
+      </div>
+    );
+  }
 
   if (user) {
     return <Navigate to="/Dashboard" replace />;

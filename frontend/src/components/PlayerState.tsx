@@ -12,9 +12,10 @@ type PlayerStats = {
 
 type PlayerStateProps = {
   previewStats?: PlayerStats;
+  id?: string;
 };
 
-export default function PlayerState({ previewStats }: PlayerStateProps) {
+export default function PlayerState({ previewStats, id }: PlayerStateProps) {
   const [stats, setStats] = useState<PlayerStats | null>(previewStats ?? null);
   const [loading, setLoading] = useState(!previewStats);
   const [error, setError] = useState<string | null>(null);
@@ -31,8 +32,9 @@ export default function PlayerState({ previewStats }: PlayerStateProps) {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch("/game-api/api/me/stats", {
-          credentials: "include",
+        // const endpoint = id ? `/game-api/api/${id}/stats` : "/game-api/api/id_user/stats";
+        const response = await fetch(`https://${window.location.hostname}:8443/game-api/api/users/${id}/status`, {
+                    'credentials': 'include'
         });
         if (!response.ok) {
           throw new Error("User not found");
@@ -47,7 +49,7 @@ export default function PlayerState({ previewStats }: PlayerStateProps) {
     };
 
     fetchPlayerState();
-  }, [previewStats]);
+  }, [previewStats, id]);
 
   const total = stats ? stats.wins + stats.losses : 0;
   const winRate = stats && total > 0 ? Math.round((stats.wins / total) * 100) : 0;
