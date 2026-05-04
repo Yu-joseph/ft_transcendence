@@ -7,7 +7,7 @@ from utils import check_winner, get_state, get_available_actions, action_to_key
 LEARNING_RATE = 0.1
 GAMMA = 0.95
 TRAINING_GAMES = 500000
-EPSILON_START = 0.3
+EPSILON_START = 0.8
 EPSILON_END = 0.01
 EPSILON_DECAY = (EPSILON_START - EPSILON_END) / TRAINING_GAMES
 
@@ -17,14 +17,27 @@ epsilon = EPSILON_START
 
 
 
-def choose_action(state, actions, force_greedy=False):
+
+def choose_action(state, actions ):
     init_q_state(state, actions)
 
-    if not force_greedy and random.random() < epsilon:
-        # print("---------++++++++++++++++-------------<<<<>>>>>>>>>>>>>>>\n\n" , flush=True)
+
+    if random.random()  < epsilon:
         return random.choice(actions)
 
-    return max(actions, key=lambda a: q_table[state][action_to_key(a)])
+    best_action = actions[0]
+    best_value = q_table[state][action_to_key(best_action)]
+
+    for action in actions:
+        key = action_to_key(action)
+        value = q_table[state][key]
+
+        if value > best_value:
+            best_value = value
+            best_action = action
+
+    return best_action
+
 
 
 def init_q_state(state, actions):
@@ -36,9 +49,6 @@ def init_q_state(state, actions):
             q_table[state][key] = 0.0
 
 
-
-#Q(s, a)            = Q(s, a) + α * (reward + γ * max(Q(s', a')) - Q(s, a))
-#epsilon = EPSILON_END + (EPSILON_START - EPSILON_END) * exp(-k * game)
 
 def count_pieces(board, player):
     count = 0
@@ -61,8 +71,6 @@ def get_winning_move_tuples(board, actions, player):
         if check_winner(temp, player):
             return action
     return None
-
-
 
 
 
@@ -105,7 +113,7 @@ def play_training_game():
     moves = []
     player = 'X'
     turn = 0
-    max_turns = 20 #200
+    max_turns = 200 
 
     while turn < max_turns:
         turn +=1
@@ -187,6 +195,7 @@ def play_training_game():
             player = 'X'
     
     epsilon = max(EPSILON_END, epsilon - EPSILON_DECAY)
+
 
 
                     

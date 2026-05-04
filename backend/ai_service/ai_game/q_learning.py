@@ -11,6 +11,8 @@ try:
 except Exception:
     q_table = {}
 
+
+
 def get_winning_move(board, actions, player):
     for action in actions:
         temp = board.copy()
@@ -23,15 +25,24 @@ def get_winning_move(board, actions, player):
             return action
     return None
 
+
+
+
 def get_best_action(state, actions):
     if state not in q_table:
         return random.choice(actions)
     return max(actions, key=lambda a: q_table[state].get(action_to_key(a), 0.0))
 
+
+
+
 def tuple_to_dict(action):
     if action[0] == 'place':
         return {"type": "place", "to": action[1], "key": f"p{action[1]}"}
     return {"type": "move", "from": action[1], "to": action[2], "key": f"m{action[1]}_{action[2]}"}
+
+
+
 
 def get_difficulty_action(state, actions, difficulty, board, player):
     win = get_winning_move(board, actions, player)
