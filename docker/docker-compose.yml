@@ -3,8 +3,6 @@ services:
     image: postgres:16
     restart: always
     container_name : db
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_USER: ${ft_user}
       POSTGRES_PASSWORD: ${ft_password}
@@ -35,7 +33,6 @@ services:
         condition: service_healthy
       vault-agent:
         condition: service_healthy
-
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/login || exit 1"]
       interval: 10s
@@ -51,9 +48,6 @@ services:
     env_file:
       - .env.local
     build: ../frontend
-    volumes:
-      - ../frontend:/app/
-      - /app/node_modules 
 
   nginx:
     build : ./nginx
@@ -85,6 +79,8 @@ services:
     depends_on:
       auth:
         condition: service_healthy
+      vault-agent:
+        condition: service_healthy
     volumes:
       - vault-game:/vault/game
       - vault-secrets:/vault/secrets
@@ -103,8 +99,6 @@ services:
         condition: service_healthy    
       ai_game:
         condition: service_started
-    env_file:
-      - .env
     volumes:
       - vault-ai:/vault/aii
     networks:
@@ -119,8 +113,6 @@ services:
     depends_on:
       auth:
         condition: service_healthy
-    ports:
-      - "3000:3000"
     volumes:
       - vault-secrets:/vault/secrets
       - vault-chat:/vault/chat
@@ -135,8 +127,6 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "5433:5432"
     volumes:
       - pp_data:/var/lib/postgresql/data
     networks:
@@ -260,14 +250,17 @@ services:
       - ./vault/userconfig/tls/ca.crt:/vault/certs/ca.crt
       - ./vault/userconfig/:/vault/userconfig/
     healthcheck:
-      test: ["CMD-SHELL", "test -f /vault/secrets/apiss.env"]
+      test: ["CMD-SHELL", "test -f /vault/secrets/apiss.env || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - app-network
     depends_on:
       vault:
         condition: service_healthy
      
-
 networks:
   app-network:
     driver: bridge

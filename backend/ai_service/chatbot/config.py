@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 
 load_dotenv("/vault/aii/file.env")
 
-
 class AppConfig:
     SQLALCHEMY_DATABASE_URI = (
         f"postgresql://{os.environ.get('DB_USER')}:"
@@ -22,3 +21,4 @@ class AppConfig:
     load_dotenv("/vault/aii/apiss.env")
 
     DJANGO_SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+
