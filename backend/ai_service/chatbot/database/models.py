@@ -32,4 +32,5 @@ class UserUsage(db.Model):
     user_id = db.Column(db.String, primary_key=True)
     daily_count = db.Column(db.Integer, default=0)
     updated_at = db.Column(db.DateTime)
+    # age1 = db.Column(db.Integer , nullable=True )
 
