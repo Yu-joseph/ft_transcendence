@@ -45,22 +45,17 @@ def tuple_to_dict(action):
 
 
 def get_difficulty_action(state, actions, difficulty, board, player):
+    win = get_winning_move(board, actions, player)
+    if win:
+        return tuple_to_dict(win)
 
     if difficulty == "hard":
         action = get_best_action(state, actions)
-
+    elif difficulty == "medium":
+        action = get_best_action(state, actions) if random.random() < 0.7 else random.choice(actions)
+    elif difficulty == "easy":
+        action = get_best_action(state, actions) if random.random() < 0.4 else random.choice(actions)
     else:
-
-        win = get_winning_move(board, actions, player)
-        if win:
-            return tuple_to_dict(win)
-
-
-        elif difficulty == "medium":
-            action = get_best_action(state, actions) if random.random() < 0.7 else random.choice(actions)
-        elif difficulty == "easy":
-            action = get_best_action(state, actions) if random.random() < 0.4 else random.choice(actions)
-        else:
-            action = get_best_action(state, actions)
+        action = get_best_action(state, actions)
 
     return tuple_to_dict(action)
