@@ -29,7 +29,6 @@ export  function    useBlockedFriend() {
                 }
             } catch (error: any) {
                 setError(error);
-                console.log(error);
             } finally {
                 setLoading(false);
             }
@@ -44,12 +43,12 @@ export  function    useBlockedFriend() {
                 method: 'POST',
                 body: JSON.stringify({username: receiverName})
             });
-            setBlocked(prev => prev.filter(u => u.username !== receiverName));
-            setStatus({type: 'success', message: 'Friend Unblocked successfuly'});
-            console.log(result);
+            if(result) {
+                setBlocked(prev => prev.filter(u => u.username !== receiverName));
+                setStatus({type: 'success', message: 'Friend Unblocked successfuly'});
+            }
         } catch (error: any) {
-            setStatus({type: 'error', message: error?.message ?? 'Failed to add friend'})
-            console.log(error);
+            setStatus({type: 'error', message: error?.message ?? 'Failed to add friend'});
         }
     }
     /**_________________ */

@@ -2,6 +2,7 @@ import  { useEffect, useState } from "react";
 import  { fetchClient } from "../../../utils/fetchClient";
 import  type { AuthUser } from "../../../../auth/auth-context";
 import { chatSocket } from "../../../../socket/sock";
+import { getErrorMessage } from "../../../utils/error";
 
 type FriendStat = 'accepted' | 'pending' | 'not';
 
@@ -58,34 +59,31 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
     
     /** *** Botton Click******/
     const handleAddToFriend = async (username: string) => {
-        console.log("In Add button");
-
         if (!username || !user)
             return;
         try {
+            setServerError(null);
             const option = {
                 method: 'POST',
                 body: JSON.stringify({ username: username })
             };
-            const result = await fetchClient('/friend/request', option);
+            await fetchClient('/friend/request', option);
             setUserInfo(prev => prev ? ({ ...prev, isFriend: 'pending' }) : null)
-        } catch (err) {
-            console.log('error is:', err);
+        } catch (err: unknown) {
+            setServerError(getErrorMessage(err, "Failed to add friend."));
         }
     }
 /**_______________________________________________________________________ */
     const handleRemoveFriend = async (friendId: string) => {
-        console.log("In Remove button");
         if (!userInfo || !friendId)
             return;
         try {
-            const result = await fetchClient(`/friend/${friendId}`, { method: 'DELETE' });
-            setUserInfo(prev => prev ? ({ ...prev, isFriend: 'not' }) : null)
-            console.log('Friend Ship removed');
-            console.log(result);
+            setServerError(null);
+            await fetchClient(`/friend/${friendId}`, { method: 'DELETE' });
+            setUserInfo(prev => prev ? ({ ...prev, isFriend: 'not' }) : null);
 
-        } catch (error) {
-            console.log(error);
+        } catch (err: unknown) {
+            setServerError(getErrorMessage(err, "Failed to remove friend."));
         }
     }
 /**_____________________________________________________________________________ */
@@ -96,17 +94,15 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
         if (!userId || !user?.id)
             return;
         try {
-            console.log('Starting conversation from profile');
+            setServerError(null);
             setGoToChat(null);
-            const result = await fetchClient('/chat/conversations', {
+            await fetchClient('/chat/conversations', {
                 method: 'POST',
                 body: JSON.stringify({ friendId: userId })
             });
-            console.log("Result of start Conversation:", result);
-            console.log('Starting conversation from profile is Done');
             setGoToChat(userId);
-        } catch (error) {
-            console.log('errr:', error);
+        } catch (err: unknown) {
+            setServerError(getErrorMessage(err, "Failed to start conversation."));
         }
     }
 /**_________________________________________________________________________________ */
@@ -153,14 +149,10 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
             // Update UI State with updatedData (handles both info and new avatar url)
             setUserInfo(prev => prev ? { ...prev, ...updatedData } : null);
             setIsEditing(false);
-        } catch (error: any) {
-            if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-                setServerError("Network error: Please check your internet connection.");
-            } else {
-                setServerError(error.message || 'Failed to save profile');
-            }
-            console.error("Failed to save profile:", error);
-        } finally {
+        } catch (err: unknown) {
+            setServerError(getErrorMessage(err, "Failed to save profile."));
+        } 
+        finally {
             setIsSaving(false); //reenable button
         }
     }

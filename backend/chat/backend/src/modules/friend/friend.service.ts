@@ -52,8 +52,7 @@ export class FriendService {
             if (existing.status === 'REJECTED') {
                 const result = await prisma.friend.update({
                     where: {
-                        id: existing.id,
-                        status: 'REJECTED'
+                        id: existing.id
                     },
                     data: {
                         receiverId: frId.id,
@@ -79,8 +78,6 @@ export class FriendService {
         });
         if(sender) {
             io.to(frId.id).emit('notification:friend_update', {senderName: sender?.username || 'Someone', type: 'REQUEST'});
-        } else {
-            console.error(`Sender with ID ${data.requesterId} not found when emitting notification`);
         }
         return newRequest;
     }
@@ -113,8 +110,7 @@ export class FriendService {
             case 'PENDING':{
                 const result = await prisma.friend.update({
                     where: {
-                        id: BigInt(data.friendRequestId),
-                        receiverId: data.receiverId
+                        id: BigInt(data.friendRequestId)
                     },
                     data: {
                         status: 'ACCEPTED'
@@ -140,7 +136,6 @@ export class FriendService {
             throw new AppError('Friend request not found', 404);
         if (friendRequest.receiverId !== data.receiverId)
             throw new AppError('Not authorized', 403);
-
         const   io = getIo();
         switch (friendRequest.status) {
             case 'ACCEPTED':
@@ -151,8 +146,7 @@ export class FriendService {
 
                 const result = await prisma.friend.update({
                     where: {
-                        id: BigInt(data.friendRequestId),
-                        receiverId: data.receiverId
+                        id: BigInt(data.friendRequestId)
                     },
                     data: {
                         status: 'REJECTED'

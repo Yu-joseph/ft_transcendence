@@ -32,7 +32,6 @@ export class    ConversationController {
                 data: null
             }
             const   statusCode = error.statusCode;
-            console.log(errorMessage);
             res.status(error.statusCode || 500).json(response);
             
         }
@@ -72,8 +71,6 @@ export class    ConversationController {
                 message: errorMessage,
                 data: null
             }
-            console.log(errorMessage);
-
             return res.status(statusCode).json(response);
         }
     }

@@ -62,12 +62,18 @@ services:
       - app-network
     restart: always
     depends_on:
-      - frontend
-      - auth
-      - db
-      - ai_game
-      - chatbot
-      - chat-system
+      frontend:
+        condition: service_started
+      auth:
+        condition: service_started
+      db:
+        condition: service_started
+      ai_game:
+        condition: service_started
+      chatbot:
+        condition: service_started
+      chat-system:
+        condition: service_healthy
 
   game:
     build: ../backend/game_service
@@ -119,6 +125,12 @@ services:
       - vault-chat:/vault/chat
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
   chat_db:
     image: postgres:15
