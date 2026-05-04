@@ -10,7 +10,9 @@ export async function    fetchClient<T>(endpoint: string, option: RequestInit = 
         headers,
         credentials: 'include'
     });
-
+    if (response.status === 429) {
+        throw new Error("You are making too many requests. Please wait a moment and try again.");
+    }
     let   data: any;
     
     try {

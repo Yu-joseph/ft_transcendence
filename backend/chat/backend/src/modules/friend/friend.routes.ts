@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { authenticated } from "../../middlewares/auth.middleware.js";
 import { FriendController } from "./friend.controller.js";
-import { friendRequestLimiter } from "../../middlewares/friend.rate.limit.midllware.js";
 import { validateRequest } from "../../middlewares/validate.middleware.js";
 import { acceptFriendSchema, addFriendSchema, removeFriendShipSchema } from "./schema.validate.friend.js";
 
@@ -11,7 +10,7 @@ const routes = Router();
 
 
 routes.get('/', authenticated, FriendController.getFriends);
-routes.post('/request', validateRequest(addFriendSchema) , friendRequestLimiter, authenticated, FriendController.addFriend);
+routes.post('/request', validateRequest(addFriendSchema), authenticated, FriendController.addFriend);
 routes.put('/:id/accept', validateRequest(acceptFriendSchema), authenticated, FriendController.acceptFriend);
 routes.put('/:id/reject', validateRequest(acceptFriendSchema), authenticated, FriendController.rejectFriend);
 routes.delete('/:id', validateRequest(removeFriendShipSchema), authenticated, FriendController.removeFriendShip); 
