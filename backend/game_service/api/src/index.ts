@@ -22,11 +22,7 @@ const PORT = 3000;
 const CORE = process.env.SECRET_KEY;
 const corsOptions = {
   origin: [
-    "http://localhost:8080",
-    "http://localhost:5173",
-    "http://localhost:5173",
     "https://localhost:8443",
-    "https://10.30.246.78:8443",
     CORE,
   ],
   methods: ["GET", "POST"],
@@ -61,15 +57,14 @@ async function requireAuth(req: Request, res: Response, next: NextFunction) {
   return next();
 }
 
-app.get("/", (_req, res) => {
-  res.json({ message: "Welcome to the API" });
-});
-
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-// Public route
+app.get("/", (_req, res) => {
+  res.json({ message: "Welcome to the API" });
+});
+
 app.get("/api/leaderboard", async (_req, res) => {
   try {
     const ranked = await getRankedUsers();
@@ -106,9 +101,12 @@ app.get("/api/me/stats", requireAuth, async (req, res) => {
   }
 });
 
-app.get("/api/me/games", requireAuth, async (req, res) => {
+app.get("/api/:id/games", requireAuth, async (req, res) => {
   try {
-    const userId = (req as AuthedRequest).userId as string;
+    const userId = req.params.id?.trim();
+    if (!userId) {
+      return res.status(400).json({ error: "User id is required" });
+    }
     const games = await prisma.game.findMany({
       where: {
         OR: [{ playerXId: userId }, { playerOId: userId }],

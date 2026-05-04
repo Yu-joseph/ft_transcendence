@@ -55,19 +55,6 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
             chatSocket.off('notification:friend_update', handleFriendUpdate);
         };
     }, [userInfo?.username, setUserInfo])
-
-    // Listen for status updates and update userInfo when it matches
-    useEffect(() => {
-        const onStatusUpdate = (data: { userId: string, status: string }) => {
-            if (!data || !data.userId) return;
-            if (userInfo?.id && data.userId === userInfo.id) {
-                setUserInfo(prev => prev ? { ...prev, user_status: data.status } : prev);
-            }
-        };
-
-        chatSocket.on('status:update', onStatusUpdate);
-        return () => { chatSocket.off('status:update', onStatusUpdate); };
-    }, [userInfo?.id, setUserInfo]);
     
     /** *** Botton Click******/
     const handleAddToFriend = async (username: string) => {
