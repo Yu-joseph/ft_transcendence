@@ -345,7 +345,7 @@ function Login() {
                   id="signupEmail"
                   value={signupEmail}
                   onChange={(e) => setSignupEmail(e.target.value)}
-                  maxLength={30}
+                  maxLength={42}
                   className="w-full px-3 py-2 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
                   placeholder="Enter email"
                   required
@@ -361,7 +361,7 @@ function Login() {
                   id="signupFullname"
                   value={signupFullname}
                   onChange={(e) => setSignupFullname(e.target.value)}
-                  // maxLength={25}
+                  maxLength={25}
                   className="w-full px-3 py-2 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
                   placeholder="Enter full name"
                 />
