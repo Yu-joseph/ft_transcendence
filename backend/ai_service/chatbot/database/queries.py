@@ -1,7 +1,7 @@
 from datetime import datetime , timedelta
 from datetime import datetime , timedelta
 from extensions import db
-from database.models import ChatSession, Message , UserUsage
+from database.models import ChatSession, Message
 
 
 from database.models import ChatSession, Message , UserUsage

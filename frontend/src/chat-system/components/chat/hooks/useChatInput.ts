@@ -48,7 +48,6 @@ export  const   useChatInput = ({convId, setMessages, friendId}: ChatInputPorps)
         const   message: string = input.trim();
         if(message === '') {
             setMessageErrors({'error': 'message cannot be empty'});
-            console.log('message cannot be empty');
             setInput('');
             return ;
         }
@@ -60,7 +59,6 @@ export  const   useChatInput = ({convId, setMessages, friendId}: ChatInputPorps)
         if(message.length > MAX_LENGHT)
         {
             setMessageErrors({'error': `message too long (max: ${MAX_LENGHT} character)`});
-            console.log(`message too long (max: ${MAX_LENGHT} character)`);
             setInput('');
             return;
         }
@@ -78,9 +76,6 @@ export  const   useChatInput = ({convId, setMessages, friendId}: ChatInputPorps)
             tempId: messageToSend.tempId
         }]); // here render new message for the sender before sending http-req
         try {
-            if (!CHAT_API_BASE) {
-                console.error("VITE_CHAT_API is not defined in the environment!");
-            }
             const   response = await fetch(`${CHAT_API_BASE}/chat/conversations/${convId}/message`, {
                 method: 'POST',
                 credentials: 'include',
@@ -89,7 +84,6 @@ export  const   useChatInput = ({convId, setMessages, friendId}: ChatInputPorps)
                 },
                 body: JSON.stringify(messageToSend)
             });
-            console.log('error on send:', response);
             let result: any;
             try {
                 result = await response.json();
@@ -120,7 +114,6 @@ export  const   useChatInput = ({convId, setMessages, friendId}: ChatInputPorps)
             });
 
         } catch (err:any) {
-            console.error(err);
             setMessages(prev => prev.map(m => m.tempId === messageToSend.tempId ? {...m, status: 'error'} : m ));
         }
         setInput('');

@@ -108,7 +108,6 @@ export function Chat() {
       try {
         if (selectedConvId) {
           setMessages([]);
-          console.log('Loading History from conv Id');
           const result = await fetchClient<{ messages: MessageItem[], status: string }>(
             `/chat/conversations/${selectedConvId}/messages`,
             { signal: abortController.signal }
@@ -126,7 +125,6 @@ export function Chat() {
           }
         } else if (selectedFriendId) {
           setMessages([]);
-          console.log('Loading History from friend profile');
           const result = await fetchClient<MessagesWithConvId>(
             `/chat/friend/${selectedFriendId}/messages`,
             { signal: abortController.signal }
@@ -145,11 +143,11 @@ export function Chat() {
           }
         }
       } catch (err: any) {
-        if (err.name === 'AbortError') return;
+        if (err.name === 'AbortError')
+          return;
         setMessages([]);
         if (!selectedConvId)
           setSelectedFriendId(null);
-        console.error(err);
       } finally {
         setIsLoadingHistory(false);
       }

@@ -15,7 +15,6 @@ export class FriendController {
             if(!requesterId)
                 return res.status(401).json({message: "Aunothorized"});
             const   friendUsername: string = req.body.username;
-            console.log(`Username:${friendUsername}`);
             const result = await FriendService.addFriend({ requesterId, friendUsername });
 
             return res.status(201).json({
@@ -29,7 +28,6 @@ export class FriendController {
             let   errorMessage = 'Something went wrong'; 
             if(error instanceof AppError)
                 errorMessage = error.message;
-            console.error(errorMessage);
             return res.status(statusCode).json({
                 success: false,
                 message: errorMessage
@@ -55,7 +53,6 @@ export class FriendController {
             let   errorMessage = 'Something went wrong'; 
             if(error instanceof AppError)
                 errorMessage = error.message;
-            console.error(errorMessage);
             return res.status(statusCode || 500).json({
                 success: false,
                 message: errorMessage
@@ -130,7 +127,6 @@ export class FriendController {
             let   errorMessage = 'Something went wrong'; 
             if(error instanceof AppError)
                 errorMessage = error.message;
-            console.log(errorMessage);
             return res.status(statusCode || 500).json({
                 success: false,
                 message: errorMessage
@@ -153,7 +149,6 @@ export class FriendController {
             let   errorMessage = 'Something went wrong'; 
             if(error instanceof AppError)
                 errorMessage = error.message;
-            console.log("error", errorMessage);
             return res.status(500).json({
                 success: false,
                 message: errorMessage
@@ -189,7 +184,6 @@ export class FriendController {
             if(!userId)
                 return res.status(401).json({message: 'Aunothorized'});
             const result : PendingFriendType[] = await FriendService.getPendingFriend(userId);
-            console.log("Pending request:", result);
             return res.status(200).json({
                 success: true,
                 message: 'Pending request',
@@ -224,7 +218,6 @@ export class FriendController {
             let   errorMessage = 'Something went wrong'; 
             if(error instanceof AppError)
                 errorMessage = error.message;
-            console.error(errorMessage);
             return res.status(statusCode).json({
                 success: false,
                 message: errorMessage
