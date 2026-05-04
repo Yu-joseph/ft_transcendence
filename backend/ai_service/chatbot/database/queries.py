@@ -4,8 +4,6 @@ from database.models import ChatSession, Message
 
 
 
-
-
 def save_message(session_id: str, role: str, content: str, user_id: str = None):
     try:
         session = db.session.get(ChatSession, session_id)
@@ -22,9 +20,6 @@ def save_message(session_id: str, role: str, content: str, user_id: str = None):
     except Exception as e:
         db.session.rollback()
         print(f"[DB ERROR] save_message: {e}")
-
-
-
 
 
 
