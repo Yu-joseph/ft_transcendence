@@ -1,7 +1,7 @@
 from flask import Flask  , jsonify
 from flask_cors import CORS
 from config import AppConfig
-from extensions import db , migrate
+from extensions import db
 from api import chat_bp, session_bp
 
 
@@ -39,7 +39,6 @@ def create_app() -> Flask:
     CORS(app)
 
     db.init_app(app)
-    migrate.init_app(app, db)
 
 
     for bp in (chat_bp, session_bp ):
