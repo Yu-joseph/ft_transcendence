@@ -25,7 +25,7 @@ export function setupSocketHandlers(io: Server) {
   });
 
   io.on('connection', (socket: Socket) => {
-    console.log('User connected:', socket.id);
+    // console.log('User connected:', socket.id);
 
     const authedUserId = socket.data.userId as string | undefined;
     if (!authedUserId) {

@@ -41,7 +41,7 @@ export async function onTurnTimeout(io: Server, matchId: string, expectedPlayerI
   const autoMove = buildAutoMove(match, match.currentTurn);
   if (!autoMove) return;
 
-  console.log('Turn timeout in ' + matchId + ', auto move for ' + match.currentTurn);
+  // console.log('Turn timeout in ' + matchId + ', auto move for ' + match.currentTurn);
   await applyMove(io, match, match.currentTurn, autoMove.oldindex, autoMove.newindex);
 }
 
