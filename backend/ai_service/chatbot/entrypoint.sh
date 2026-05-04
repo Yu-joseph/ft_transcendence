@@ -2,10 +2,17 @@
 echo "waiting for database ..."
 sleep 3
 
+# Wait for vault-agent to write env files
+echo "Waiting for vault env files..."
+until [ -s "/vault/aii/file.env" ]; do
+    echo "vault env not ready, waiting..."
+    sleep 2
+done
+echo "Vault env ready ✅"
+
 if [ ! -f "migrations/env.py" ]; then
     flask db init
 fi
-
 
 python -c "
 from app import app
@@ -16,9 +23,7 @@ with app.app_context():
         conn.commit()
 " 2>/dev/null || true
 
-
 rm -f migrations/versions/*.py
-
 
 OUTPUT=$(flask db migrate -m "auto" 2>&1)
 echo "$OUTPUT"
