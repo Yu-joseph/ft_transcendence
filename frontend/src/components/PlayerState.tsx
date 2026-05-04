@@ -22,8 +22,6 @@ export default function PlayerState({ previewStats, id }: PlayerStateProps) {
   const [loading, setLoading] = useState(!previewStats);
   const [error, setError] = useState<string | null>(null);
   let isOwnProfile: boolean;
-  if (!id )
-    return;
   if (user?.id === id) {
     isOwnProfile = true;
   } else {
@@ -31,6 +29,8 @@ export default function PlayerState({ previewStats, id }: PlayerStateProps) {
   }
   
   useEffect(() => {
+    if (!id )
+      return;
     if (previewStats) {
       setStats(previewStats);
       setLoading(false);

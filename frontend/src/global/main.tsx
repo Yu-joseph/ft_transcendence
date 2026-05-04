@@ -23,7 +23,7 @@ import LandinPage from './LandinPage.tsx'
 import { GlobalChatListener } from '../chat-system/GlobalChatListener.tsx'
 
 createRoot(document.getElementById('root')!).render(
-  // <StrictMode>
+  <StrictMode>
     <BrowserRouter>
       <AuthProvider>
         <GlobalInviteListener />
@@ -53,5 +53,5 @@ createRoot(document.getElementById('root')!).render(
         </Routes>
       </AuthProvider>
     </BrowserRouter>
-  // </StrictMode>,
+   </StrictMode>,
 )

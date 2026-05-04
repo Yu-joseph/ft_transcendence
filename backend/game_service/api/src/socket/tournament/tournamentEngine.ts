@@ -16,6 +16,7 @@ export function emitTournamentUpdate(io: Server, tournament: Tournament) {
       creatorId: tournament.creatorId,
       status: tournament.status,
       currentRound: tournament.currentRound,
+      maxPlayers: tournament.maxPlayers,
       bracket: tournament.bracket,
       players: tournament.players,
       winner: tournament.winner,
