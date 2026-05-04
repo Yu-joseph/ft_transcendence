@@ -12,7 +12,5 @@ urlpatterns = [
     path('42/callback/',       views.forty_two_callback, name='42-callback'),
     path('update_avatar/',    views.update_avatar, name='update_avatar'),
     path('protected/', views.protected_view, name='protected_view'),
-    #youssseeeef chouf fya hani hna
-    # myaawww =>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     path('42/password/',       views.password_42, name='password_42'),
 ]
