@@ -74,8 +74,6 @@ services:
       - app-network
     env_file:
       - .env.local
-    environment:
-      DATABASE_URL: postgres://sayf:1234@db:5432/mydb
     depends_on:
       auth:
         condition: service_healthy
@@ -129,6 +127,7 @@ services:
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - pp_data:/var/lib/postgresql/data
+      - vault-ai:/vault/aii
     networks:
       - app-network
     healthcheck:
