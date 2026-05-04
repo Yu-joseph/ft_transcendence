@@ -9,6 +9,7 @@ import { useAuth } from "../auth/useAuth";
 type CellValue = "X" | "O" | null;
 
 const TURN_TIMEOUT_MS = 5000;
+const WIN_MODAL_DELAY_MS = 500;
 
 interface Player {
   id: string;
@@ -61,6 +62,7 @@ function Game() {
   const [showWinModal, setShowWinModal] = useState(false);
   const [turnRemainingMs, setTurnRemainingMs] = useState(TURN_TIMEOUT_MS);
   const turnEndsAtRef = useRef<number | null>(null);
+  const winModalTimerRef = useRef<number | null>(null);
 
   // Derive move count from the current board state
   const getMoveCount = (symbol: "X" | "O"): number => {
@@ -122,14 +124,26 @@ function Game() {
         setTurnRemainingMs(TURN_TIMEOUT_MS);
       }
 
+      if (winModalTimerRef.current !== null) {
+        window.clearTimeout(winModalTimerRef.current);
+        winModalTimerRef.current = null;
+      }
+
       if (match.winner) {
         const winnerPlayer = match.players.find((p) => p.id === match.winner);
         setWinner(winnerPlayer?.username ?? match.winner);
-        setShowWinModal(true);
+        // Delay the modal so the final winning move is visible on the board.
+        setShowWinModal(false);
+        winModalTimerRef.current = window.setTimeout(() => {
+          setShowWinModal(true);
+          winModalTimerRef.current = null;
+        }, WIN_MODAL_DELAY_MS);
       } else if (match.status === "finished") {
         setWinner("Draw");
+        setShowWinModal(false);
       } else {
         setWinner(null);
+        setShowWinModal(false);
       }
     };
 
@@ -161,6 +175,14 @@ function Game() {
       gameSocket.off("you-forfeited", handleYouForfeited);
     };
   }, [backTo, matchId, navigate]);
+
+  useEffect(() => {
+    return () => {
+      if (winModalTimerRef.current !== null) {
+        window.clearTimeout(winModalTimerRef.current);
+      }
+    };
+  }, []);
 
     useEffect(() => {
     if (!matchId) return;

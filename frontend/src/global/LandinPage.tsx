@@ -51,9 +51,9 @@ function LandinPage() {
 
   const developers = [
     { id: "dev-1", name: "Brahim", image: bouhammoImage },
-    { id: "dev-2", name: "ismail", image: ismailImage },
+    { id: "dev-2", name: "Ismail", image: ismailImage },
     { id: "dev-3", name: "Mouhamed", image: maitTajImage },
-    { id: "dev-4", name: "sayf aldin", image: sahamZaoImage },
+    { id: "dev-4", name: "Sayf-eddine", image: sahamZaoImage },
     { id: "dev-5", name: "Youssef", image: youssefiImage },
   ];
 
