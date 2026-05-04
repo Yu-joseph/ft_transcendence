@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // window.removeEventListener('focus', refreshAuthUser);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [user?.id]);
 
   // Sync logout across browser tabs via localStorage event.
   useEffect(() => {

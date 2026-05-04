@@ -15,15 +15,9 @@ function LandinPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
 
-  // useEffect(() => {
-
     if (user) {
       return <Navigate to="/Dashboard" replace />;
     }
-  // },[user])
-
-
-  console.log("wwwwwwwwwwwwwwwwwwwwwwwwww");
   const previewStats = {
     id: "preview-player",
     username: "ArenaPilot",

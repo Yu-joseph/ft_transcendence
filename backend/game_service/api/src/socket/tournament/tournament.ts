@@ -12,6 +12,15 @@ import {
 import { getOrCreatePlayer, getSocketUserId } from './tournamentPlayers';
 import { tournaments } from './tournamentStore';
 import { getUserRoom, isPlayerInActiveMatch } from '../onevone/lobbyPresence';
+//yssf
+const ALLOWED_TOURNAMENT_SIZES = new Set([4, 8, 16]);
+const DEFAULT_MAX_PLAYERS = 16;
+
+function resolveMaxPlayers(value: unknown): number | null {
+  const parsed = typeof value === 'string' ? Number(value) : value;
+  if (typeof parsed !== 'number' || !Number.isInteger(parsed)) return null;
+  return ALLOWED_TOURNAMENT_SIZES.has(parsed) ? parsed : null;
+}
 
 export { advanceTournamentBracket } from './tournamentEngine';
 
@@ -39,11 +48,15 @@ async function hydrateWaitingTournaments() {
         isReady: false,
       }));
 
+    const dbMaxPlayers = (t as { maxPlayers?: number }).maxPlayers;
+    const maxPlayers = resolveMaxPlayers(dbMaxPlayers) ?? DEFAULT_MAX_PLAYERS;
+
     tournaments.set(t.id, {
       id: t.id,
       name: t.name,
       creatorId: t.creatorId,
       players,
+      maxPlayers,
       bracket: [],
       status: 'waiting',
       currentRound: 1,
@@ -60,6 +73,12 @@ export function setupTournamentHandlers(io: Server) {
         const player = await getOrCreatePlayer(socket);
         if (!player) {
           socket.emit('tournament-error', { message: 'Unauthorized' });
+          return;
+        }
+
+        const maxPlayers = resolveMaxPlayers(data.maxPlayers);
+        if (!maxPlayers) {
+          socket.emit('tournament-error', { message: 'Invalid tournament size' });
           return;
         }
 
@@ -81,6 +100,7 @@ export function setupTournamentHandlers(io: Server) {
           name: name || `${player.username}'s Tournament`,
           creatorId: player.id,
           players: [player],
+          maxPlayers,
           bracket: [],
           status: 'waiting',
           currentRound: 1,
@@ -121,7 +141,7 @@ export function setupTournamentHandlers(io: Server) {
           name: tournament.name,
           creatorName: player.username,
           playerCount: 1,
-          maxPlayers: data.maxPlayers || 4,
+          maxPlayers,
         });
       },
     );
@@ -175,6 +195,11 @@ export function setupTournamentHandlers(io: Server) {
           return;
         }
 
+        if (tournament.players.length >= tournament.maxPlayers) {
+          socket.emit('tournament-error', { message: 'Tournament is full' });
+          return;
+        }
+
         tournament.players.push(hydratedPlayer);
 
         await prisma.tournamentParticipant.create({
@@ -193,6 +218,7 @@ export function setupTournamentHandlers(io: Server) {
           name: tournament.name,
           creatorName: tournament.players[0]?.username,
           playerCount: tournament.players.length,
+          maxPlayers: tournament.maxPlayers,
         });
       },
     );
@@ -432,6 +458,7 @@ export function setupTournamentHandlers(io: Server) {
         name: tournament.name,
         creatorName: tournament.players[0]?.username,
         playerCount: tournament.players.length,
+        maxPlayers: tournament.maxPlayers,
       });
 
       console.log(`${caller.username} left tournament \"${tournament.name}\"`);
@@ -454,6 +481,7 @@ export function setupTournamentHandlers(io: Server) {
             t.players[0]?.username ??
             'Unknown',
           playerCount: t.players.length,
+          maxPlayers: t.maxPlayers,
           status: t.status,
         }));
       socket.emit('tournaments-list', list);

@@ -41,7 +41,7 @@ export default function Dashboard() {
     return () => {
       gameSocket.off("tournament-created", onTournamentCreated);
     };
-  }, [navigate, user?.id]);
+  }, [navigate, user]);
 
   if (loading) {
     return (
