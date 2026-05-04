@@ -65,8 +65,8 @@ def login(request):
     access  = refresh.access_token
 
     response = JsonResponse({"message": "Login successful"})
-    response.set_cookie(key="access_token",  value=str(access),  max_age=settings.ACCESS_TOKEN_COOKIE_MAX_AGE,    httponly=True, secure=False, samesite="Lax", path="/")
-    response.set_cookie(key="refresh_token", value=str(refresh), max_age=settings.REFRESH_TOKEN_COOKIE_MAX_AGE, httponly=True, secure=False, samesite="Lax", path="/")
+    response.set_cookie(key="access_token",  value=str(access),  max_age=settings.ACCESS_TOKEN_COOKIE_MAX_AGE,    httponly=True, secure=True, samesite="Lax", path="/")
+    response.set_cookie(key="refresh_token", value=str(refresh), max_age=settings.REFRESH_TOKEN_COOKIE_MAX_AGE, httponly=True, secure=True, samesite="Lax", path="/")
     return response
 
 
@@ -304,13 +304,13 @@ def protected_view(request):
     token = request.COOKIES.get("access_token")
 
     if not token:
-        return JsonResponse({"error": "Authentication required"}, status=401)
+        return JsonResponse({"message": "Authentication required"})
 
     try:
         access  = AccessToken(token)
         user_id = access["user_id"]
     except TokenError:
-        return JsonResponse({"error": "Invalid token"}, status=401)
+        return JsonResponse({"message": "Invalid token"})
 
     return JsonResponse({"message": "Authorized", "user_id": user_id})
 

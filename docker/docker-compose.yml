@@ -48,9 +48,9 @@ services:
     env_file:
       - .env.local
     build: ../frontend
-    volumes:
-      - ../frontend:/app/
-      - /app/node_modules 
+    # volumes:
+    #   - ../frontend:/app/
+    #   - /app/node_modules 
 
   nginx:
     build : ./nginx
@@ -75,9 +75,10 @@ services:
     restart: unless-stopped
     networks:
       - app-network
+    env_file:
+      - .env.local
     environment:
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
-      SECRET_KEY: ${DJANGO_SECRET_KEY}
     depends_on:
       auth:
         condition: service_healthy
@@ -120,11 +121,6 @@ services:
     volumes:
       - vault-secrets:/vault/secrets
       - vault-chat:/vault/chat
-      - ../backend/chat/backend:/app
-      - /app/node_modules 
-    environment:
-      SECRET_KEY: ${DJANGO_SECRET_KEY}
-      DATABASE_URL: postgres://sayf:1234@db:5432/mydb
     networks:
       - app-network
 

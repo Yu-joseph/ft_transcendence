@@ -12,3 +12,10 @@ export const gameSocket: Socket = io("/", {
   path: "/game-socket",
 });
 
+export function ensureSocketConnected(socket: Socket) {
+  const engineState = (socket.io.engine as any)?.readyState; // "opening" | "open" | ...
+  if (socket.connected) return;
+  if (engineState === "opening" || engineState === "open") return;
+  socket.connect();
+}
+

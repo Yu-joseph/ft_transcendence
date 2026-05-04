@@ -41,7 +41,7 @@ export default function TournamentList() {
   useEffect(() => {
     const fetchMyTournaments = async () => {
       try {
-        const response = await fetch("ai_game/api/me/tournaments", {
+        const response = await fetch("/game-api/api/me/tournaments", {
           credentials: "include",
         });
         if (!response.ok)

@@ -32,7 +32,7 @@ export default function MyTournamentsTable() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch("/ai_game/api/me/tournaments", {
+        const response = await fetch("/game-api/api/me/tournaments", {
           credentials: "include",
         });
 
