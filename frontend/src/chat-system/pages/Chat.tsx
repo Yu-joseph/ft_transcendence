@@ -125,7 +125,6 @@ export function Chat() {
           }
         } else if (selectedFriendId) {
           setMessages([]);
-          console.log('Loading History from friend profile');
           const result = await fetchClient<MessagesWithConvId>(
             `/chat/friend/${selectedFriendId}/messages`,
             { signal: abortController.signal }

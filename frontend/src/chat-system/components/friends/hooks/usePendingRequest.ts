@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { fetchClient } from "../../../utils/fetchClient";
-// import { chatSocket } from "../../../../socket/sock";
 import { useRefresh } from "../../shared/useRefresh";
 import { withMediaPrefix } from "../../shared/sharedUtils";
+import { getErrorMessage } from "../../../utils/error";
 
 
 type RequestType = 'incoming' | 'outgoing';
@@ -21,13 +21,15 @@ interface PendingFriendType {
 export  function    usePendingRequest() {
     const   [pendingFriend, setPendingFriend] = useState<PendingFriendType[]>([]);
     const   [loading, setLoading] = useState(false);
-    const   [error, setError] = useState(null);
     const   refresh = useRefresh();
+    const [error, setError] = useState<string | null>(null); // page load
+    const [actionError, setActionError] = useState<string | null>(null); // accept/reject/cancel
 
     useEffect(() => {
         const   getPendingRequests = async () => {
             try {
                 setError(null);
+                setActionError(null);
                 setLoading(true);
                 const   result: PendingFriendType[] = await fetchClient('/friend/pending', {});
                 if(result) {
@@ -36,9 +38,9 @@ export  function    usePendingRequest() {
                     });
                     setPendingFriend(result);
                 }
-            } catch (error: any) {
-                setError(error);
-                console.log('error herer:', error);
+            } catch (err: unknown) {
+                setPendingFriend([]);
+                setError(getErrorMessage(err, "Could not load pending requests."));
             } finally {
                 setLoading(false);
             }
@@ -48,30 +50,32 @@ export  function    usePendingRequest() {
 
     /**_______ Cancel Friend Logic */
     const   handleCancel = async (reqId: number) => {
-        console.log("That is the cancled request:", reqId);
         try {
-            const   result = await fetchClient(`/friend/${reqId}/cancel`, { method: 'DELETE' });
+            setActionError(null);
+            await fetchClient(`/friend/${reqId}/cancel`, { method: 'DELETE' });
             setPendingFriend(prev => prev.filter(fr => fr.friendRequestId !== reqId));
-        } catch (error: any) {
-            console.log(error);
+        } catch (err: unknown) {
+            setActionError(getErrorMessage(err, "Could not cancel request."));
         }
     }
     /**_______ Accept Friend Logic */
     const   handleAccept = async (frReqId: number) => {
         try {
-            const   result = await fetchClient(`/friend/${frReqId}/accept`, { method: 'PUT' });
+            setActionError(null);
+            await fetchClient(`/friend/${frReqId}/accept`, { method: 'PUT' });
             setPendingFriend(prev => prev.filter(fr => fr.friendRequestId !== frReqId));
-        } catch (error : any) {
-            console.log(error);
+        } catch (err: unknown) {
+            setActionError(getErrorMessage(err, "Could not accept request."));
         }
     }
     /**_______ Reject Friend Logic */
     const   handleReject = async (frReqId: number) => {
         try {
-            const   result = await fetchClient(`/friend/${frReqId}/reject`, { method: 'PUT' });
+            setActionError(null);
+            await fetchClient(`/friend/${frReqId}/reject`, { method: 'PUT' });
             setPendingFriend(prev => prev.filter(fr => fr.friendRequestId !== frReqId));
-        } catch (error : any) {
-            console.log(error);
+        } catch (err: unknown) {
+            setActionError(getErrorMessage(err, "Could not reject request."));
         }
     }
     /**________________________ */
@@ -81,6 +85,8 @@ export  function    usePendingRequest() {
         handleReject,
         pendingFriend,
         loading,
-        error
+        error,
+        actionError,
+        clearActionError: () => setActionError(null),
     };
 }

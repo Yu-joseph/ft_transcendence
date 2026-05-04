@@ -69,7 +69,6 @@ export function ProfileHeader({ isOwnProfile, userInfo, setUserInfo }: ProfileHe
                         </div>
                         {/* Status Indicator (hidden on own profile) */}
                         {!isOwnProfile && (
-                            // console.log('User Status : --->:', userInfo?.user_status);
                             <div className={`absolute bottom-2 right-2 h-6 w-6 rounded-full border-4 border-slate-900 shadow-xl
                                 ${userInfo?.user_status === 'Online' ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-slate-500 shadow-slate-500/50'}`}>
                                 <div className={`absolute inset-0 rounded-full animate-ping opacity-20 ${userInfo?.user_status === 'Online' ? 'bg-emerald-400' : 'bg-slate-400'}`}></div>

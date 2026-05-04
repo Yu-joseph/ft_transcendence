@@ -9,7 +9,7 @@ export  function useAddFriend() {
     const   [state, setState] = useState<{status: status, message: string} | null>(null);
 
     /**____ Send Friend Request ______ */
-    const   handleSubmit = async (e: any) => {
+    const   handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setState(null);
         const username = input.trim();
@@ -21,7 +21,6 @@ export  function useAddFriend() {
             setState({status: 'error', message: 'Invalid username.'});
             return;
         }
-        console.log("Username is:", username);
         try {
             setLoading(true);
             setState(null);
@@ -29,11 +28,15 @@ export  function useAddFriend() {
                 method: 'POST',
                 body: JSON.stringify({username: username})
             };
-            const   result = await fetchClient('/friend/request', option);
+            await fetchClient('/friend/request', option);
             setInput('');
             setState({status: 'success', message: 'Friend request sent'});
-        } catch (error: any) {
-            setState({status: 'error', message: error?.message ?? 'Failed to send request'});
+        } catch (error: unknown) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Failed to send request";
+            setState({status: 'error', message});
         } finally {
             setLoading(false); 
         }

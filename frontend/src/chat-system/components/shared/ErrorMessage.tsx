@@ -1,6 +1,4 @@
-
 export type TypeOfError = 'conversations'| 'messages' | 'friends' | 'pending requests' | 'rejected requests' | 'profile information'; 
-
 
 export const ErrorMessage = ({message, typeOfError}: {message: string|null, typeOfError: TypeOfError}) => {
     return (

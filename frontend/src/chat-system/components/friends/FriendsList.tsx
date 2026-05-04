@@ -1,4 +1,4 @@
-import { MessageCircle, UserX, Users } from "lucide-react";
+import { MessageCircle, UserX, Users, X } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { useFriendList } from "./hooks/useFriendList";
 import { ErrorMessage, type TypeOfError } from "../shared/ErrorMessage";
@@ -13,7 +13,9 @@ export function FriendsList() {
         activeTab,
         fiteredFriend,
         loading,
-        error
+        error,
+        actionError,
+        clearActionError,
     } = useFriendList();
 
     /**_________ Component-Style ___________ */
@@ -58,6 +60,19 @@ export function FriendsList() {
                 </div>
             </div>
 
+            {actionError && (
+                <div className="mt-4 bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+                    <span className="text-sm font-medium">{actionError}</span>
+                    <button
+                        onClick={clearActionError}
+                        className="text-rose-200 hover:text-white transition-colors"
+                        aria-label="Dismiss error"
+                    >
+                        <X size={16} />
+                    </button>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 overflow-y-auto w-full">
                 {
                     loading && (
@@ -87,7 +102,9 @@ export function FriendsList() {
                             <ErrorMessage message={error ?? null} typeOfError={type} />
                     )
                 }
-                {!loading && !error && fiteredFriend.map((fr) => {
+                {!loading && 
+                    !error && 
+                    fiteredFriend.map((fr) => {
                     return (
                         <div
                             key={fr.id}

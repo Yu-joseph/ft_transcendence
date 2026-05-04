@@ -63,23 +63,27 @@ export  function    useEditeProfileModale(initialData: UserProfileInfo, isOpen: 
             return;
         }
         if(!file?.type.startsWith('image/')) {
-            console.log('Invalid Image');
-            setErrors({...errors, avatar: 'Invalid Image type.'}); // *****
+            setErrors((prev) => ({ ...(prev || {}), avatar: "Invalid image type." })); // *****
             setAvatar(null);
             return;
         }
-        if (file) {
-            const url = URL.createObjectURL(file);
-            setPreviewUrl(url);
-            setAvatar(file);
-        }
+        // Clear old avatar error when a valid image is selected
+        setErrors((prev) => {
+            if (!prev) return prev;
+            const next = { ...prev };
+            delete next.avatar;
+            return next;
+        });
+        
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+        setAvatar(file);
     };
 
     const uploadAvatar = async (file: File) => {
         if(!file)
             return ;
         const fd = new FormData();
-        console.log('before append:', fd);
         fd.append('avatar', file);
         /** ________________ upload avatr _____________________ */
         const res = await fetch('/authent/update_avatar/', {
