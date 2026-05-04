@@ -141,7 +141,7 @@ export default function UserMatchHistory({ limit = 8, id }: UserMatchHistoryProp
     <section className="w-full bg-slate-800 border border-black rounded-xl shadow-lg overflow-hidden h-fit hover:border-amber-500 hover:scale-102 transition-all duration-300">
       <div className="px-6 py-4 border-b border-black">
         <h3 className="text-xl font-semibold text-amber-500">Match History</h3>
-        <p className="text-sm text-gray-400">Your most recent games</p>
+        <p className="text-sm text-gray-400">most recent games</p>
       </div>
 
       {loading ? (

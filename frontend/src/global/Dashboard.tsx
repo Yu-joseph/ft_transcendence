@@ -28,6 +28,7 @@ export default function Dashboard() {
         //create a callback function and stores it in variable
     const onTournamentCreated = (data: { tournamentId: string; tournament: { name: string; creatorId: string } }) => {
       if (user) {
+
         sessionStorage.setItem('activeTournament', JSON.stringify({
           tournamentId: data.tournamentId,
           // userId: user.id,
