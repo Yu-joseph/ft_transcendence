@@ -1,6 +1,10 @@
-from datetime import datetime
+from datetime import datetime , timedelta
+from datetime import datetime , timedelta
 from extensions import db
 from database.models import ChatSession, Message
+
+
+from database.models import ChatSession, Message , UserUsage
 
 
 
@@ -13,7 +17,8 @@ def save_message(session_id: str, role: str, content: str, user_id: str = None):
         if not session:
             print(f"[DB ERROR] save_message: session {session_id} not found")
             return
-     
+            print(f"[DB ERROR] save_message: session {session_id} not found")
+            return
 
         db.session.add(Message(session_id=session_id, role=role, content=content))
         session.message_count = (session.message_count or 0) + 1

@@ -5,13 +5,11 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   server: {
     host: '0.0.0.0',
+    allowedHosts: ['tictac', 'localhost'],
     hmr: {
       clientPort: 8443,
     },
   },
-  // Allow running `npm run dev` from `frontend/` while keeping env in repo root.
   envDir: '..',
   plugins: [react(), tailwindcss()],
 })
-
-

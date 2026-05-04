@@ -14,6 +14,7 @@ from .auth_utils import get_user_from_request
 from .permissions import role_required
 import uuid
 import requests
+import os
 from .models import User
 import json
 
@@ -117,7 +118,12 @@ def register(request):
 
     if not all(part.isalpha() for part in fullname.split()):
         return JsonResponse({"error": "Invalid name"}, status=400)
-
+    if len(username) > 25:
+         return JsonResponse({"error": "Invalid username"}, status=400)
+    if len(email) > 42:
+        return JsonResponse({"error": "Invalid email"}, status=400)
+    if len(fullname) > 25:
+        return JsonResponse({"error": "Invalid fullname"}, status=400)
     User.objects.create(
         id=str(uuid.uuid4()),
         username=username,
@@ -433,7 +439,15 @@ def update_avatar(request):
             return JsonResponse({"error": "avatar file is required"}, status=400)
 
         tmp_user = get_user_from_request(request)
-
+        i = 0
+        strgg = "https"
+        av_name = tmp_user.avatar.name
+        while i < 5 and i < len(av_name):
+            if strgg[i] != av_name[i]:
+                break
+            i += 1
+        if tmp_user.avatar.name != "images/pipi.jpg" and i != 5:
+            os.remove("/app/media/" + av_name) 
         tmp_user.avatar = avatar_file  
         tmp_user.save()
 

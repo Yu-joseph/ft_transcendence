@@ -19,7 +19,7 @@ export default function PrivacyPolicy() {
             onClick={() => navigate("/Dashboard")}
             className="inline-flex items-center justify-center rounded-xl border border-amber-400/40 bg-slate-900 px-4 py-2 text-sm font-semibold text-amber-300 transition hover:border-amber-400 hover:text-amber-200"
           >
-            Back to Dashboard
+            Back
           </button>
         </div>
       </header>

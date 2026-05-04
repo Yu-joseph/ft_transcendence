@@ -8,12 +8,16 @@ import ismailImage from "../Devolopers/eismail_red.jpg";
 import maitTajImage from "../Devolopers/mait-taj.jpg";
 import sahamZaoImage from "../Devolopers/sahamzao.jpg";
 import youssefiImage from "../Devolopers/ysouhail.jpg";
+// import { useEffect } from "react";
 
 
 function LandinPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
 
+    if (user) {
+      return <Navigate to="/Dashboard" replace />;
+    }
   const previewStats = {
     id: "preview-player",
     username: "ArenaPilot",
@@ -47,9 +51,9 @@ function LandinPage() {
 
   const developers = [
     { id: "dev-1", name: "Brahim", image: bouhammoImage },
-    { id: "dev-2", name: "ismail", image: ismailImage },
+    { id: "dev-2", name: "Ismail", image: ismailImage },
     { id: "dev-3", name: "Mouhamed", image: maitTajImage },
-    { id: "dev-4", name: "sayf aldin", image: sahamZaoImage },
+    { id: "dev-4", name: "Sayf-eddine", image: sahamZaoImage },
     { id: "dev-5", name: "Youssef", image: youssefiImage },
   ];
 
@@ -62,9 +66,6 @@ function LandinPage() {
     );
   }
 
-  if (user) {
-    return <Navigate to="/Dashboard" replace />;
-  }
 
   return (
     <div className="landing-root min-h-screen bg-slate-900 text-white">

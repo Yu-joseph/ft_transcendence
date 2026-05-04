@@ -8,8 +8,10 @@ class ChatBot:
         self.llm    = self.config.llm
         self.history = [self.config.system_message]
         self.error = False
+        self.error = False
 
     def ask_stream(self, message: str):
+        self.error  = False
         self.error  = False
         try:
             self.history.append(HumanMessage(content=message))

@@ -22,7 +22,7 @@ function Bar() {
         return;
       const newAvatar = detail.avatarUrl;
       setAvatar(newAvatar || '');
-      if (user) {
+      if (user?.id) {
         setUser({ ...user, avatar: newAvatar });
       }
     }

@@ -12,6 +12,7 @@ export async function    fetchClient<T>(endpoint: string, option: RequestInit = 
     });
 
     let   data: any;
+    
     try {
         data = await response.json();
     } catch {

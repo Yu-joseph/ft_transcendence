@@ -1,8 +1,15 @@
 import { PrismaClient } from '@prisma/client';
-import dotenv from 'dotenv';
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
 
-dotenv.config({ path: '/vault/secrets/database.env' });
+const pool = new pg.Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+
+export const prisma = new PrismaClient({
+    adapter,
+    log: ["error", "query", "warn", "info"]
+});
 
 export default prisma;

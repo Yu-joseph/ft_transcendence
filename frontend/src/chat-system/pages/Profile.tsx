@@ -26,7 +26,7 @@ export function Profile() {
     const [userInfo, setUserInfo] = useState<UserProfileInfo | null>(null);
     const { user } = useAuth();
     const params = useParams<string>();
-    const userId = params.id as string | null;
+    const userId = params.id as string ;
     const [loadHeaderInfo, setLoadHeaderInfo] = useState<boolean>(false);// this for load header info in 'ProfileHeader' component
     const [errHeaderInfo, setErrHeaderInfo] = useState<string|null>(null);// this for load header info in 'ProfileHeader' component
 
@@ -40,7 +40,7 @@ export function Profile() {
                 setUserInfo(prev => prev ? { ...prev, user_status: data.status } : prev);
             }
         };
-
+        
         chatSocket.on('status:update', onStatusUpdate);
         return () => { chatSocket.off('status:update', onStatusUpdate); };
     }, [userInfo?.id, setUserInfo]);

@@ -7,7 +7,11 @@ python-dotenv
 langchain-core
 langchain-openai
 langchain-groq
+# langchain-google-genai
+# huggingface_hub
 Pillow
 PyJWT
 gunicorn
+flask-limiter
 redis
+Flask-Migrate
