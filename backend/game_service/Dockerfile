@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:20
 
 WORKDIR /app
 
@@ -6,5 +6,6 @@ COPY api/package*.json ./
 RUN npm install
 
 COPY api/ .
+RUN chmod +x /app/pulling.sh
 
-CMD ["sh", "-c", "npx prisma db pull && npx prisma generate && npm run dev"]
+ENTRYPOINT ["sh", "/app/pulling.sh"]

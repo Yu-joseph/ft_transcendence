@@ -5,6 +5,8 @@ from flask import request
 
 
 
+
+
 def get_user_id():
     token = request.cookies.get('access_token')
     if not token:
@@ -15,6 +17,10 @@ def get_user_id():
     except Exception as e:
         print(f"[JWT] Failed to decode token: {e}")
         return None
+    
+
+
+
     
 
 

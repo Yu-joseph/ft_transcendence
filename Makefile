@@ -23,7 +23,9 @@ rm_vol:
 	@docker volume ls -q | xargs -r docker volume rm
 
 fclean :
+	cd docker && docker compose down -v
 	rm -rf docker/vault/data/*
 	rm -rf docker/vault/userconfig/tls/*
 	rm -rf docker/vault/userconfig/*.json
 	rm -rf backend/auth/myauth/authentication/migrations/0*.py
+re : fclean rm_vol  build
