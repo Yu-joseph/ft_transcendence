@@ -21,11 +21,11 @@ export  const   useChatInput = ({convId, setMessages, friendId}: ChatInputPorps)
 
     const   MAX_LENGHT = 500;
 
+    const   {user} = useAuth();
     const   [messageErrors, setMessageErrors] = useState<Record<string, string> | null>(null);
     const   [input, setInput] = useState<string>('');
     const   [isTyping, setIsTyping] = useState<boolean>(false);
     const   typingTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-    const   {user} = useAuth();
 
 
     const   handleSendMessage = async (event: React.SyntheticEvent) => {
