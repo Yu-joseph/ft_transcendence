@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+resources
 
 # Editor directories and files
 .vscode/*
@@ -26,4 +27,5 @@ dist-ssr
 
 docker/vault/data/
 docker/vault/userconfig/*.json
-docker/vault/userconfig/tls/    
+docker/vault/userconfig/tls/   
+*.md

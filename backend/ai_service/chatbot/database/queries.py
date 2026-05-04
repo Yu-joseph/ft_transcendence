@@ -1,5 +1,9 @@
 from datetime import datetime , timedelta
+from datetime import datetime , timedelta
 from extensions import db
+from database.models import ChatSession, Message , UserUsage
+
+
 from database.models import ChatSession, Message , UserUsage
 
 
@@ -11,6 +15,8 @@ def save_message(session_id: str, role: str, content: str, user_id: str = None):
         session = db.session.get(ChatSession, session_id)
 
         if not session:
+            print(f"[DB ERROR] save_message: session {session_id} not found")
+            return
             print(f"[DB ERROR] save_message: session {session_id} not found")
             return
 

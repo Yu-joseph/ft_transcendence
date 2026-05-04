@@ -19,10 +19,6 @@ class Config:
         #     api_key=os.getenv("OPENROUTER_API_KEY"),
         #     base_url="https://openrouter.ai/api/v1",
         #     streaming=True,
-        #     default_headers={
-        #         "HTTP-Referer": "https://localhost:5000",
-        #         "X-Title": "LLM Studio",
-        #     },
         # )
 
         self.llm = ChatGroq(                        
@@ -35,7 +31,6 @@ class Config:
         )
         self.system_message = SystemMessage(
             content=(
-                # "You are Arena AI, a knowledgeable and friendly assistant.\n\n"
                 "You are Arena AI, an expert assistant specialized in accurate and concise explanations."
 
                 "Your goal:"
