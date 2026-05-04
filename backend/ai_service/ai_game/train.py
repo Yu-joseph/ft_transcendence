@@ -6,7 +6,7 @@ from utils import check_winner, get_state, get_available_actions, action_to_key
 
 LEARNING_RATE = 0.1
 GAMMA = 0.95
-TRAINING_GAMES = 500000
+TRAINING_GAMES = 1000000
 EPSILON_START = 0.8
 EPSILON_END = 0.01
 EPSILON_DECAY = (EPSILON_START - EPSILON_END) / TRAINING_GAMES
@@ -195,10 +195,6 @@ def play_training_game():
             player = 'X'
     
     epsilon = max(EPSILON_END, epsilon - EPSILON_DECAY)
-
-
-
-                    
 
 
 
