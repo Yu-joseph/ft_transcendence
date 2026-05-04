@@ -69,8 +69,9 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
             };
             const result = await fetchClient('/friend/request', option);
             setUserInfo(prev => prev ? ({ ...prev, isFriend: 'pending' }) : null)
-        } catch (err) {
-            console.log('error is:', err);
+        } catch (err: any) {
+            setServerError(err.message || 'Failed to add friend'); 
+            // console.log('error is:', err);
         }
     }
 /**_______________________________________________________________________ */
@@ -80,12 +81,12 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
             return;
         try {
             const result = await fetchClient(`/friend/${friendId}`, { method: 'DELETE' });
-            setUserInfo(prev => prev ? ({ ...prev, isFriend: 'not' }) : null)
-            console.log('Friend Ship removed');
-            console.log(result);
+            if(result)
+                setUserInfo(prev => prev ? ({ ...prev, isFriend: 'not' }) : null);
 
-        } catch (error) {
-            console.log(error);
+        } catch (error: any) {
+            setServerError(error.message || 'Failed to remove friend');
+            // console.log(error);
         }
     }
 /**_____________________________________________________________________________ */
@@ -96,17 +97,16 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
         if (!userId || !user?.id)
             return;
         try {
-            console.log('Starting conversation from profile');
             setGoToChat(null);
             const result = await fetchClient('/chat/conversations', {
                 method: 'POST',
                 body: JSON.stringify({ friendId: userId })
             });
-            console.log("Result of start Conversation:", result);
-            console.log('Starting conversation from profile is Done');
-            setGoToChat(userId);
-        } catch (error) {
-            console.log('errr:', error);
+            if(result)
+                setGoToChat(userId);
+        } catch (error: any) {
+            setServerError(error.message || 'Failed to start conversation');
+            // console.log('errr:', error);
         }
     }
 /**_________________________________________________________________________________ */
@@ -159,7 +159,6 @@ export function useProfileHeader({user, setUserInfo, userInfo } : UseUserProfile
             } else {
                 setServerError(error.message || 'Failed to save profile');
             }
-            console.error("Failed to save profile:", error);
         } finally {
             setIsSaving(false); //reenable button
         }

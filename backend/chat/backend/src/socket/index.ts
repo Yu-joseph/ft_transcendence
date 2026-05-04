@@ -6,6 +6,7 @@ import prisma from '../lib/prisma.js';
 import z from 'zod';
 import { FriendService } from '../modules/friend/friend.service.js';
 import { JwtPayload } from '../middlewares/auth.middleware.js';
+import { corsOrigins } from '../app.js';
 
 let io: Server;
 
@@ -40,21 +41,16 @@ const   isUserInConversation = async (convId: string, userId: string) => {
 /**************** */
 
 export const initSocket = (server: HTTPServer) => {
+
     io = new Server(server, {
         cors: {
-                origin: [
-    "http://localhost:8080",
-    "http://localhost:5173",
-    "http://localhost:5173",
-    "https://localhost:8443",
-    "https://10.30.234.188:8443",
-    "https://10.30.242.27:8443"
-
-  ],
-  
-            credentials: true
+                origin: corsOrigins,
+                credentials: true,
+                optionsSuccessStatus: 200
         }
     })
+    console.log("[🔌] Socket.IO engine initialized on HTTP server...");
+
     io.use(socketAuthenticate);
     io.on('connection', async (socket: any) => {
         const   authentUser = (socket as any).user as JwtPayload;
@@ -68,12 +64,11 @@ export const initSocket = (server: HTTPServer) => {
             // Notify friends that this user is now Online
             const friends = await FriendService.getFriendIds(authentUser.user_id);
             friends.forEach(fId => io.to(fId).emit('status:update', { userId: authentUser.user_id, status: 'Online' }));
-        } catch (e) {
+        } catch (e: any) {
             console.error('Failed to update status to Online:', e);
         }
         /*************************************************** */
         socket.join(authentUser.user_id); // for conversation Update and notification , so i emit the event for the sender and receiver
-        console.log('I join my Private Room:', authentUser.user_id);
 
         /**
          * ****  join chat handler ****
@@ -90,7 +85,6 @@ export const initSocket = (server: HTTPServer) => {
             if(await isUserInConversation(convId, userId)) {
                 socket.join(room_id);
                 userConversationCache.add(convId); // i cach it here
-                console.log(`User ${userId} authorized and joined room ${room_id}`);
             }
         }
         /**
@@ -112,7 +106,6 @@ export const initSocket = (server: HTTPServer) => {
         const   onTypingStart = async (data: unknown) => {
             const   validatedData = typingSchema.safeParse(data);
             if(!validatedData.success || validatedData.data.userId !== authentUser.user_id) {
-                console.log(validatedData.error?.issues);
                 emitError(socket, 'Invalid request data');
                 return ;
             }
@@ -153,23 +146,26 @@ export const initSocket = (server: HTTPServer) => {
         socket.on('disconnect', async () => {
         /** Update status to Offline when user disconnect */
             try {
-                await prisma.user.update({
-                    where: { id: authentUser.user_id },
-                    data: { user_status: 'Offline' }
-                });
-                // Notify friends that this user is now Offline
-                const friends = await FriendService.getFriendIds(authentUser.user_id);
-                friends.forEach(fId => {
-                    io.to(fId).emit('status:update', 
-                        { 
-                            userId: authentUser.user_id, 
-                            status: 'Offline'
-                        })
-                });
+                //i check first if that user loged in multipl tabs or device, if yes i don't set to Offline
+                const   connectedSockets = await io.in(authentUser.user_id).fetchSockets();
+                if(connectedSockets.length === 0) {
+                    await prisma.user.update({
+                        where: { id: authentUser.user_id },
+                        data: { user_status: 'Offline' }
+                    });
+                    // Notify friends that this user is now Offline
+                    const friends = await FriendService.getFriendIds(authentUser.user_id);
+                    friends.forEach(fId => {
+                        io.to(fId).emit('status:update', 
+                            { 
+                                userId: authentUser.user_id, 
+                                status: 'Offline'
+                            })
+                    });
+                }
             } catch (e) {
                 console.error('Failed to update status to Offline:', e);
             }
-            console.log(`User Disconnected, socketId: ${socket.id}`);
             userConversationCache.clear();
         })
         /**************************************************************************************** */

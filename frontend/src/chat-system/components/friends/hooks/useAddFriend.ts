@@ -33,7 +33,6 @@ export  function useAddFriend() {
             setInput('');
             setState({status: 'success', message: 'Friend request sent'});
         } catch (error: any) {
-            console.log('error is:', error);
             setState({status: 'error', message: error?.message ?? 'Failed to send request'});
         } finally {
             setLoading(false); 

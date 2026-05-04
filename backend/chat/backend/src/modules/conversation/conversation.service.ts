@@ -43,7 +43,6 @@ export  class   ConversationService {
             lastMessage: conv.Message?.[0] ? { ...conv.Message[0], id: conv.Message[0].id.toString() } : null,
             updated_at: conv.updated_at
         }));
-        console.log('Conversation list:', result);
         return result;
     }
     /**

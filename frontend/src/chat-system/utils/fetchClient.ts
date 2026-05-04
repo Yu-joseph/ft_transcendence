@@ -1,7 +1,6 @@
 const   BASE_URL = `/api`;
 
 export async function    fetchClient<T>(endpoint: string, option: RequestInit = {}) : Promise<T> {
-    console.log('VITE CAHT API:', `${BASE_URL}${endpoint}`);
     const   headers = {
         'Content-Type': 'application/json',
         ...(option.headers as Record<string, string> || {})
