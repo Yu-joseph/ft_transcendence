@@ -75,15 +75,32 @@ class Config:
     def handle_error(e: Exception) -> str:
         logging.error(f"LLM Error: {e}")
         msg = str(e).lower()
-        if "timed out" in msg:
-            return "The AI is taking too long to respond. Please try again."
-        elif "rate limit" in msg:
+
+        if "tokens per day" in msg or "tpd" in msg:
+            return "Daily token limit reached. Please wait a few minutes or reduce usage."
+
+        elif "rate_limit_exceeded" in msg or "rate limit" in msg:
             return "Too many requests. Please wait a moment and try again."
-        elif "quota" in msg or "exhausted" in msg:
+
+        elif "try again in" in msg:
+            return "Rate limit reached. Please wait before retrying."
+
+        elif "timed out" in msg:
+            return "The AI is taking too long to respond. Please try again."
+
+        elif "quota" in msg or "exhausted" in msg or "insufficient" in msg:
             return "API quota exceeded. Please try again later."
-        elif "402" in msg  or "credits" in msg:
+
+        elif "402" in msg or "credits" in msg:
             return "AI service is out of credits. Please try later."
-        return f"Error: {e}"
+
+        elif "model_overloaded" in msg:
+            return "Model is busy right now. Please retry shortly."
+
+        elif "internal_error" in msg:
+            return "Server error. Please try again."
+
+        return f"Unexpected error: {e}"
     
 
 

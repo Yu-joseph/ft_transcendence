@@ -15,7 +15,7 @@ class User(models.Model):
     password   = models.CharField(max_length=255, blank=False, null=False)
     created_at = models.DateTimeField(auto_now_add=True)   
     updated_at = models.DateTimeField(auto_now=True)   
-    avatar     = models.ImageField(upload_to='images/', blank=True,null=True , default='/authent/media/images/pipi.jpg')
+    avatar     = models.ImageField(upload_to='images/', blank=True,null=True , default='images/pipi.jpg')
     user_status     = models.CharField(max_length=50, default="Offline")    
     status     = models.CharField(max_length=50, default="Online")
     user_status     = models.CharField(max_length=50, default="Offline")
