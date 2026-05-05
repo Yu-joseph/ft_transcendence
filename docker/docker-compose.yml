@@ -24,6 +24,7 @@ services:
     networks:
       - app-network
     volumes:
+      - media_volume:/app/media
       - ../backend/auth/myauth:/app
       - vault-secrets:/vault/secrets
     env_file:
@@ -57,6 +58,8 @@ services:
       - "8443:443"
     networks:
       - app-network
+    volumes:
+      - media_volume:/app/media 
     restart: always
     depends_on:
       frontend:
@@ -293,3 +296,4 @@ volumes:
   vault-ai:
   vault-chat:
   vault-game:
+  media_volume:
