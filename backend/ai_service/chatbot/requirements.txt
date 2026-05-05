@@ -11,3 +11,4 @@ Pillow
 PyJWT
 gunicorn
 redis
+gevent
