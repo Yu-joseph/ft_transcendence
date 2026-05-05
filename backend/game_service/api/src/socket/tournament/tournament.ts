@@ -270,7 +270,7 @@ export function setupTournamentHandlers(io: Server) {
         console.error('Failed to update tournament status:', err);
       }
 
-      console.log(`Tournament \"${tournament.name}\" started with ${tournament.players.length} players`);
+      // console.log(`Tournament \"${tournament.name}\" started with ${tournament.players.length} players`);
       markReadyMatches(io, tournament);
     });
 
@@ -323,9 +323,9 @@ export function setupTournamentHandlers(io: Server) {
         });
 
         emitTournamentUpdate(io, tournament);
-        console.log(
-          `${caller.username} requested match (Round ${tm.roundNumber}, Match ${tm.matchIndex})`,
-        );
+        // console.log(
+        //   `${caller.username} requested match (Round ${tm.roundNumber}, Match ${tm.matchIndex})`,
+        // );
       },
     );
 
@@ -394,7 +394,7 @@ export function setupTournamentHandlers(io: Server) {
         tm.status = 'finished';
         tm.matchId = tm.matchId ?? `forfeit-${tournament.id}-r${tm.roundNumber}-m${tm.matchIndex}`;
 
-        console.log(`${caller.username} declined match -> ${opponent.username} wins by forfeit`);
+        // console.log(`${caller.username} declined match -> ${opponent.username} wins by forfeit`);
 
         const syntheticFinishedMatch: Match = {
           id: tm.matchId,
@@ -448,7 +448,7 @@ export function setupTournamentHandlers(io: Server) {
           });
         });
         io.emit('tournament-removed', { tournamentId: data.tournamentId });
-        console.log(`Tournament \"${tournament.name}\" cancelled - creator left`);
+        // console.log(`Tournament \"${tournament.name}\" cancelled - creator left`);
         return;
       }
 
@@ -461,7 +461,7 @@ export function setupTournamentHandlers(io: Server) {
         maxPlayers: tournament.maxPlayers,
       });
 
-      console.log(`${caller.username} left tournament \"${tournament.name}\"`);
+      // console.log(`${caller.username} left tournament \"${tournament.name}\"`);
     });
 
     socket.on('get-tournaments', async () => {
@@ -532,9 +532,9 @@ export function setupTournamentHandlers(io: Server) {
         const player = tournament.players.find((p) => p.socketId === socket.id);
         if (!player) continue;
 
-        console.log(
-          `Tournament player ${player.username} disconnected (tournament: ${tournament.name})`,
-        );
+        // console.log(
+        //   `Tournament player ${player.username} disconnected (tournament: ${tournament.name})`,
+        // );
         break;
       }
     });

@@ -40,7 +40,7 @@ export function registerLobbyEvents(io: Server, socket: Socket) {
       }
 
       emitLobbyPlayersUpdate(io);
-      console.log(profile.username + ' joined the lobby');
+      // console.log(profile.username + ' joined the lobby');
     });
 
     
@@ -72,7 +72,7 @@ export function registerLobbyEvents(io: Server, socket: Socket) {
         },
       });
 
-      console.log(sender.username + ' invited ' + target.username);
+      // console.log(sender.username + ' invited ' + target.username);
     });
 
         socket.on('accept-invite', async (data: { inviteId: string }) => {
@@ -128,7 +128,7 @@ export function registerLobbyEvents(io: Server, socket: Socket) {
         status: 'accepted',
       });
 
-      console.log('Match created via invite: ' + player1.username + ' vs ' + player2.username);
+      // console.log('Match created via invite: ' + player1.username + ' vs ' + player2.username);
     });
 
     socket.on('decline-invite', (data: { inviteId: string }) => {
@@ -151,7 +151,7 @@ export function registerLobbyEvents(io: Server, socket: Socket) {
         status: 'declined',
       });
 
-      console.log((decliner?.username || 'Unknown') + ' declined invite');
+      // console.log((decliner?.username || 'Unknown') + ' declined invite');
     });
 }
 

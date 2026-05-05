@@ -35,6 +35,8 @@ function LandinPage() {
     { id: "p3", username: "djangoo", wins: 39, losses: 20, xp: 1880, rank: 3 },
     { id: "p4", username: "xpinzar", wins: 35, losses: 24, xp: 1710, rank: 4 },
     { id: "p5", username: "Mirchal", wins: 33, losses: 26, xp: 1620, rank: 5 },
+    { id: "p6", username: "SAYF", wins: 20, losses: 19, xp: 982, rank: 6 },
+    { id: "p7", username: "Brahim", wins: 17, losses: 19, xp: 402, rank: 7 },
   ];
 
   const previewBoard: ("X" | "O" | null)[] = [
@@ -85,6 +87,27 @@ function LandinPage() {
         </div>
       </div>
 
+     <section className="mx-auto mt-10 grid max-w-4xl gap-8 text-center">
+       <div className="flex flex-col items-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-500">
+              AI tactics + live chat
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
+              Special tic-tac-toe battles powered by Creativity and real-time chat.
+            </h2>
+            <p className="mt-2 text-sm text-white sm:text-base">
+              I bet that you can't defeted our (hard) AI challange.
+            </p>
+            <div className="mt-6 w-full max-w-3xl">
+              <p className="text-xs uppercase tracking-[0.3em] text-amber-500">How to Play</p>
+              <h3 className="mt-2 text-lg font-semibold text-white">How to Play OUR Tic Tac Toe Online</h3>
+              <ul className="mt-3 space-y-2 text-sm text-white">
+                <li>Each player can have only 3 pieces on the board at a time.</li>
+                <li>On your turn, place a piece on an empty square .</li>
+              </ul>
+            </div>
+          </div>
+        </section>
       <main className="relative mx-auto w-full max-w-7xl flex-1 px-4 pb-16 pt-10 sm:px-6 lg:px-8">
         <section className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1fr_minmax(0,0.9fr)]">
           <div className="flex flex-col gap-6">
@@ -121,27 +144,7 @@ function LandinPage() {
             </section>
           </div>
         </section>
-        <section className="mt-10 grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-500">
-              AI tactics + live chat
-            </p>
-            <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
-              Special tic-tac-toe battles powered by Creativity and real-time chat.
-            </h2>
-            <p className="mt-2 text-sm text-white sm:text-base">
-              I bet that you can't defeted our (hard) AI challange.
-            </p>
-            <div className="mt-6 max-w-3xl">
-              <p className="text-xs uppercase tracking-[0.3em] text-amber-500">How to Play</p>
-              <h3 className="mt-2 text-lg font-semibold text-white">How to Play OUR Tic Tac Toe Online</h3>
-              <ul className="mt-3 space-y-2 text-sm text-white">
-                <li>Each player can have only 3 pieces on the board at a time.</li>
-                <li>On your turn, place a piece on an empty squa diagonal.</li>
-              </ul>
-            </div>
-          </div>
-        </section>
+     
         <section className="mt-12">
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-500">
             Developers
