@@ -428,6 +428,18 @@ def get_user(request):
 
     return JsonResponse(user)
 
+ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png'}
+ALLOWED_MIME_TYPES = {"image/jpeg", "image/png"}
+
+def is_valid_image(file):
+    try:
+        img = Image.open(file)
+        img.verify()  
+        file.seek(0)   
+        return True
+    except Exception:
+        return False
+
 @csrf_exempt
 def update_avatar(request):
     if request.method != "POST":
@@ -436,6 +448,19 @@ def update_avatar(request):
         avatar_file = request.FILES.get("avatar")  
         if not avatar_file:
             return JsonResponse({"error": "avatar file is required"}, status=400)
+
+        ext = os.path.splitext(avatar_file.name)[1].lower()
+        if ext not in ALLOWED_EXTENSIONS:
+            return JsonResponse(
+                {"error": f"Invalid file type '{ext}'. Allowed: jpg, jpeg, png"},
+                status=400
+            )
+
+        if not is_valid_image(avatar_file):
+            return JsonResponse(
+                {"error": "File is not a valid image"},
+                status=400
+            )
 
         tmp_user = get_user_from_request(request)
 

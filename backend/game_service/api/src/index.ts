@@ -19,22 +19,25 @@ import { players } from "./socket/onevone/onevoneState";
 
 const app = express();
 const PORT = 3000;
-const CORE = process.env.SECRET_KEY;
-const corsOptions = {
-  origin: [
-    "https://localhost:8443",
-    CORE,
-  ],
-  methods: ["GET", "POST"],
-  credentials: true,
-};
+
+
+export const   corsOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',')
+    : ["http://localhost:8080"];
+
+app.use(cors({
+    origin: corsOrigins,
+    credentials: true,
+    optionsSuccessStattus: 200
+}));
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: corsOptions,
+  cors: corsOrigins,
+  credentials: true,
+  optionsSuccessStattus: 200
 });
 
-app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
