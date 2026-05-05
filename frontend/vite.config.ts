@@ -11,6 +11,7 @@ export default defineConfig({
       protocol: 'wss'
     },
   },
+  // Allow running `npm run dev` from `frontend/` while keeping env in repo root.
   envDir: '..',
   plugins: [react(), tailwindcss()],
   build: {
