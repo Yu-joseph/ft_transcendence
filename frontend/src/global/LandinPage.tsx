@@ -74,7 +74,7 @@ function LandinPage() {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
         <div className="text-center sm:text-left">
           <p className="text-xs uppercase tracking-[0.3em] text-amber-500">Tic-TAC-toe Areana</p>
-          <h1 className="text-xl font-semibold text-white">AI play, live chat, ranked battles</h1>
+          <h1 className="text-xl font-semibold text-white">Play, chat, and compete with friends or AI in a connected gaming hub.</h1>
         </div>
         <div className="flex w-full items-center justify-center gap-3 sm:w-auto sm:justify-end">
           <button
