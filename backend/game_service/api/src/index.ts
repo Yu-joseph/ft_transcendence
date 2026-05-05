@@ -17,9 +17,7 @@ import { getRankedUsers } from "./socket/onevone/leaderboardService";
 import { isPlayerInActiveMatch } from "./socket/onevone/lobbyPresence";
 import { players } from "./socket/onevone/onevoneState";
 
-const app = express();
-const PORT = 3000;
-
+export const app = express();
 
 export const   corsOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',')
@@ -28,15 +26,8 @@ export const   corsOrigins = process.env.CORS_ORIGIN
 app.use(cors({
     origin: corsOrigins,
     credentials: true,
-    optionsSuccessStattus: 200
+    optionsSuccessStatus: 200
 }));
-
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: corsOrigins,
-  credentials: true,
-  optionsSuccessStattus: 200
-});
 
 app.use(express.json());
 app.use(cookieParser());
@@ -220,7 +211,3 @@ app.get("/api/users/:id/status", async (req, res) => {
 
 setupSocketHandlers(io);
 setupTournamentHandlers(io);
-
-httpServer.listen(PORT, () => {
-  // console.log(`Server running on http://localhost:${PORT}`);
-});
