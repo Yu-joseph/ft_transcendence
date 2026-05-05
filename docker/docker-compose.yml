@@ -111,7 +111,7 @@ services:
 
   chat-system:
     build:
-        context: ../backend/chat/backend
+        context: ../backend/chat
         dockerfile: Dockerfile
     container_name: chat-system
     restart: always

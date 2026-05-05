@@ -12,6 +12,5 @@ RUN curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-20.
 COPY secrets.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
-RUN chmod +x /reload.sh
-RUN chmod +x /reload_br.sh
+
 ENTRYPOINT ["/entrypoint.sh"]
