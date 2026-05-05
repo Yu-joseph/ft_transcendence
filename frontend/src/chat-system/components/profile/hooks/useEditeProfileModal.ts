@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import type { UserProfileInfo } from "./useProfileHeader";
 import { withMediaPrefix } from "../../shared/sharedUtils";
 
@@ -15,6 +15,24 @@ export  function    useEditeProfileModale(initialData: UserProfileInfo, isOpen: 
         email: initialData?.email || '' as string,
         avatar: initialData?.avatar || '' as string
     });
+
+    // Reset state when the modal is opened
+    useEffect(() => {
+        if (isOpen) {
+            setFormData({
+                fullname: initialData?.fullname || '' as string,
+                bio: initialData?.bio || '' as string,
+                email: initialData?.email || '' as string,
+                avatar: initialData?.avatar || '' as string
+            });
+            setPreviewUrl(initialData?.avatar ?? null);
+            setAvatar(null);
+            setErrors(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    }, [isOpen, initialData]);
 
     const validateForm = () => {
         const   newErrors: Record<string, string> = {};

@@ -38,8 +38,8 @@ export  function AddFriend() {
                     <button
                         type="submit"
                         disabled={loading || input.trim().length === 0}
-                        className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-800/50 disabled:text-slate-600 text-white px-8 py-4 rounded-2xl font-bold transition-all duration-300
-                        shadow-lg shadow-indigo-500/20 active:scale-95 shrink-0">
+                        className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-800/60 disabled:text-slate-500 text-white px-8 py-4 rounded-2xl font-bold transition-all duration-300
+                        shadow-lg shadow-indigo-500/10 active:scale-95 shrink-0">
                         {loading ? 'Sending...' : 'Send Request'}
                     </button>
                 </div>

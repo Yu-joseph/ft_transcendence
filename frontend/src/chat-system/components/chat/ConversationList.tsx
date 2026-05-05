@@ -18,7 +18,7 @@ export function ConversationList({ onSelectConversation, convId, friendId }: Con
     /**________ Component-Style __________________ */
     if (loading) {
         return (
-            <aside className="w-1/3 md:w-80 flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700 rounded-2xl p-4 shadow-xl">
+            <aside className="w-1/3 md:w-80 flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-2xl p-4 shadow-xl">
                 <div className="pb-2 mb-2">
                     <h2 className="text-xl font-bold text-white">Messages</h2>
                 </div>
@@ -57,7 +57,7 @@ export function ConversationList({ onSelectConversation, convId, friendId }: Con
     }
 
     return (
-        <aside className="w-full h-full flex flex-col bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-3xl shadow-xl overflow-hidden">
+        <aside className="w-full h-full flex flex-col bg-slate-800/50 backdrop-blur-xl border border-white/5 rounded-3xl shadow-xl overflow-hidden">
             
             <div className="px-6 py-5 border-b border-white/5 shrink-0">
                 <h2 className="text-xl font-bold text-white tracking-tight">Messages</h2>
@@ -88,8 +88,6 @@ export function ConversationList({ onSelectConversation, convId, friendId }: Con
                             <li
                                 onClick={() => {
                                     onSelectConversation(conv.id, conv.otherUser.id as string)
-                                    // setConvId(conv.id);
-                                    // selectFriendId(conv.otherUser.id as string);
                                 }}
                                 key={conv.id}
                                 className={`group flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-200 ${
