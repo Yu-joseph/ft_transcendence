@@ -26,13 +26,16 @@ template {
   source      = "/vault/templates/database.tpl"
   destination = "/vault/secrets/database.env"
   perms       = 0644
+  command     = "sh reload.sh"
 }
 
 template {
   source      = "/vault/templates/br_db.tpl"
   destination = "/vault/aii/file.env"
   perms       = 0644
+  command     = "sh reload_br.sh"
 }
+
 
 template {
   source      = "/vault/templates/ai.tpl"

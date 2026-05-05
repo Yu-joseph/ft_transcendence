@@ -40,17 +40,6 @@ if [ "$INITIALIZED" = "false" ]; then
     fortytwo_key_auth="${SOCIAL_AUTH_42_KEY}"
 fi
 
-# if ! vault kv get -format=json secret/myapp/apis >/dev/null 2>&1; then
-#   vault kv put secret/myapp/apis \
-#     openai_api_key="${OPENROUTER_API_KEY}" \
-#     django_secret_key="${DJANGO_SECRET_KEY}" \
-#     grok_secret_key="${GROQ_API_KEY}" \
-#     social_secret_fortytwo="${SOCIAL_AUTH_42_SECRET}" \
-#     fortytwo_key_auth="${SOCIAL_AUTH_42_KEY}"
-#     break
-# fi
-
-
 vault secrets enable database 2>/dev/null || true
 
 if [ "$INITIALIZED" = "false" ]; then
@@ -67,8 +56,8 @@ if [ "$INITIALIZED" = "false" ]; then
     creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
       GRANT SELECT ON ALL TABLES IN SCHEMA public TO \"{{name}}\";" \
     revocation_statements="DROP ROLE IF EXISTS \"{{name}}\";" \
-    default_ttl="1h" \
-    max_ttl="3h"
+    default_ttl="24h" \
+    max_ttl="72h"
 
   vault write database/roles/main-readwrite \
     db_name=main-postgres \
@@ -81,8 +70,8 @@ if [ "$INITIALIZED" = "false" ]; then
       GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO \"{{name}}\";
     " \
     revocation_statements="DROP ROLE IF EXISTS \"{{name}}\";" \
-    default_ttl="1h" \
-    max_ttl="3h"
+    default_ttl="24h" \
+    max_ttl="72h"
 
   vault write database/config/game-postgres \
     plugin_name=postgresql-database-plugin \
@@ -96,8 +85,8 @@ if [ "$INITIALIZED" = "false" ]; then
     creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
       GRANT SELECT ON ALL TABLES IN SCHEMA public TO \"{{name}}\";" \
     revocation_statements="DROP ROLE IF EXISTS \"{{name}}\";" \
-    default_ttl="1h" \
-    max_ttl="3h"
+    default_ttl="24h" \
+    max_ttl="72h"
 
   vault write database/roles/game-readwrite \
     db_name=game-postgres \
@@ -110,8 +99,8 @@ if [ "$INITIALIZED" = "false" ]; then
       GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO \"{{name}}\";
     " \
     revocation_statements="DROP ROLE IF EXISTS \"{{name}}\";" \
-    default_ttl="1h" \
-    max_ttl="3h"
+    default_ttl="24h" \
+    max_ttl="72h"
 fi
 
 vault auth enable approle 2>/dev/null || true
@@ -136,8 +125,8 @@ EOF
 
 vault write auth/approle/role/my-role \
   token_policies="myapp-policy" \
-  token_ttl="1h" \
-  token_max_ttl="4h" \
+  token_ttl="24h" \
+  token_max_ttl="72h" \
   secret_id_ttl="0" \
   secret_id_num_uses=0
 
@@ -151,7 +140,7 @@ fi
 if [ "$INITIALIZED" = "false" ]; then
 
   echo "Waiting for main postgres..."
-  until pg_isready -h db -p 5432 -U "${ft_user}" 2>/dev/null; do  
+  until pg_isready -h db -p 5432 -U "${ft_user}" 2>/dev/null; do
     sleep 2
   done
 

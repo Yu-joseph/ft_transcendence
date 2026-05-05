@@ -48,9 +48,6 @@ services:
     env_file:
       - .env.local
     build: ../frontend
-    volumes:
-      - ../frontend:/app/
-      - /app/node_modules 
 
   nginx:
     build : ./nginx
@@ -119,6 +116,8 @@ services:
     restart: always
     depends_on:
       auth:
+        condition: service_healthy
+      vault-agent:
         condition: service_healthy
     volumes:
       - vault-secrets:/vault/secrets
@@ -257,6 +256,7 @@ services:
     volumes:
       - ./agent/vault-agent-config.hcl:/vault/config/agent.hcl:ro
       - ./templates:/vault/templates
+      - /var/run/docker.sock:/var/run/docker.sock
       - vault-secrets:/vault/secrets
       - vault-ai:/vault/aii
       - vault-chat:/vault/chat
@@ -264,7 +264,7 @@ services:
       - ./vault/userconfig/tls/ca.crt:/vault/certs/ca.crt
       - ./vault/userconfig/:/vault/userconfig/
     healthcheck:
-      test: ["CMD-SHELL", "test -f /vault/secrets/apiss.env || exit 1"]
+      test: ["CMD-SHELL", "test -f /vault/secrets/database.env || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
