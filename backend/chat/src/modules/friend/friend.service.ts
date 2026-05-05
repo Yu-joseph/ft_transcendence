@@ -7,6 +7,7 @@ import { getIo } from "../../socket/index.js";
 export class FriendService {
     /*  _________ Add Friend Request __________    */
     static async addFriend(data: AddFriendRequest) {
+        console.log('=====>:', data.friendUsername);
         const frId = await prisma.user.findUnique({
             where: { username: data.friendUsername }
         });

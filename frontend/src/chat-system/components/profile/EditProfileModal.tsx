@@ -82,8 +82,7 @@ export function EditProfileModal({ isOpen, onClose, initialData, onHandleSaveInf
     /**__________________________________________________________________ */
     return createPortal(
 
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ overflowAnchor: 'none' }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={onClose} />
             
             <div className="relative bg-slate-900 border border-white/10 w-full max-w-lg rounded-3xl p-8 shadow-2xl">
@@ -182,7 +181,11 @@ export function EditProfileModal({ isOpen, onClose, initialData, onHandleSaveInf
                         <span>Change password</span>
                 </button>
                 <div className="flex gap-3 mt-10">
-                    <button onClick={onClose} className="flex-1 px-6 py-3 rounded-xl font-medium text-slate-300 hover:bg-white/5 transition-all">
+                    <button onClick={() => {
+                        onClose();
+                        
+                    }
+                } className="flex-1 px-6 py-3 rounded-xl font-medium text-slate-300 hover:bg-white/5 transition-all">
                         Cancel
                     </button>
                     <button 

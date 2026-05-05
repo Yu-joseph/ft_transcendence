@@ -6,11 +6,9 @@ import  profileRoutes   from    './modules/profile/profile.routes.js';
 import  { Request, Response, NextFunction }   from    'express';
 import cookieParser from "cookie-parser";
 import helmet from 'helmet';
-import apiLimiter from './utils/rateLimit.js';
 
 const   app = express();
 app.use(helmet());
-app.use('/api', apiLimiter);
 
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();

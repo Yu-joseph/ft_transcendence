@@ -65,7 +65,7 @@ export default function BottomNav() {
                 : "text-gray-400 hover:text-amber-600 hover:bg-slate-800/50 hover:scale-105"
             }`}
           >
-            <span className="font-semibold">Areana Ai</span>
+            <span className="font-semibold">Arena AI</span>
           </button>
         </div>
       </div>

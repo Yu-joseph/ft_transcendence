@@ -9,10 +9,6 @@ RUN curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-20.
     && cp docker/docker /usr/local/bin/ \
     && rm -rf docker.tgz docker
 
-COPY reload_br.sh /reload_br.sh
-
-COPY reload.sh /reload.sh
-
 COPY secrets.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh

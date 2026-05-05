@@ -20,7 +20,7 @@ ps :
 	docker ps 
 
 rm_vol:
-	@docker volume ls -q | xargs  docker volume rm
+	@docker volume prune -f
 
 fclean :
 	cd docker && docker compose down -v
