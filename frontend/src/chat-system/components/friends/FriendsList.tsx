@@ -108,8 +108,8 @@ export function FriendsList() {
                     return (
                         <div
                             key={fr.id}
-                            className="group relative flex flex-col items-center justify-center bg-slate-800/40 backdrop-blur-md
-                            border border-white/5 rounded-3xl p-8 shadow-xl hover:border-indigo-500/30 hover:bg-slate-800/60 
+                            className="group relative flex flex-col items-center justify-center bg-slate-800/50 backdrop-blur-md
+                            border border-white/5 rounded-3xl p-8 shadow-xl hover:border-indigo-500/30 hover:bg-slate-800/30 
                             hover:-translate-y-2 transition-all duration-300 ease-out"
                         >
                             <div className="relative mb-6">
