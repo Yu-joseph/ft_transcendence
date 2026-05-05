@@ -18,7 +18,6 @@ class User(models.Model):
     avatar     = models.ImageField(upload_to='images/', blank=True,null=True , default='images/pipi.jpg')
     user_status     = models.CharField(max_length=50, default="Offline")    
     status     = models.CharField(max_length=50, default="Online")
-    user_status     = models.CharField(max_length=50, default="Offline")
     role       = models.CharField(max_length=50, default="user") 
     wins       = models.IntegerField(default=0)
     losses     = models.IntegerField(default=0)

@@ -71,7 +71,7 @@ export function Profile() {
 
     const   type: TypeOfError = 'profile information';
     return (
-        <main className="relative h-full w-full bg-slate-950 overflow-y-auto overflow-x-hidden no-scrollbar">
+        <main className="relative h-full w-full bg-slate-900 overflow-y-auto overflow-x-hidden no-scrollbar pb-24">
             {/* Background Decorative Elements */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-full z-0 pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 blur-[120px] rounded-full"></div>

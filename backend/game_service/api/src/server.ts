@@ -1,28 +1,31 @@
 import  'dotenv/config';
 import  http            from    'node:http';
-import  {app}             from    './index.js';
-import  { connectDB }   from    './utils/connectDb.js';
-import  { prisma }      from    './lib/prisma.js';
-import { Server } from "express";
-import { createServer } from "http";
+import  { app, corsOrigins }  from    './index';
+import  { connectDB }   from    './utils/connectDb';
+import  { prisma }      from    './lib/prisma';
+import  { Server }      from    'socket.io';
+import  { setupSocketHandlers }       from  './socket/handlers';
+import  { setupTournamentHandlers }   from  './socket/tournament/tournament';
 
 const   PORT = process.env.PORT || 3000;
 const   server = http.createServer(app);
 
-export const   corsOrigins = process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN.split(',')
-    : ["http://localhost:8080"];
+let io: Server;
 
-const initSocket = (app:Server) => {
-
-    const httpServer = createServer(app);
-    const io = new Server(httpServer, {
-    cors: {
+const   initSocket = (server: http.Server) => {
+    io = new Server(server, {
+        cors: {
             origin: corsOrigins,
             credentials: true,
             optionsSuccessStatus: 200
-    }
+        }
     });
+    console.log("[🔌] Socket.IO engine initialized on HTTP server...");
+
+    setupSocketHandlers(io);
+    setupTournamentHandlers(io);
+
+    return io;
 }
 
 const   startServer = async () => {
@@ -31,7 +34,7 @@ const   startServer = async () => {
 
         await connectDB();
         server.listen(PORT, () => {
-                console.log(`[🚀] game service running on port ${PORT}...`)
+                console.log(`[🚀] Game service running on port ${PORT}...`)
             }
         );
     } catch (error) {
@@ -48,7 +51,6 @@ const   shutdown = async (signal: string) => {
     server.close(async () => {
         console.log('[HTTP] Server closed.');
         try {
-            const   io = getIo();
             if(io) {
                 io.close();
                 console.log('[SOCKET] Websockets disconnected.');
@@ -77,6 +79,9 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('uncaughtException', (reason) => {
     console.error('[💥] UNHANDLED EXCEPTION:', reason);
     shutdown('UNCAUGHT_EXCEPTION');
+})
+process.on('unhandledRejection', (reason) => {
+    console.error('[💥] UNHANDLED REJECTION:', reason);
 })
 
 startServer();

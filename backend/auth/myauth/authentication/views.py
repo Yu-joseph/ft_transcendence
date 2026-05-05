@@ -139,46 +139,6 @@ def register(request):
 
 
 @csrf_exempt
-def update_users(request):
-    if request.method != "PATCH":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
-
-    tmp_user = get_user_from_request(request)
-    if not tmp_user:
-        return JsonResponse({"error": "Not authenticated"}, status=401)
-
-    try:
-        body     = json.loads(request.body)
-        email    = body.get("email")
-        bio      = body.get("bio")
-        fullname = body.get("fullname")
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "invalid JSON"}, status=400)
-
-    if not (email and bio and fullname):
-        return JsonResponse({"error": "email, bio and fullname required"}, status=400)
-
-    if email:
-        validator = EmailValidator()
-        try:
-            validator(email)
-        except ValidationError:
-            return JsonResponse({"error": "Invalid Email"}, status=400)
-        tmp_user.email = email
-
-    if fullname:
-        if not all(part.isalpha() for part in fullname.split()):
-            return JsonResponse({"error": "Invalid name"}, status=400)
-        tmp_user.fullname = fullname
-
-    if bio:
-        tmp_user.bio = bio
-
-    tmp_user.save()
-    return JsonResponse({"message": "profile updated"}, status=200)
-
-
-@csrf_exempt
 def changing_password(request):
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
@@ -240,7 +200,7 @@ def update_users(request):
         try:
             validator(email)
         except ValidationError:
-            return JsonResponse({"error": "Invalid email"}, status=402)
+            return JsonResponse({"error": "Invalid email"}, status=400)
         tmp_user.email = email
         fields_to_update.append("email")
 
@@ -256,42 +216,6 @@ def update_users(request):
 
     tmp_user.save(update_fields=fields_to_update)
     return JsonResponse({"message": "profile updated", "email": tmp_user.email, "fullname": tmp_user.fullname, "bio": tmp_user.bio}, status=200)
-
-@csrf_exempt
-def changing_password(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
-
-    tmp_user = get_user_from_request(request)
-    if not tmp_user:
-        return JsonResponse({"error": "Not authenticated"}, status=401)
-
-    try:
-        body            = json.loads(request.body)
-        curr_pass       = body.get("current_pass")
-        new_pass        = body.get("new_pass")
-        retype_new_pass = body.get("retype_new_pass")
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
-
-    if not curr_pass or not new_pass or not retype_new_pass:
-        return JsonResponse({"error": "All fields are required"}, status=400)
-
-    if not check_password(curr_pass, tmp_user.password):
-        return JsonResponse({"error": "Incorrect current password"}, status=400)
-
-    if new_pass != retype_new_pass:
-        return JsonResponse({"error": "New passwords do not match"}, status=400)
-
-    try:
-        validate_password(new_pass, user=tmp_user)
-    except ValidationError as e:
-        return JsonResponse({"error": e.messages}, status=400)
-
-    tmp_user.password = make_password(new_pass)
-    tmp_user.save()
-    return JsonResponse({"message": "Password updated"}, status=200)
-
 
 @csrf_exempt
 def logout(request):
@@ -386,8 +310,8 @@ def forty_two_callback(request):
     access  = refresh.access_token
 
     response = redirect(redirect_url)
-    response.set_cookie(key='access_token',  value=str(access),  max_age=604800,    httponly=True, secure=False, samesite='Lax', path='/')
-    response.set_cookie(key='refresh_token', value=str(refresh), max_age=604800, httponly=True, secure=False, samesite='Lax', path='/')
+    response.set_cookie(key='access_token',  value=str(access),  max_age=604800,    httponly=True, secure=True, samesite='Lax', path='/')
+    response.set_cookie(key='refresh_token', value=str(refresh), max_age=604800, httponly=True, secure=True, samesite='Lax', path='/')
     return response
 
 @csrf_exempt
@@ -459,6 +383,11 @@ def update_avatar(request):
         if not avatar_file:
             return JsonResponse({"error": "avatar file is required"}, status=400)
 
+        tmp_user = get_user_from_request(request)
+
+        if not tmp_user:
+           return JsonResponse({"error": "unauthorized user"}, status=401)
+
         ext = os.path.splitext(avatar_file.name)[1].lower()
         if ext not in ALLOWED_EXTENSIONS:
             return JsonResponse(
@@ -478,7 +407,6 @@ def update_avatar(request):
         if not is_valid_image(avatar_file):
             return JsonResponse({"error": "Invalid image"}, status=400)
 
-        tmp_user = get_user_from_request(request)
 
         if tmp_user.avatar and tmp_user.avatar.name != "images/pipi.jpg":
             if default_storage.exists(tmp_user.avatar.name):
@@ -493,4 +421,4 @@ def update_avatar(request):
         }, status=200)
 
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse({"error": "Internal server error"}, status=500)

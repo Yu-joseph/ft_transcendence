@@ -1,35 +1,31 @@
 import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { createServer } from "http";
-import { Server } from "socket.io";
 import prisma from "./lib/prisma";
-import {
-  setupSocketHandlers,
-} from "./socket/handlers";
-import { setupTournamentHandlers } from "./socket/tournament/tournament";
-import { setupTournamentHandlers } from "./socket/tournament/tournament";
 import { getUserIdFromToken } from "./auth/identity";
 import { getRankedUsers } from "./socket/onevone/leaderboardService";
 import { isPlayerInActiveMatch } from "./socket/onevone/lobbyPresence";
 import { players } from "./socket/onevone/onevoneState";
-import { getRankedUsers } from "./socket/onevone/leaderboardService";
-import { isPlayerInActiveMatch } from "./socket/onevone/lobbyPresence";
-import { players } from "./socket/onevone/onevoneState";
+import helmet from 'helmet';
 
 export const app = express();
 
-export const   corsOrigins = process.env.CORS_ORIGIN
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
+
+export const corsOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',')
     : ["http://localhost:8080"];
 
+app.use(helmet());
 app.use(cors({
     origin: corsOrigins,
     credentials: true,
     optionsSuccessStatus: 200
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 
 type AuthedRequest = Request & { userId?: string };
@@ -51,8 +47,9 @@ async function requireAuth(req: Request, res: Response, next: NextFunction) {
   return next();
 }
 
+/** Health check endpoint for Docker / DevOps */
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok" });
+  res.json({ status: "ok", message: "Game service is healthy" });
 });
 
 app.get("/", (_req, res) => {
@@ -209,5 +206,19 @@ app.get("/api/users/:id/status", async (req, res) => {
   }
 });
 
-setupSocketHandlers(io);
-setupTournamentHandlers(io);
+/** to prevent server for sending HTML content for not found routes */
+app.use((_req: Request, res: Response) => {
+    res.status(404).json({
+        success: false,
+        message: `Route ${_req.originalUrl} not found`,
+    });
+});
+
+/** Global Error Handler (prevents sending HTML res on crash) */
+app.use((error: any, _req: Request, res: Response, _next: NextFunction) => {
+    console.error("Unhandled Error:", error);
+    res.status(500).json({
+        success: false,
+        message: 'Internal Server Error',
+    });
+});
