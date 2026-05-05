@@ -117,7 +117,12 @@ def register(request):
 
     if not all(part.isalpha() for part in fullname.split()):
         return JsonResponse({"error": "Invalid name"}, status=400)
-
+    if len(username) > 25:
+         return JsonResponse({"error": "Invalid username"}, status=400)
+    if len(email) > 42:
+        return JsonResponse({"error": "Invalid email"}, status=400)
+    if len(fullname) > 25:
+        return JsonResponse({"error": "Invalid fullname"}, status=400)
     User.objects.create(
         id=str(uuid.uuid4()),
         username=username,

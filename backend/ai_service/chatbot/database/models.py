@@ -2,7 +2,6 @@ from datetime import datetime
 from extensions import db
 
 
-
 class ChatSession(db.Model):
     __tablename__ = 'chat_sessions'
 
@@ -13,6 +12,7 @@ class ChatSession(db.Model):
     updated_at    = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     message_count = db.Column(db.Integer, default=0)
     messages      = db.relationship('Message', backref='session', lazy=True)
+
 
 
 class Message(db.Model):
@@ -32,5 +32,4 @@ class UserUsage(db.Model):
     user_id = db.Column(db.String, primary_key=True)
     daily_count = db.Column(db.Integer, default=0)
     updated_at = db.Column(db.DateTime)
-    # age1 = db.Column(db.Integer , nullable=True )
 
