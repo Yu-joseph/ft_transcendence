@@ -3,7 +3,7 @@
 VAULT_ADDR="https://vault:8200"
 VAULT_CACERT="/vault/certs/ca.crt"
 CREDS_FILE="/vault/userconfig/approle-creds.json"
-
+export DOCKER_API_VERSION=1.49
 echo "Waiting for Vault to be reachable..."
 until vault status -address="$VAULT_ADDR" -ca-cert="$VAULT_CACERT" 2>/dev/null; do
   echo "  vault not reachable, retrying in 2s..."

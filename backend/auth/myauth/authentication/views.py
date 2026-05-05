@@ -9,6 +9,8 @@ from django.core.validators import EmailValidator
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from django.views.decorators.http import require_POST
+from django.core.files.storage import default_storage
 from rest_framework_simplejwt.exceptions import TokenError
 from .auth_utils import get_user_from_request
 from .permissions import role_required
@@ -16,6 +18,8 @@ import uuid
 import requests
 from .models import User
 import json
+import os
+from PIL import Image
 
 FORTY_TWO_AUTHORIZE_URL = 'https://api.intra.42.fr/oauth/authorize'
 FORTY_TWO_TOKEN_URL     = 'https://api.intra.42.fr/oauth/token'
@@ -433,42 +437,60 @@ ALLOWED_MIME_TYPES = {"image/jpeg", "image/png"}
 
 def is_valid_image(file):
     try:
+        file.seek(0)
         img = Image.open(file)
         img.verify()  
         file.seek(0)   
+        img = Image.open(file)
+        img.load()
+        file.seek(0)
         return True
-    except Exception:
+    except Exception as e:
+        # Check your terminal/server logs for this output!
+        print(f"DEBUG: Image validation failed with error: {e}")
         return False
 
+
+@require_POST
 @csrf_exempt
 def update_avatar(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
     try:
-        avatar_file = request.FILES.get("avatar")  
+        avatar_file = request.FILES.get("avatar")
         if not avatar_file:
             return JsonResponse({"error": "avatar file is required"}, status=400)
 
         ext = os.path.splitext(avatar_file.name)[1].lower()
         if ext not in ALLOWED_EXTENSIONS:
             return JsonResponse(
-                {"error": f"Invalid file type '{ext}'. Allowed: jpg, jpeg, png"},
+                {"error": f"Invalid file type '{ext}'"},
+                status=400
+            )
+        if avatar_file.content_type not in ALLOWED_MIME_TYPES:
+            return JsonResponse(
+                {"error": f"Invalid MIME type '{avatar_file.content_type}'"},
                 status=400
             )
 
+        if avatar_file.size > 2 * 1024 * 1024:
+            return JsonResponse({"error": "File too large"}, status=400)
+
+        
         if not is_valid_image(avatar_file):
-            return JsonResponse(
-                {"error": "File is not a valid image"},
-                status=400
-            )
+            return JsonResponse({"error": "Invalid image"}, status=400)
 
         tmp_user = get_user_from_request(request)
 
-        tmp_user.avatar = avatar_file  
+        if tmp_user.avatar and tmp_user.avatar.name != "images/pipi.jpg":
+            if default_storage.exists(tmp_user.avatar.name):
+                default_storage.delete(tmp_user.avatar.name)
+
+        tmp_user.avatar = avatar_file
         tmp_user.save()
 
-        avatar_url = tmp_user.avatar.url  
+        return JsonResponse({
+            "message": "Avatar updated successfully",
+            "url": tmp_user.avatar.url
+        }, status=200)
 
-        return JsonResponse({"message": "Avatar updated successfully", "url": avatar_url}, status=200)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
