@@ -15,7 +15,7 @@ export async function createGameInDB(match: Match) {
       created_at: new Date(),
     },
   });
-  console.log(`Game created in DB: ${match.id}`);
+  // console.log(`Game created in DB: ${match.id}`);
 }
 
 export async function updateGameInDB(match: Match) {
@@ -70,7 +70,7 @@ export async function finalizeGame(match: Match) {
   });
 
   if (match.tournamentId) {
-    console.log(`Tournament game finished without W/L update: ${match.id}`);
+    // console.log(`Tournament game finished without W/L update: ${match.id}`);
     return;
   }
 
@@ -81,8 +81,8 @@ export async function finalizeGame(match: Match) {
       prisma.user.update({ where: { id: loserId }, data: { losses: { increment: 1 } } }),
     ]);
 
-    console.log(
-      `Game finished: ${result} | ${match.players[0].username} vs ${match.players[1].username}`,
-    );
+    // console.log(
+    //   `Game finished: ${result} | ${match.players[0].username} vs ${match.players[1].username}`,
+    // );
   }
 }

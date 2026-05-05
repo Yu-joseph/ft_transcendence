@@ -14,13 +14,9 @@ export const socketAuthenticate = async (socket: Socket, next: (err?: Error) => 
         if(!token)
             return next(new AppError('Authentication error: no cookie', 401));
         const   payload = jwt.verify(token, JWT_SECRET as string) as JwtPayload;
-        console.log(payload);
-        console.log(JWT_SECRET);
-
         if(typeof payload === 'string' || payload === null)
             return next(new AppError('Invalid token payload', 401));
-            
-        // Verify user actually exists in the database
+
         const userExists = await prisma.user.findUnique({
             where: { id: payload.user_id }
         });

@@ -21,9 +21,9 @@ interface EditProfileModalProps {
  */
 
 export function EditProfileModal({ isOpen, onClose, initialData, onHandleSaveInfo, serverError, setServerError, isSavingProfile }: EditProfileModalProps) {
+    const {user} = useAuth();
     const   navigate = useNavigate();
     const [isUploading, setIsUploading] = useState<boolean>(false);
-    const {user} = useAuth();
     /**_______________ Costume Hook __________________ */
     const   hook = useEditeProfileModale(initialData as UserProfileInfo, isOpen);
     if(hook === null)
@@ -62,16 +62,16 @@ export function EditProfileModal({ isOpen, onClose, initialData, onHandleSaveInf
                 }
                 /** __________ Call avatr uplaod if the avatar changed/exist */
                 if(avatar) {
-                    console.log('Im saving the avatar ....')
                     const newAvatarUrl = await uploadAvatar(avatar); // if this fails it throws an error and stop 
                     finalData.avatar = newAvatarUrl;
                     window.dispatchEvent(new CustomEvent<{avatarUrl: string, userId: string | null}>("avatar:update", {detail: {avatarUrl: newAvatarUrl, userId: user?.id ?? null}})); // emit event for updating avatar in the bar component
                 }
-                console.log('saving the user infooooo_____________');
                 await onHandleSaveInfo(finalData, isUserInfoChanged);
-            } catch (error: any) {
-                console.log('the errorr ', error)
-                setServerError(error.message);
+            } catch (error: unknown) {
+                if (error instanceof Error)
+                    setServerError(error.message);
+                else
+                    setServerError("Failed to save profile changes.");
             } finally {
                 setIsUploading(false);
             }
@@ -82,7 +82,8 @@ export function EditProfileModal({ isOpen, onClose, initialData, onHandleSaveInf
     /**__________________________________________________________________ */
     return createPortal(
 
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ overflowAnchor: 'none' }}>
             <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={onClose} />
             
             <div className="relative bg-slate-900 border border-white/10 w-full max-w-lg rounded-3xl p-8 shadow-2xl">
@@ -107,6 +108,7 @@ export function EditProfileModal({ isOpen, onClose, initialData, onHandleSaveInf
                                 ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
                         </div>
                         <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold text-center">Click to change photo</p>
+                        {errors?.avatar && <p className="text-red-400 text-sm">{errors.avatar}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -169,6 +171,7 @@ export function EditProfileModal({ isOpen, onClose, initialData, onHandleSaveInf
     
                     </div>
                 </div>
+
                 <button
                 onClick={() => {navigate('/profile/setting')}}
                     type='button'

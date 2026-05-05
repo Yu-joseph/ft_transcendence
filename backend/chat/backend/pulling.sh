@@ -11,4 +11,4 @@ fi
 
 npx prisma db pull
 npx prisma generate
-exec npm run dev
+exec npx tsx watch src/server.ts

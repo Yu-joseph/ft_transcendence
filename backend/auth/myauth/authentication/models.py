@@ -57,6 +57,7 @@ class Friend(models.Model):
             models.Index(fields=["receiver"]),
             models.Index(fields=["status"]),
         ]
+        unique_together = [("requester", "receiver")] #prevent duplicat friendRequest bettwen same users
 
     def __str__(self):
         return f"{self.requester} → {self.receiver} ({self.status})"

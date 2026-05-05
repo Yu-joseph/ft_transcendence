@@ -89,7 +89,6 @@ function Game() {
     }
 
     const handleReconnectFailed = (data: { reason: string }) => {
-      console.log('Reconnect failed:', data.reason);
       navigate(backTo);
     };
 
@@ -188,7 +187,6 @@ function Game() {
     if (!matchId) return;
 
     const handleMatchFound = (data: { matchId: string; match: Match; symbol: string }) => {
-      console.log("Match restored:", data.matchId, "Symbol:", data.symbol);
       setMySymbol(data.symbol as "X" | "O");
       setBoard(data.match.board as CellValue[]);
       setCurrentTurn(data.match.currentTurn);
@@ -268,15 +266,6 @@ function Game() {
 
     return () => clearInterval(timerId);
   }, [currentTurn, isTurnActive]);
-
-  // Debug states
-  useEffect(() => {
-    console.log("Debug - user.id:", authUser?.id);
-    console.log("Debug - currentTurn:", currentTurn);
-    console.log("Debug - isMyTurn:", isMyTurn);
-    console.log("Debug - matchStatus:", matchStatus);
-    console.log("Debug - mySymbol:", mySymbol);
-  }, [authUser, currentTurn, isMyTurn, matchStatus, mySymbol]);
 
   // Determine status text
   let statusText: string;

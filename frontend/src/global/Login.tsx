@@ -81,7 +81,6 @@ function Login() {
       const { data, isJson } = await readApiResponse(response);
 
       if (!response.ok) {
-        // console.log(response);
         if (!isJson) {
           throw new Error("Login endpoint return false.");
         }

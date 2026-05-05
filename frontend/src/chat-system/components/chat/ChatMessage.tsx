@@ -76,7 +76,6 @@ export function ChatMessage({ messages, friendId, convId, isTyping, isLoading, o
                     setFriendInfo(result);
                 }
             } catch (err: any) {
-                console.log(err);
                 setFriendInfo(null);
                 setError(err.message || 'Failed to load user info');
             } finally {

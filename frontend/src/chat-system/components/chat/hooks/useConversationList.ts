@@ -5,6 +5,7 @@ import { chatSocket } from "../../../../socket/sock";
 import { useRefresh } from "../../shared/useRefresh";
 import { useAuth } from "../../../../auth/useAuth";
 import { withMediaPrefix } from "../../shared/sharedUtils";
+import { getErrorMessage } from "../../../utils/error";
 
 interface UpdatedConversationEvent {
   lastMessage: {
@@ -18,11 +19,11 @@ interface UpdatedConversationEvent {
 }
 
 export  function useConversationList(friendId: string | null){
+    const   {user} = useAuth();
     const   [conversationList, setConversationList] = useState<ConversationType[]>([]);
     const   [error, setError] = useState<Error | null>(null);
     const   [loading, setLoading] = useState<boolean>(false);
     const   refresh = useRefresh();
-    const   {user} = useAuth();
     /**____________ Hooks __________ */
 
     useEffect(() => {
@@ -53,10 +54,9 @@ export  function useConversationList(friendId: string | null){
                     result.map(conv => conv.otherUser.avatar = withMediaPrefix(conv.otherUser.avatar) ?? '');
                     setConversationList(result ?? []);
                 }
-            } catch (error: any) {
-                setError(error);
+            } catch (err: unknown) {
+                setError(new Error(getErrorMessage(err, "Could not load conversations.")));
                 setConversationList([]);
-                console.log(error);
             } finally {
                 setLoading(false);
             }

@@ -112,7 +112,7 @@ export async function forfeitMatch(io: Server, matchId: string, leaverId: string
     console.error('Failed to finalize forfeited match:', err);
   }
 
-  console.log(`Match ${matchId} forfeited by ${leaverId}, ${opponent.username} wins`);
+  // console.log(`Match ${matchId} forfeited by ${leaverId}, ${opponent.username} wins`);
 }
 
 export function checkWinner(board: (string | null)[]): string | null {

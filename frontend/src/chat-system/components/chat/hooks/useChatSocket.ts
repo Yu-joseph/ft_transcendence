@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import  {chatSocket}  from    '../../../../socket/sock';
 import type { MessageItem, MessageState } from '../../../pages/Chat';
 import  {useAuth}   from    '../../../../auth/useAuth';
-// import { translateToBigInt } from '../../../utils/translator';
 
 interface   UseChatSocketProps {
     convId: string | null
@@ -18,18 +17,24 @@ export interface JoinChatInf {
 
 export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSocketProps) => {
     const   { user } = useAuth();
+    
     useEffect(() => {
-        if(user === null || !chatSocket.connected)
+        if(!user)
             return ;
  
         const ROM_ID: string | null = `ROOM_${convId}`;
-        if (chatSocket.connected && convId !== null) {
-            console.log('Joinning Chat ID:', ROM_ID);
-            chatSocket.emit('join-chat', {room_id: ROM_ID, convId: convId, userId: user?.id} as JoinChatInf);
+
+        const   joinRoom = () => {
+            if(convId !== null) {
+                chatSocket.emit('join-chat', {room_id: ROM_ID, convId: convId, userId: user?.id} as JoinChatInf);
+            }
+        }
+
+        if(chatSocket.connected) {
+            joinRoom();
         }
 
         const onReceiveMessage = (newMessage: MessageItem) => {
-
             if(newMessage.convId && newMessage.convId !== convId) {
                 return;
             }
@@ -59,25 +64,25 @@ export  const   useChatSocket = ({convId, setMessages, setIsTyping}: UseChatSock
             if(convId !== data.convId)
                 return ;
             setIsTyping(true);
-            console.log('its typinggg:', data);
         }
         const   onTypingStop = (data: {convId: string}) => {
             if(convId !== data.convId)
                 return ;
             setIsTyping(false);
-            console.log('its typinggg:', data);
         }
         /************************************************* */
+        chatSocket.on('connect', joinRoom);
         chatSocket.on('message:new', onReceiveMessage)
         chatSocket.on('typing:start', onTypingStart);
         chatSocket.on('typing:stop', onTypingStop);
         /************************************************* */
         return (() => {
+            chatSocket.off('connect', joinRoom);
             chatSocket.emit('leave:conversation', ROM_ID);
             chatSocket.off('typing:start', onTypingStart);
             chatSocket.off('typing:stop', onTypingStop);
-            setIsTyping(false);
             chatSocket.off('message:new', onReceiveMessage);
+            setIsTyping(false);
     }
 
     );
