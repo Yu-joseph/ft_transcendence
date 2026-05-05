@@ -142,7 +142,6 @@ services:
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - pp_data:/var/lib/postgresql/data
-      - vault-ai:/vault/aii
     networks:
       - app-network
     healthcheck:
