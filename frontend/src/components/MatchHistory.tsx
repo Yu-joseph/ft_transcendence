@@ -103,6 +103,7 @@ export default function UserMatchHistory({ limit = 8, id }: UserMatchHistoryProp
         setLoading(true);
         setError(null);
         
+        // const userId = id || user?.id;
         const response = await fetch(`/game-api/api/${id}/games`, {
           method: "GET",
           credentials: "include",

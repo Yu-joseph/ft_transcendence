@@ -1,29 +1,19 @@
 import os
 import logging
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 from langchain_core.messages import SystemMessage
 
 
 load_dotenv("/vault/aii/file.env")
-load_dotenv("/vault/aii/apiss.env")
 
 
 class Config:
     def __init__(self):
-        # self.llm = ChatOpenAI(
-        #     model="meta-llama/llama-3.3-70b-instruct",
-        #     temperature=0.7,
-        #     max_tokens=1024,
-        #     api_key=os.getenv("OPENROUTER_API_KEY"),
-        #     base_url="https://openrouter.ai/api/v1",
-        #     streaming=True,
-        # )
 
         self.llm = ChatGroq(                        
-            # model="llama-3.3-70b-versatile",  
-            model="llama-3.1-8b-instant",
+            model="llama-3.3-70b-versatile",  
+            # model="llama-3.1-8b-instant",
             temperature=0.7,
             max_tokens=1024,
             api_key=os.getenv("GROQ_API_KEY"), 

@@ -56,4 +56,4 @@ template {
   source      = "/vault/templates/chat.tpl"
   destination = "/vault/chat/apiss.env"
   perms       = 0644
-} 
+}
