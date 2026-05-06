@@ -76,7 +76,6 @@ export function ChatMessage({ messages, friendId, convId, isTyping, isLoading, o
                     setFriendInfo(result);
                 }
             } catch (err: any) {
-                console.log(err);
                 setFriendInfo(null);
                 setError(err.message || 'Failed to load user info');
             } finally {
@@ -103,7 +102,7 @@ export function ChatMessage({ messages, friendId, convId, isTyping, isLoading, o
 
     if (loading && friendId !== null) {
         return (
-            <div className="flex-1 flex flex-col animate-pulse bg-slate-900/30">
+            <div className="flex-1 flex flex-col animate-pulse bg-slate-800/50">
                 <header className="px-6 py-4 border-b border-white/5 flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-slate-800"></div>
                     <div className="h-4 w-32 bg-slate-800 rounded"></div>
@@ -125,7 +124,7 @@ export function ChatMessage({ messages, friendId, convId, isTyping, isLoading, o
 
     if (friendId === null)
         return (
-            <div className="flex-1 flex items-center justify-center p-8 text-center bg-slate-900/30">
+            <div className="flex-1 flex items-center justify-center p-8 text-center bg-slate-800/50">
                 <div className="max-w-md flex flex-col items-center opacity-60">
                     <div className="flex items-center justify-center w-20 h-20 mb-6 rounded-full bg-slate-800/80 text-slate-400 shadow-inner">
                         <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,9 +139,9 @@ export function ChatMessage({ messages, friendId, convId, isTyping, isLoading, o
             </div>);
     /**_____________________________________________________________________________ */
     return (
-        <div className="flex-1 flex flex-col overflow-hidden bg-slate-900/40">
+        <div className="flex-1 flex flex-col overflow-hidden bg-slate-800/50">
                 {/* header of the messages window */}
-            <header className="px-4 md:px-6 py-3 md:py-4 border-b border-white/5 bg-slate-900/60 backdrop-blur-md flex justify-between items-center z-10 shrink-0">
+            <header className="px-4 md:px-6 py-3 md:py-4 border-b border-white/5 bg-slate-800/50 backdrop-blur-md flex justify-between items-center z-10 shrink-0">
                 <div className="flex items-center gap-3 md:gap-4 w-full">
                     {onBack && (
                         <button 
@@ -207,7 +206,7 @@ export function ChatMessage({ messages, friendId, convId, isTyping, isLoading, o
                                         <div className={`px-4 py-2.5 shadow-sm ${
                                             isMe 
                                             ? 'bg-indigo-600 text-white rounded-2xl rounded-tr-sm' 
-                                            : 'bg-slate-800 text-slate-100 rounded-2xl rounded-tl-sm'
+                                            : 'bg-slate-800/80 text-slate-100 rounded-2xl rounded-tl-sm'
                                         }`}>
                                             <p className='text-[15px] leading-relaxed break-words'>
                                                 {m.content}

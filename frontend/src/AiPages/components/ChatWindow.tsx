@@ -70,6 +70,17 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
   }, [loading, onStreamingChange])
 
 
+  const getErrorText = (raw: string): string => {
+    if (!raw) return ''
+    try {
+        const parsed = JSON.parse(raw)
+        if (parsed && typeof parsed.error === 'string') return parsed.error
+      } catch {
+        // not JSON
+      }
+      return raw
+    }
+
   const handleSend = async () => {
     if (!input.trim() || loading) return
 
@@ -110,6 +121,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
       })
 
       if (!response.ok) {
+<<<<<<< HEAD
         const friendly = 
           response.status === 401 ? 'Session expired. Please sign in again.' :
           response.status === 403 ? 'This chat is unavailable.' :
@@ -118,8 +130,16 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
           response.status >= 500 ? 'Server error. Try again.' :
           'Something went wrong.';
         throw new Error(friendly);
+=======
+        const text = await response.text().catch(() => '')
+        const message = getErrorText(text) || `Request failed (${response.status})`
+        setErrorNotice(message)
+        writeDraft(null)
+        throw new Error(message)
+>>>>>>> 1893babdcdb759c06251eeca73adc603da066f95
       }
       if (!response.body) {
+        writeDraft(null)
         throw new Error('EMPTY_STREAM');
       }
 
@@ -145,26 +165,23 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
           for (const line of lines) {
             if (!line.startsWith('data:')) continue
 
-            let payload = line.slice(5)
-            if (payload.startsWith(' ')) payload = payload.slice(1)
+            let payload = line.startsWith('data: ') ? line.slice(6) : line.slice(5)
 
-            if (payload === '[DONE]') {
-              setErrorNotice(null);
-              const current = readDraft();
+            // strip sentinel tokens the backend may include in-stream
+            payload = payload.replace(/\[DONE\]/g, '')
+            if (payload === '') continue
+
+            const errorText = getErrorText(payload)
+            if (errorText && errorText !== payload) {
+              setShowThinking(false)
+              setErrorNotice(errorText)
+              const current = readDraft()
               if (current) {
-                writeDraft({ ...current, typing: false, updatedAt: Date.now() });
+                writeDraft({ ...current, typing: false, updatedAt: Date.now() })
               }
               streamDone = true
               break
             }
-
-            if (isErrorChunk(payload)) {
-              setShowThinking(false)
-              setErrorNotice(extractFriendlyErrorFromChunk(payload))
-              streamDone = true
-              break
-            }
-
             if (firstToken) {
               setShowThinking(false);
               setErrorNotice(null);
@@ -195,13 +212,7 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
       const fallback = 'Something went wrong. Please try again.'
       const userMessage = err instanceof Error && err.message ? err.message : fallback
       setErrorNotice(userMessage)
-
-      writeDraft({
-        typing: false,
-        userText: messageText,
-        partialAi: userMessage,
-        updatedAt: Date.now(),
-      })
+      writeDraft(null)
     } finally {
       streamAbortRef.current = null
       setLoading(false)
@@ -371,36 +382,6 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
     // snap to bottom to avoid repeated smooth scroll jumps
     el.scrollTop = el.scrollHeight
   }
-
-  const isErrorChunk = (chunk: string): boolean => {
-    const lower = chunk.toLowerCase();
-    return (
-      chunk.startsWith('Error:') ||
-      chunk.startsWith('error:') ||
-      lower.includes('invalid_api_key') ||
-      lower.includes('api key') ||
-      lower.includes('quota exceeded') ||
-      lower.includes('rate limit') ||
-      lower.includes('too many requests')
-    );
-  };
-
-  const extractFriendlyErrorFromChunk = (chunk: string): string => {
-    const lower = chunk.toLowerCase();
-    if (lower.includes('invalid_api_key') || lower.includes('api key')) {
-      return 'AI service is temporarily unavailable. Please try again later.';
-    }
-    if (lower.includes('rate limit') || lower.includes('too many requests')) {
-      return 'Too many requests. Please wait a moment and try again, 5/min, 100/day';
-    }
-    if (lower.includes('quota') || lower.includes('exhausted') || lower.includes('credits')) {
-      return 'AI service is unavailable right now. Please try again later.';
-    }
-    if (lower.includes('timed out')) {
-      return 'The AI is taking too long to respond. Please try again.';
-    }
-    return 'Something went wrong. Please try again.';
-  };
 
   // Auto-hide popup after a few seconds
   useEffect(() => {

@@ -21,9 +21,9 @@ interface EditProfileModalProps {
  */
 
 export function EditProfileModal({ isOpen, onClose, initialData, onHandleSaveInfo, serverError, setServerError, isSavingProfile }: EditProfileModalProps) {
+    const {user} = useAuth();
     const   navigate = useNavigate();
     const [isUploading, setIsUploading] = useState<boolean>(false);
-    const {user} = useAuth();
     /**_______________ Costume Hook __________________ */
     const   hook = useEditeProfileModale(initialData as UserProfileInfo, isOpen);
     if(hook === null)
@@ -62,16 +62,16 @@ export function EditProfileModal({ isOpen, onClose, initialData, onHandleSaveInf
                 }
                 /** __________ Call avatr uplaod if the avatar changed/exist */
                 if(avatar) {
-                    console.log('Im saving the avatar ....')
                     const newAvatarUrl = await uploadAvatar(avatar); // if this fails it throws an error and stop 
                     finalData.avatar = newAvatarUrl;
                     window.dispatchEvent(new CustomEvent<{avatarUrl: string, userId: string | null}>("avatar:update", {detail: {avatarUrl: newAvatarUrl, userId: user?.id ?? null}})); // emit event for updating avatar in the bar component
                 }
-                console.log('saving the user infooooo_____________');
                 await onHandleSaveInfo(finalData, isUserInfoChanged);
-            } catch (error: any) {
-                console.log('the errorr ', error)
-                setServerError(error.message);
+            } catch (error: unknown) {
+                if (error instanceof Error)
+                    setServerError(error.message);
+                else
+                    setServerError("Failed to save profile changes.");
             } finally {
                 setIsUploading(false);
             }
@@ -107,6 +107,7 @@ export function EditProfileModal({ isOpen, onClose, initialData, onHandleSaveInf
                                 ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
                         </div>
                         <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold text-center">Click to change photo</p>
+                        {errors?.avatar && <p className="text-red-400 text-sm">{errors.avatar}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -169,6 +170,7 @@ export function EditProfileModal({ isOpen, onClose, initialData, onHandleSaveInf
     
                     </div>
                 </div>
+
                 <button
                 onClick={() => {navigate('/profile/setting')}}
                     type='button'
@@ -179,7 +181,11 @@ export function EditProfileModal({ isOpen, onClose, initialData, onHandleSaveInf
                         <span>Change password</span>
                 </button>
                 <div className="flex gap-3 mt-10">
-                    <button onClick={onClose} className="flex-1 px-6 py-3 rounded-xl font-medium text-slate-300 hover:bg-white/5 transition-all">
+                    <button onClick={() => {
+                        onClose();
+                        
+                    }
+                } className="flex-1 px-6 py-3 rounded-xl font-medium text-slate-300 hover:bg-white/5 transition-all">
                         Cancel
                     </button>
                     <button 

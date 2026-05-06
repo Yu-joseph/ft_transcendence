@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { ProfileHeader } from "../components/profile/ProfileHeader";
-import { UserStatCard } from "../components/profile/UserStatCard";
 import { SkeletonProfileUi } from "../components/profile/SkeletonProfileUi";
 import { ErrorMessage, type TypeOfError } from "../components/shared/ErrorMessage";
 import { fetchClient } from "../utils/fetchClient";
@@ -27,11 +26,7 @@ export function Profile() {
     const [userInfo, setUserInfo] = useState<UserProfileInfo | null>(null);
     const { user } = useAuth();
     const params = useParams<string>();
-    const userId = params.id as string | null;
-    
-    const [userStat, setUserStat] = useState<UserStatGame | null>(null);
-    const [loadStat, setLoadStat] = useState<boolean>(false);
-    const [statError, setStatError] = useState<string | null>(null);
+    const userId = params.id as string ;
     const [loadHeaderInfo, setLoadHeaderInfo] = useState<boolean>(false);// this for load header info in 'ProfileHeader' component
     const [errHeaderInfo, setErrHeaderInfo] = useState<string|null>(null);// this for load header info in 'ProfileHeader' component
 
@@ -45,11 +40,19 @@ export function Profile() {
                 setUserInfo(prev => prev ? { ...prev, user_status: data.status } : prev);
             }
         };
+<<<<<<< HEAD
 
         chatSocket.on('status:update', onStatusUpdate);
         return () => { chatSocket.off('status:update', onStatusUpdate); };
     }, [userInfo?.id, setUserInfo]);
 
+=======
+        
+        chatSocket.on('status:update', onStatusUpdate);
+        return () => { chatSocket.off('status:update', onStatusUpdate); };
+    }, [userInfo?.id, setUserInfo]);
+    /**__________________________________________________ */
+>>>>>>> 1893babdcdb759c06251eeca73adc603da066f95
     useEffect(() => {
         if(!user?.id || !userId)
             return ;
@@ -65,41 +68,18 @@ export function Profile() {
                     setUserInfo(result)
                 }
             } catch (err:any) {
-                console.log('Error in profile header:', err);
                 setErrHeaderInfo(err?.message || 'Failed to load profile');
             } finally {
                 setLoadHeaderInfo(false);
             }
         }
         loadUserInfo();
-        /**____________________________________________________________________ */
-        const loadUserStatGame = async () => {
-            setLoadStat(true);
-            if(!userId)
-                return;
-            try {
-                setStatError(null);
-                const result = await fetch(`https://${window.location.hostname}:8443/game-api/api/users/${userId}/status`, {
-                    'credentials': 'include'
-                });
-                if (!result.ok)
-                    throw new Error('Failed to load User stats');
-                const data = await result.json() as UserStatGame;
-                console.log("Result of the game statistic:", data);
-                setUserStat(data);
-            } catch (err: any) {
-                console.log('error:', err.message);
-                setStatError(err.message);
-            } finally {
-                setLoadStat(false);
-            }
-        }
-        loadUserStatGame();
+       
     }, [userId, user?.id])
 
     const   type: TypeOfError = 'profile information';
     return (
-        <main className="relative h-full w-full bg-slate-950 overflow-y-auto overflow-x-hidden no-scrollbar">
+        <main className="relative h-full w-full bg-slate-900 overflow-y-auto overflow-x-hidden no-scrollbar pb-24">
             {/* Background Decorative Elements */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-full z-0 pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 blur-[120px] rounded-full"></div>
@@ -109,32 +89,32 @@ export function Profile() {
             <div className="relative z-10 p-4 md:p-8 lg:p-12 pb-24 lg:pb-32">
                 <div className="max-w-5xl mx-auto space-y-8 md:space-y-12">
                     {
-                        (loadStat || loadHeaderInfo) && (
-                            <SkeletonProfileUi />
-                        )
+                        loadHeaderInfo && ( <SkeletonProfileUi /> )
                     }
                     {
-                        !loadStat && !loadHeaderInfo && (statError || errHeaderInfo) && (
+                        !loadHeaderInfo && errHeaderInfo && (
                             <div className="flex justify-center py-12">
-                                <ErrorMessage message={statError ?? errHeaderInfo ?? null} typeOfError={type} />
+                                <ErrorMessage message={errHeaderInfo ?? null} typeOfError={type} />
                             </div>
                         )
                     }
                     {
-                        !loadStat && !loadHeaderInfo && !statError && !errHeaderInfo && (
+                        !loadHeaderInfo && !errHeaderInfo && (
                             <div className="space-y-8 md:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
                                 <ProfileHeader 
-                                    userGameStat={userStat} 
                                     isOwnProfile={isOwnProfile}
                                     userInfo={userInfo} 
                                     setUserInfo={setUserInfo}
                                 />
                                 <PlayerState  id={isOwnProfile ? userId : userInfo?.id} />
                                 <UserMatchHistory limit={8} id={isOwnProfile ? userId : userInfo?.id} />
+<<<<<<< HEAD
                                 {/* <UserStatCard 
                                     userGameStat={userStat} 
                                     isOwnProfile={isOwnProfile} 
                                 /> */}
+=======
+>>>>>>> 1893babdcdb759c06251eeca73adc603da066f95
                             </div>
                         )
                     }

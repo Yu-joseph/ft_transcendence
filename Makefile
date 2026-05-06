@@ -1,6 +1,7 @@
 up :
 	cd docker && docker compose up 
 build :
+	bash ip.sh
 	cd docker && docker compose up --build
 
 start :
@@ -19,10 +20,11 @@ ps :
 	docker ps 
 
 rm_vol:
-	@docker volume ls -q | xargs -r docker volume rm
+	@docker volume prune -f
 
 fclean :
+	cd docker && docker compose down -v
 	rm -rf docker/vault/data/*
 	rm -rf docker/vault/userconfig/tls/*
 	rm -rf docker/vault/userconfig/*.json
-	rm -rf backend/auth/myauth/authentication/migrations/0*.py
+re : fclean rm_vol  build

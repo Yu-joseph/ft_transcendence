@@ -28,6 +28,7 @@ export default function Dashboard() {
         //create a callback function and stores it in variable
     const onTournamentCreated = (data: { tournamentId: string; tournament: { name: string; creatorId: string } }) => {
       if (user) {
+
         sessionStorage.setItem('activeTournament', JSON.stringify({
           tournamentId: data.tournamentId,
           // userId: user.id,
@@ -82,7 +83,7 @@ export default function Dashboard() {
               <div className="grid md:grid-cols-1 lg:grid-cols-2 sm:grid-cols-2 gap-6 w-full mt-4">
                 <button onClick={() => navigate("/AiChallange")} className="flex flex-col items-center gap-3 p-8 rounded-b-4xl bg-slate-800 border border-black hover:border-amber-500 hover:scale-102 transition-all duration-300 shadow-lg">
                   <span className="text-4xl"><PiGameControllerFill /></span>
-                  <span className="text-amber-500 text-xl font-semibold">AiChallange</span>
+                  <span className="text-amber-500 text-xl font-semibold">AI Challange</span>
                   <span className="text-gray-400 text-sm">Find players and start a match</span>
                 </button>
                 <button onClick={() => setOpenPop(true)} className="flex flex-col items-center gap-3 p-8 rounded-b-4xl bg-slate-800 border border-black hover:border-amber-500 hover:scale-102 transition-all duration-300 shadow-lg">

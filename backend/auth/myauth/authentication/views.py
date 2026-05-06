@@ -9,6 +9,8 @@ from django.core.validators import EmailValidator
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from django.views.decorators.http import require_POST
+from django.core.files.storage import default_storage
 from rest_framework_simplejwt.exceptions import TokenError
 from .auth_utils import get_user_from_request
 from .permissions import role_required
@@ -16,6 +18,8 @@ import uuid
 import requests
 from .models import User
 import json
+import os
+from PIL import Image
 
 FORTY_TWO_AUTHORIZE_URL = 'https://api.intra.42.fr/oauth/authorize'
 FORTY_TWO_TOKEN_URL     = 'https://api.intra.42.fr/oauth/token'
@@ -117,7 +121,12 @@ def register(request):
 
     if not all(part.isalpha() for part in fullname.split()):
         return JsonResponse({"error": "Invalid name"}, status=400)
-
+    if len(username) > 25:
+         return JsonResponse({"error": "Invalid username"}, status=400)
+    if len(email) > 42:
+        return JsonResponse({"error": "Invalid email"}, status=400)
+    if len(fullname) > 25:
+        return JsonResponse({"error": "Invalid fullname"}, status=400)
     User.objects.create(
         id=str(uuid.uuid4()),
         username=username,
@@ -127,46 +136,6 @@ def register(request):
         role="user"
     )
     return JsonResponse({"message": "User created"}, status=201)
-
-
-@csrf_exempt
-def update_users(request):
-    if request.method != "PATCH":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
-
-    tmp_user = get_user_from_request(request)
-    if not tmp_user:
-        return JsonResponse({"error": "Not authenticated"}, status=401)
-
-    try:
-        body     = json.loads(request.body)
-        email    = body.get("email")
-        bio      = body.get("bio")
-        fullname = body.get("fullname")
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "invalid JSON"}, status=400)
-
-    if not (email and bio and fullname):
-        return JsonResponse({"error": "email, bio and fullname required"}, status=400)
-
-    if email:
-        validator = EmailValidator()
-        try:
-            validator(email)
-        except ValidationError:
-            return JsonResponse({"error": "Invalid Email"}, status=400)
-        tmp_user.email = email
-
-    if fullname:
-        if not all(part.isalpha() for part in fullname.split()):
-            return JsonResponse({"error": "Invalid name"}, status=400)
-        tmp_user.fullname = fullname
-
-    if bio:
-        tmp_user.bio = bio
-
-    tmp_user.save()
-    return JsonResponse({"message": "profile updated"}, status=200)
 
 
 @csrf_exempt
@@ -231,7 +200,7 @@ def update_users(request):
         try:
             validator(email)
         except ValidationError:
-            return JsonResponse({"error": "Invalid email"}, status=402)
+            return JsonResponse({"error": "Invalid email"}, status=400)
         tmp_user.email = email
         fields_to_update.append("email")
 
@@ -247,42 +216,6 @@ def update_users(request):
 
     tmp_user.save(update_fields=fields_to_update)
     return JsonResponse({"message": "profile updated", "email": tmp_user.email, "fullname": tmp_user.fullname, "bio": tmp_user.bio}, status=200)
-
-@csrf_exempt
-def changing_password(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
-
-    tmp_user = get_user_from_request(request)
-    if not tmp_user:
-        return JsonResponse({"error": "Not authenticated"}, status=401)
-
-    try:
-        body            = json.loads(request.body)
-        curr_pass       = body.get("current_pass")
-        new_pass        = body.get("new_pass")
-        retype_new_pass = body.get("retype_new_pass")
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
-
-    if not curr_pass or not new_pass or not retype_new_pass:
-        return JsonResponse({"error": "All fields are required"}, status=400)
-
-    if not check_password(curr_pass, tmp_user.password):
-        return JsonResponse({"error": "Incorrect current password"}, status=400)
-
-    if new_pass != retype_new_pass:
-        return JsonResponse({"error": "New passwords do not match"}, status=400)
-
-    try:
-        validate_password(new_pass, user=tmp_user)
-    except ValidationError as e:
-        return JsonResponse({"error": e.messages}, status=400)
-
-    tmp_user.password = make_password(new_pass)
-    tmp_user.save()
-    return JsonResponse({"message": "Password updated"}, status=200)
-
 
 @csrf_exempt
 def logout(request):
@@ -377,8 +310,8 @@ def forty_two_callback(request):
     access  = refresh.access_token
 
     response = redirect(redirect_url)
-    response.set_cookie(key='access_token',  value=str(access),  max_age=604800,    httponly=True, secure=False, samesite='Lax', path='/')
-    response.set_cookie(key='refresh_token', value=str(refresh), max_age=604800, httponly=True, secure=False, samesite='Lax', path='/')
+    response.set_cookie(key='access_token',  value=str(access),  max_age=604800,    httponly=True, secure=True, samesite='Lax', path='/')
+    response.set_cookie(key='refresh_token', value=str(refresh), max_age=604800, httponly=True, secure=True, samesite='Lax', path='/')
     return response
 
 @csrf_exempt
@@ -423,22 +356,69 @@ def get_user(request):
 
     return JsonResponse(user)
 
+ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png'}
+ALLOWED_MIME_TYPES = {"image/jpeg", "image/png"}
+
+def is_valid_image(file):
+    try:
+        file.seek(0)
+        img = Image.open(file)
+        img.verify()  
+        file.seek(0)   
+        img = Image.open(file)
+        img.load()
+        file.seek(0)
+        return True
+    except Exception as e:
+        # Check your terminal/server logs for this output!
+        print(f"DEBUG: Image validation failed with error: {e}")
+        return False
+
+
+@require_POST
 @csrf_exempt
 def update_avatar(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
     try:
-        avatar_file = request.FILES.get("avatar")  
+        avatar_file = request.FILES.get("avatar")
         if not avatar_file:
             return JsonResponse({"error": "avatar file is required"}, status=400)
 
         tmp_user = get_user_from_request(request)
 
-        tmp_user.avatar = avatar_file  
+        if not tmp_user:
+           return JsonResponse({"error": "unauthorized user"}, status=401)
+
+        ext = os.path.splitext(avatar_file.name)[1].lower()
+        if ext not in ALLOWED_EXTENSIONS:
+            return JsonResponse(
+                {"error": f"Invalid file type '{ext}'"},
+                status=400
+            )
+        if avatar_file.content_type not in ALLOWED_MIME_TYPES:
+            return JsonResponse(
+                {"error": f"Invalid MIME type '{avatar_file.content_type}'"},
+                status=400
+            )
+
+        if avatar_file.size > 2 * 1024 * 1024:
+            return JsonResponse({"error": "File too large"}, status=400)
+
+        
+        if not is_valid_image(avatar_file):
+            return JsonResponse({"error": "Invalid image"}, status=400)
+
+
+        if tmp_user.avatar and tmp_user.avatar.name != "images/pipi.jpg":
+            if default_storage.exists(tmp_user.avatar.name):
+                default_storage.delete(tmp_user.avatar.name)
+
+        tmp_user.avatar = avatar_file
         tmp_user.save()
 
-        avatar_url = tmp_user.avatar.url  
+        return JsonResponse({
+            "message": "Avatar updated successfully",
+            "url": tmp_user.avatar.url
+        }, status=200)
 
-        return JsonResponse({"message": "Avatar updated successfully", "url": avatar_url}, status=200)
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse({"error": "Internal server error"}, status=500)

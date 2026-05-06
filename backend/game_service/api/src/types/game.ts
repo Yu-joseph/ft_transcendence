@@ -21,6 +21,7 @@ export interface Tournament {
   name: string;
   creatorId: string;
   players: Player[];
+  maxPlayers: number;
   bracket: TournamentMatch[];
   status: 'waiting' | 'in-progress' | 'finished';
   currentRound: number;

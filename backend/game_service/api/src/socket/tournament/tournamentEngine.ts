@@ -16,6 +16,7 @@ export function emitTournamentUpdate(io: Server, tournament: Tournament) {
       creatorId: tournament.creatorId,
       status: tournament.status,
       currentRound: tournament.currentRound,
+      maxPlayers: tournament.maxPlayers,
       bracket: tournament.bracket,
       players: tournament.players,
       winner: tournament.winner,
@@ -69,9 +70,9 @@ export function actuallyStartMatch(io: Server, tournament: Tournament, tm: Tourn
   io.to(getUserRoom(tm.player1.id)).emit('match-found', { matchId, match, symbol: 'X' });
   io.to(getUserRoom(tm.player2.id)).emit('match-found', { matchId, match, symbol: 'O' });
 
-  console.log(
-    `Tournament match started: ${tm.player1.username} vs ${tm.player2.username} (Round ${tm.roundNumber})`,
-  );
+  // console.log(
+  //   `Tournament match started: ${tm.player1.username} vs ${tm.player2.username} (Round ${tm.roundNumber})`,
+  // );
   emitTournamentUpdate(io, tournament);
 }
 
@@ -119,7 +120,7 @@ function handleBracketMatchFinish(io: Server, tournament: Tournament, bracketMat
 
       emitTournamentUpdate(io, tournament);
       const winnerPlayer = tournament.players.find((p) => p.id === tournament.winner);
-      console.log(`Tournament "${tournament.name}" won by ${winnerPlayer?.username}`);
+      // console.log(`Tournament "${tournament.name}" won by ${winnerPlayer?.username}`);
 
       tournament.players.forEach((p) => {
         io.to(getUserRoom(p.id)).emit('tournament-finished', {
@@ -132,7 +133,7 @@ function handleBracketMatchFinish(io: Server, tournament: Tournament, bracketMat
       tournaments.delete(tournament.id);
     } else {
       tournament.currentRound++;
-      console.log(`Tournament "${tournament.name}" advancing to round ${tournament.currentRound}`);
+      // console.log(`Tournament "${tournament.name}" advancing to round ${tournament.currentRound}`);
       markReadyMatches(io, tournament);
     }
   } else {

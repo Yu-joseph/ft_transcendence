@@ -6,7 +6,7 @@ import { PasswordField } from "../components/PasswordField";
 // import {  } from "re";
 
 function Login() {
-  const usernameMaxLength = 20;
+  const usernameMaxLength = 25;
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +81,6 @@ function Login() {
       const { data, isJson } = await readApiResponse(response);
 
       if (!response.ok) {
-        // console.log(response);
         if (!isJson) {
           throw new Error("Login endpoint return false.");
         }
@@ -345,6 +344,7 @@ function Login() {
                   id="signupEmail"
                   value={signupEmail}
                   onChange={(e) => setSignupEmail(e.target.value)}
+                  maxLength={42}
                   className="w-full px-3 py-2 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
                   placeholder="Enter email"
                   required
@@ -360,6 +360,7 @@ function Login() {
                   id="signupFullname"
                   value={signupFullname}
                   onChange={(e) => setSignupFullname(e.target.value)}
+                  maxLength={25}
                   className="w-full px-3 py-2 rounded-lg bg-emerald-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
                   placeholder="Enter full name"
                 />

@@ -22,7 +22,7 @@ def chat_stream():
         return jsonify ({"error" : "Unauthorized"}) , 401
 
     if not check_rate_limit(user_id):
-        return jsonify({"error": "Too many requests"}), 429
+        return jsonify({"error": "Too many requests, you have 5/min and 500/day"}), 429
     
     data       = request.get_json()
     message    = data.get('message', '').strip()

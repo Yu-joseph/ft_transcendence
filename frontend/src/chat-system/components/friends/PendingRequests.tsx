@@ -10,7 +10,9 @@ export  function    PendingRequests() {
         handleReject,
         pendingFriend,
         loading,
-        error
+        error,
+        actionError,
+        clearActionError,
     } = usePendingRequest();
     /**_______________ Component-Style ___________________ */
     const   type: TypeOfError = 'pending requests';
@@ -23,6 +25,20 @@ export  function    PendingRequests() {
                 </h1>
                 <p className='mt-1 text-slate-400'>Manage your incoming and outgoing friend requests.</p>
             </div>
+            {/* /************************************** */ }
+            {actionError && (
+                <div className="mb-4 bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+                    <span className="text-sm font-medium">{actionError}</span>
+                    <button
+                        onClick={clearActionError}
+                        className="text-rose-200 hover:text-white transition-colors"
+                        aria-label="Dismiss error"
+                    >
+                        <X size={16} />
+                    </button>
+                </div>
+            )}
+
             {/* / ******************************************************* */ }
             <div className='flex flex-col gap-4 max-w-3xl mx-auto w-full'>
                 {
@@ -44,8 +60,9 @@ export  function    PendingRequests() {
                 {
                     !loading && error && (<ErrorMessage message={error ?? null} typeOfError={type} />)
                 }
-                { !loading && !error &&
-                pendingFriend
+                { !loading &&
+                    !error &&
+                    pendingFriend
                     .filter(p => !(p.status === 'REJECTED' && p.type === 'incoming'))
                     .map((penFr) => (
                     <div key={penFr.friendRequestId}
@@ -98,7 +115,7 @@ export  function    PendingRequests() {
                     </div>
                 ))}
             </div>
-            {pendingFriend.length === 0 && !loading && (
+            {pendingFriend.length === 0 && !loading && !error && (
                 <div className="flex flex-col items-center justify-center h-80 text-center opacity-40">
                     <div className="p-6 rounded-full bg-slate-800/50 mb-4">
                         <UserSearch size={48} className="text-slate-500" />

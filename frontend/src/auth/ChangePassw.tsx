@@ -97,6 +97,7 @@ export default function ChangePassw() {
       setCurrentPass("");
       setNewPass("");
       setRetypeNewPass("");
+      navigate("/Dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unexpected error.");
     } finally {

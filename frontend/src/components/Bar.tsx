@@ -22,7 +22,7 @@ function Bar() {
         return;
       const newAvatar = detail.avatarUrl;
       setAvatar(newAvatar || '');
-      if (user) {
+      if (user?.id) {
         setUser({ ...user, avatar: newAvatar });
       }
     }
@@ -95,7 +95,7 @@ function Bar() {
   const avatarUrl = avatarPath
     ? avatarPath.startsWith("http") || avatarPath.startsWith("/authent/")
       ? avatarPath
-      : `/authent/media${avatarPath}`
+      : `/media${avatarPath}`
     : undefined;
 
   return (

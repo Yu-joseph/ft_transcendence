@@ -1,22 +1,14 @@
 import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { createServer } from "http";
-import { Server } from "socket.io";
 import prisma from "./lib/prisma";
-import {
-  setupSocketHandlers,
-} from "./socket/handlers";
-import { setupTournamentHandlers } from "./socket/tournament/tournament";
-import { setupTournamentHandlers } from "./socket/tournament/tournament";
 import { getUserIdFromToken } from "./auth/identity";
 import { getRankedUsers } from "./socket/onevone/leaderboardService";
 import { isPlayerInActiveMatch } from "./socket/onevone/lobbyPresence";
 import { players } from "./socket/onevone/onevoneState";
-import { getRankedUsers } from "./socket/onevone/leaderboardService";
-import { isPlayerInActiveMatch } from "./socket/onevone/lobbyPresence";
-import { players } from "./socket/onevone/onevoneState";
+import helmet from 'helmet';
 
+<<<<<<< HEAD
 const app = express();
 const PORT = 3000;
 const CORE = process.env.SECRET_KEY;
@@ -31,15 +23,26 @@ const corsOptions = {
   ],
   methods: ["GET", "POST"],
   credentials: true,
+=======
+export const app = express();
+
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+>>>>>>> 1893babdcdb759c06251eeca73adc603da066f95
 };
 
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: corsOptions,
-});
+export const corsOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',')
+    : ["http://localhost:8080"];
 
-app.use(cors(corsOptions));
-app.use(express.json());
+app.use(helmet());
+app.use(cors({
+    origin: corsOrigins,
+    credentials: true,
+    optionsSuccessStatus: 200
+}));
+
+app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 
 type AuthedRequest = Request & { userId?: string };
@@ -61,15 +64,15 @@ async function requireAuth(req: Request, res: Response, next: NextFunction) {
   return next();
 }
 
+/** Health check endpoint for Docker / DevOps */
+app.get("/api/health", (_req, res) => {
+  res.json({ status: "ok", message: "Game service is healthy" });
+});
+
 app.get("/", (_req, res) => {
   res.json({ message: "Welcome to the API" });
 });
 
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok" });
-});
-
-// Public route
 app.get("/api/leaderboard", async (_req, res) => {
   try {
     const ranked = await getRankedUsers();
@@ -106,9 +109,12 @@ app.get("/api/me/stats", requireAuth, async (req, res) => {
   }
 });
 
-app.get("/api/me/games", requireAuth, async (req, res) => {
+app.get("/api/:id/games", requireAuth, async (req, res) => {
   try {
-    const userId = (req as AuthedRequest).userId as string;
+    const userId = req.params.id?.trim();
+    if (!userId) {
+      return res.status(400).json({ error: "User id is required" });
+    }
     const games = await prisma.game.findMany({
       where: {
         OR: [{ playerXId: userId }, { playerOId: userId }],
@@ -217,9 +223,19 @@ app.get("/api/users/:id/status", async (req, res) => {
   }
 });
 
-setupSocketHandlers(io);
-setupTournamentHandlers(io);
+/** to prevent server for sending HTML content for not found routes */
+app.use((_req: Request, res: Response) => {
+    res.status(404).json({
+        success: false,
+        message: `Route ${_req.originalUrl} not found`,
+    });
+});
 
-httpServer.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+/** Global Error Handler (prevents sending HTML res on crash) */
+app.use((error: any, _req: Request, res: Response, _next: NextFunction) => {
+    console.error("Unhandled Error:", error);
+    res.status(500).json({
+        success: false,
+        message: 'Internal Server Error',
+    });
 });

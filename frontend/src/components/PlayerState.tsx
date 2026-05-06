@@ -29,6 +29,8 @@ export default function PlayerState({ previewStats, id }: PlayerStateProps) {
   }
   
   useEffect(() => {
+    if (!id )
+      return;
     if (previewStats) {
       setStats(previewStats);
       setLoading(false);

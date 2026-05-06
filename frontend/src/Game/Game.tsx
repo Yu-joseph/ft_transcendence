@@ -9,6 +9,7 @@ import { useAuth } from "../auth/useAuth";
 type CellValue = "X" | "O" | null;
 
 const TURN_TIMEOUT_MS = 5000;
+const WIN_MODAL_DELAY_MS = 500;
 
 interface Player {
   id: string;
@@ -61,6 +62,7 @@ function Game() {
   const [showWinModal, setShowWinModal] = useState(false);
   const [turnRemainingMs, setTurnRemainingMs] = useState(TURN_TIMEOUT_MS);
   const turnEndsAtRef = useRef<number | null>(null);
+  const winModalTimerRef = useRef<number | null>(null);
 
   // Derive move count from the current board state
   const getMoveCount = (symbol: "X" | "O"): number => {
@@ -87,7 +89,6 @@ function Game() {
     }
 
     const handleReconnectFailed = (data: { reason: string }) => {
-      console.log('Reconnect failed:', data.reason);
       navigate(backTo);
     };
 
@@ -122,14 +123,26 @@ function Game() {
         setTurnRemainingMs(TURN_TIMEOUT_MS);
       }
 
+      if (winModalTimerRef.current !== null) {
+        window.clearTimeout(winModalTimerRef.current);
+        winModalTimerRef.current = null;
+      }
+
       if (match.winner) {
         const winnerPlayer = match.players.find((p) => p.id === match.winner);
         setWinner(winnerPlayer?.username ?? match.winner);
-        setShowWinModal(true);
+        // Delay the modal so the final winning move is visible on the board.
+        setShowWinModal(false);
+        winModalTimerRef.current = window.setTimeout(() => {
+          setShowWinModal(true);
+          winModalTimerRef.current = null;
+        }, WIN_MODAL_DELAY_MS);
       } else if (match.status === "finished") {
         setWinner("Draw");
+        setShowWinModal(false);
       } else {
         setWinner(null);
+        setShowWinModal(false);
       }
     };
 
@@ -162,11 +175,18 @@ function Game() {
     };
   }, [backTo, matchId, navigate]);
 
+  useEffect(() => {
+    return () => {
+      if (winModalTimerRef.current !== null) {
+        window.clearTimeout(winModalTimerRef.current);
+      }
+    };
+  }, []);
+
     useEffect(() => {
     if (!matchId) return;
 
     const handleMatchFound = (data: { matchId: string; match: Match; symbol: string }) => {
-      console.log("Match restored:", data.matchId, "Symbol:", data.symbol);
       setMySymbol(data.symbol as "X" | "O");
       setBoard(data.match.board as CellValue[]);
       setCurrentTurn(data.match.currentTurn);
@@ -246,15 +266,6 @@ function Game() {
 
     return () => clearInterval(timerId);
   }, [currentTurn, isTurnActive]);
-
-  // Debug states
-  useEffect(() => {
-    console.log("Debug - user.id:", authUser?.id);
-    console.log("Debug - currentTurn:", currentTurn);
-    console.log("Debug - isMyTurn:", isMyTurn);
-    console.log("Debug - matchStatus:", matchStatus);
-    console.log("Debug - mySymbol:", mySymbol);
-  }, [authUser, currentTurn, isMyTurn, matchStatus, mySymbol]);
 
   // Determine status text
   let statusText: string;

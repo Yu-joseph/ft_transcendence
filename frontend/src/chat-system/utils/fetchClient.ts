@@ -1,7 +1,6 @@
 const   BASE_URL = `/api`;
 
 export async function    fetchClient<T>(endpoint: string, option: RequestInit = {}) : Promise<T> {
-    console.log('VITE CAHT API:', `${BASE_URL}${endpoint}`);
     const   headers = {
         'Content-Type': 'application/json',
         ...(option.headers as Record<string, string> || {})
@@ -11,16 +10,18 @@ export async function    fetchClient<T>(endpoint: string, option: RequestInit = 
         headers,
         credentials: 'include'
     });
-
+    if (response.status === 429) {
+        throw new Error("You are making too many requests. Please wait a moment and try again.");
+    }
     let   data: any;
+    
     try {
         data = await response.json();
-    } catch (e: any) {
+    } catch {
         data = {message: 'Server unreachable. Try again later...'};
     }
 
     if (response.status === 401) {
-        console.warn("Session expired. Redirecting to login...");
         window.location.href = '/'; // redirect to login page when token expired
         return Promise.reject(new Error("Unauthorized"));
     }

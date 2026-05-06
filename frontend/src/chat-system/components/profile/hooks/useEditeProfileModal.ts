@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import type { UserProfileInfo } from "./useProfileHeader";
 import { withMediaPrefix } from "../../shared/sharedUtils";
 
@@ -15,6 +15,24 @@ export  function    useEditeProfileModale(initialData: UserProfileInfo, isOpen: 
         email: initialData?.email || '' as string,
         avatar: initialData?.avatar || '' as string
     });
+
+    // Reset state when the modal is opened
+    useEffect(() => {
+        if (isOpen) {
+            setFormData({
+                fullname: initialData?.fullname || '' as string,
+                bio: initialData?.bio || '' as string,
+                email: initialData?.email || '' as string,
+                avatar: initialData?.avatar || '' as string
+            });
+            setPreviewUrl(initialData?.avatar ?? null);
+            setAvatar(null);
+            setErrors(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    }, [isOpen, initialData]);
 
     const validateForm = () => {
         const   newErrors: Record<string, string> = {};
@@ -63,23 +81,27 @@ export  function    useEditeProfileModale(initialData: UserProfileInfo, isOpen: 
             return;
         }
         if(!file?.type.startsWith('image/')) {
-            console.log('Invalid Image');
-            setErrors({...errors, avatar: 'Invalid Image type.'}); // *****
+            setErrors((prev) => ({ ...(prev || {}), avatar: "Invalid image type." })); // *****
             setAvatar(null);
             return;
         }
-        if (file) {
-            const url = URL.createObjectURL(file);
-            setPreviewUrl(url);
-            setAvatar(file);
-        }
+        // Clear old avatar error when a valid image is selected
+        setErrors((prev) => {
+            if (!prev) return prev;
+            const next = { ...prev };
+            delete next.avatar;
+            return next;
+        });
+        
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+        setAvatar(file);
     };
 
     const uploadAvatar = async (file: File) => {
         if(!file)
             return ;
         const fd = new FormData();
-        console.log('before append:', fd);
         fd.append('avatar', file);
         /** ________________ upload avatr _____________________ */
         const res = await fetch('/authent/update_avatar/', {

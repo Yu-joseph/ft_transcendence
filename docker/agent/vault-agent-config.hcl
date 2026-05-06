@@ -26,13 +26,16 @@ template {
   source      = "/vault/templates/database.tpl"
   destination = "/vault/secrets/database.env"
   perms       = 0644
+  command     = "DOCKER_API_VERSION=1.41 docker restart auth"
 }
 
 template {
   source      = "/vault/templates/br_db.tpl"
   destination = "/vault/aii/file.env"
   perms       = 0644
+  command     = "DOCKER_API_VERSION=1.41 docker restart chatbot"
 }
+
 
 template {
   source      = "/vault/templates/ai.tpl"

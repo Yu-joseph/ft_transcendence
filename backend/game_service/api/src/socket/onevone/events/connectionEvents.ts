@@ -53,6 +53,6 @@ export function registerConnectionEvents(io: Server, socket: Socket) {
       removePendingInvitesForUser(userId);
       players.delete(userId);
       emitLobbyPlayersUpdate(io);
-      console.log('User disconnected:', player?.username || userId);
+      // console.log('User disconnected:', player?.username || userId);
     });
 }

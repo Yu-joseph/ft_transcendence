@@ -19,14 +19,14 @@ export default function PrivacyPolicy() {
             onClick={() => navigate("/Dashboard")}
             className="inline-flex items-center justify-center rounded-xl border border-amber-400/40 bg-slate-900 px-4 py-2 text-sm font-semibold text-amber-300 transition hover:border-amber-400 hover:text-amber-200"
           >
-            Back to Dashboard
+            Back
           </button>
         </div>
       </header>
 
       <main className="mx-auto w-full max-w-5xl px-6 py-10">
         <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/40">
-          <p className="text-sm text-slate-400">Effective date: April 23, 2026</p>
+          <p className="text-sm text-slate-400">Effective date: May 5, 2026</p>
           <div className="mt-6 space-y-6 text-sm leading-relaxed text-slate-200 sm:text-base">
             <section>
               <h2 className="text-lg font-semibold text-amber-400">Overview</h2>
@@ -48,16 +48,12 @@ export default function PrivacyPolicy() {
                   tournament participation, rankings, and match history.
                 </li>
                 <li>
-                  <span className="font-semibold text-slate-100">Chat and content:</span> messages,
-                  images, or uploads you send to other players.
+                  <span className="font-semibold text-slate-100">Chat and content:</span> text chat
+                  messages and profile content you share with other players.
                 </li>
                 <li>
-                  <span className="font-semibold text-slate-100">Technical data:</span> device
-                  identifiers, IP address, browser type, and logs needed to keep the service secure.
-                </li>
-                <li>
-                  <span className="font-semibold text-slate-100">Usage signals:</span> feature usage,
-                  clicks, and preferences that help us improve the experience.
+                  <span className="font-semibold text-slate-100">Technical data:</span> IP address,
+                  browser type, and security logs used for rate limiting and troubleshooting.
                 </li>
               </ul>
             </section>
@@ -67,13 +63,13 @@ export default function PrivacyPolicy() {
                 <li>Run core gameplay features, matchmaking, tournaments, and chat.</li>
                 <li>Authenticate users, prevent fraud, and maintain fair play.</li>
                 <li>Provide support, troubleshoot issues, and communicate updates.</li>
-                <li>Understand usage trends and improve features and performance.</li>
+                <li>Maintain service reliability, security, and performance.</li>
               </ul>
             </section>
             <section>
               <h2 className="text-lg font-semibold text-amber-400">Sharing and disclosure</h2>
               <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-300">
-                <li>With service providers that host, secure, or analyze the platform.</li>
+                <li>With service providers that host or secure the platform.</li>
                 <li>With other players, such as your username, avatar, and match results.</li>
                 <li>When required by law or to protect the safety of players and the service.</li>
                 <li>With your consent or at your direction.</li>
@@ -89,15 +85,15 @@ export default function PrivacyPolicy() {
             <section>
               <h2 className="text-lg font-semibold text-amber-400">Security</h2>
               <p className="mt-2">
-                We use reasonable safeguards to protect your information, but no system is
-                completely secure. Please keep your credentials confidential.
+                We use reasonable safeguards such as TLS, security headers, WAF protections, and
+                rate limiting, but no system is completely secure. Please keep your credentials
+                confidential. We do not offer two-factor authentication.
               </p>
             </section>
             <section>
               <h2 className="text-lg font-semibold text-amber-400">Your choices</h2>
               <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-300">
                 <li>Update profile details in the app when available.</li>
-                <li>Control browser cookie settings for non-essential data.</li>
                 <li>Contact the team if you want to access or delete your account data.</li>
               </ul>
             </section>
@@ -113,14 +109,6 @@ export default function PrivacyPolicy() {
               <p className="mt-2">
                 Questions about privacy? Reach out through the app or contact the team on Discord.
               </p>
-              <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-300">
-                <li>youssef: yu_joseph</li>
-                <li>Sayf aldin: 0xsayf_0_iq</li>
-                <li>ismail: el34bas</li>
-                <li>djangoo: mhdjant</li>
-                {/* <li>radouan: TBD</li>
-                <li>abdlali: TBD</li> */}
-              </ul>
             </section>
           </div>
         </div>

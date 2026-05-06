@@ -4,6 +4,7 @@ import { useAuth } from "../../../../auth/useAuth";
 import { useRefresh } from "../../shared/useRefresh";
 import { chatSocket } from "../../../../socket/sock";
 import { withMediaPrefix } from "../../shared/sharedUtils";
+import { getErrorMessage } from "../../../utils/error";
 
 export interface FriendsListType {
     id: string
@@ -16,14 +17,15 @@ export interface FriendsListType {
 type ActiveTabeType = 'All' | 'Online' | 'Offline';
 
 export  function    useFriendList() {
+    
+    const   {user} = useAuth();
+    const   refresh = useRefresh();
     const   [friendList, setFriendList] = useState<FriendsListType[]>([]);
-    const   [error, setError] = useState(null);
     const   [loading, setLoading] = useState(false);
     const   [activeTab, setActivetab] = useState<ActiveTabeType>('All');
     const   [goChat, setGoChat] = useState<string | null>(null);
-    const   refresh = useRefresh();
-    const   {user} = useAuth();
-
+    const [error, setError] = useState<string | null>(null); // page level error
+    const [actionError, setActionError] = useState<string | null>(null); // button/action error
     /******************************* */
 
     useEffect(() => {
@@ -40,15 +42,16 @@ export  function    useFriendList() {
         const   fetchUserList = async () => {
             try {
                 setError(null);
+                setActionError(null);
                 setLoading(true);
                 const   result  = await fetchClient<FriendsListType[]>('/friend', {});
                 if(result) {
                     result.map(fr => fr.avatar = withMediaPrefix(fr.avatar || null) ?? '')
                     setFriendList(result ?? []);
                 }
-            } catch (err: any) {
-                setError(err);
-                console.log(err);
+            } catch (err: unknown) {
+                setFriendList([]);
+                setError(getErrorMessage(err, "Could not load friends list."));
             }
             finally{
                 setLoading(false);
@@ -62,13 +65,13 @@ export  function    useFriendList() {
         if(!friendId)
             return;
         try {
-            const   result = await fetchClient(`/friend/${friendId}`, { method: 'DELETE' });
-            if(result)
-                setFriendList(prev => prev.filter(fr => fr.id !== friendId));
+            setActionError(null);
+            await fetchClient(`/friend/${friendId}`, { method: 'DELETE' });
+            setFriendList(prev => prev.filter(fr => fr.id !== friendId));
             // Broadcast to the rest of the app specialy for my chat.tsx that a friend was removed!
             window.dispatchEvent(new Event("refresh_friends"));
-        } catch (error: any) {
-            console.log(error);
+        } catch (err: unknown) {
+            setActionError(getErrorMessage(err, "Could not remove friend."));
         }
     }
 /**-------------------------------------------------------- */
@@ -76,15 +79,15 @@ export  function    useFriendList() {
         if(!userId)
             return;
         try {
+            setActionError(null);
             setGoChat(null);
-            const   result = await fetchClient('/chat/conversations', {
+            await fetchClient('/chat/conversations', {
                 method: 'POST',
                 body: JSON.stringify({friendId: userId})
             });
-            if(result)
-                setGoChat(userId);
-        } catch (error:any) {
-            console.log('errr:', error);
+            setGoChat(userId);
+        } catch (err:unknown) {
+            setActionError(getErrorMessage(err, "Could not start conversation."));
         }
     }
 
@@ -102,6 +105,8 @@ export  function    useFriendList() {
         activeTab,
         fiteredFriend,
         loading,
-        error
+        error,
+        actionError,
+        clearActionError: () => setActionError(null),
     };
 }

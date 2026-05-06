@@ -5,7 +5,7 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 load_dotenv()
@@ -68,8 +68,13 @@ WSGI_APPLICATION = 'myauth.wsgi.application'
 
 VAULT_SECRETS_FILE = '/vault/secrets/database.env'
 
-while True:
+i = 0 
+if os.path.exists(VAULT_SECRETS_FILE):
+    i = 1
+
+while True and i != 1:
     if os.path.exists(VAULT_SECRETS_FILE):
+        i = 1
         break
         
 

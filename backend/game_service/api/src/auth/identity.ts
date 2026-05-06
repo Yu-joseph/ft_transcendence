@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.SECRET_KEY ;
 
 export async function getUserIdFromToken(token: string): Promise<string | null> {
   if (!JWT_SECRET) {
-    console.error("Missing JWT secret. Set SECRET_KEY or DJANGO_SECRET_KEY.");
+    // console.error("Missing JWT secret. Set SECRET_KEY or DJANGO_SECRET_KEY.");
     return null;
   }
 
