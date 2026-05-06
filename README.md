@@ -170,7 +170,7 @@ The ft_transcendence subject requires a minimum of **14 points** to complete the
 | 8 | **Remote authentication with OAuth 2.0** | User Management | Minor | 1 | `sahamzao` | OAuth 2.0 via 42 Intra API with authorization code flow, token exchange. |
 | 9 | **WAF/ModSecurity + HashiCorp Vault** | Cybersecurity | Major | 2 | `sahamzao` | Strict ModSecurity with OWASP CRS at Nginx gateway. HashiCorp Vault with AppRole auth and Vault Agent renders all secrets (API keys, DB credentials) to isolated per-service files. |
 | 10 | **Implement a complete web-based game** | Gaming | Major | 2 | `eismail` | Real-time 1v1 Tic-tac-toe game ,5 second timer, limited movable peaces. |
-| 11 | **Remote players** | Gaming | Major | 2 | `eismail`, `cahaik` | Two players on separate computers play in real-time via Socket.IO. Handles network latency, disconnect and reconnection logic for smooth remote gameplay. |
+| 11 | **Remote players** | Gaming | Major | 2 | `eismail`, `ysouhail` | Two players on separate computers play in real-time via Socket.IO. Handles network latency, disconnect and reconnection logic for smooth remote gameplay. |
 | 12 | **Game customization options** | Gaming | Minor | 1 | `eismail` | Multiple match modes (1v1 Friend Challenge, Solo Practice against Ai opponent with Customizable difficulty (Easy, Medium, Hard) ). |
 | 13 | **Gamification system** | Gaming | Minor | 1 | `eismail` | XP/Rank system and leaderboard — all persistent in database with visual notifications, Clear rules and progression mechanics |
 | 14 | **Tournament system** | Gaming | Minor | 1 | `eismail` |  Tournament system with Clear matchup order and bracket system|`eismail` |  Customizable game difficulty (Easy, Medium, Hard)|
