@@ -95,7 +95,7 @@ function Bar() {
   const avatarUrl = avatarPath
     ? avatarPath.startsWith("http") || avatarPath.startsWith("/authent/")
       ? avatarPath
-      : `/authent/media${avatarPath}`
+      : `/media${avatarPath}`
     : undefined;
 
   return (

@@ -1,4 +1,4 @@
-const MEDIA_PREFIX = "/authent/media";
+const MEDIA_PREFIX = "/media";
 
 export function withMediaPrefix(avatar: string | null): string | null {
   if (!avatar) return null;

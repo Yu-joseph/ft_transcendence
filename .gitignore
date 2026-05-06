@@ -23,7 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.env.local
 
 docker/vault/data/
 docker/vault/userconfig/*.json
 docker/vault/userconfig/tls/   
+
+__pycache__/

@@ -161,7 +161,7 @@ export function Chat() {
   useChatSocket({ convId: selectedConvId, setMessages: setMessages, setIsTyping: setIsTyping });
   /*************************  Composnent **************************************** */
   return (
-    <main className="h-full flex flex-col md:flex-row p-2 sm:p-4 gap-0 md:gap-4 overflow-hidden bg-slate-950">
+    <main className="h-full flex flex-col md:flex-row p-2 sm:p-4 gap-0 md:gap-4 overflow-hidden bg-slate-900">
       <div className={`w-full md:w-80 h-full ${selectedFriendId ? 'hidden md:flex' : 'flex'}`}>
         <ConversationList
           onSelectConversation={handleSelectConversation}

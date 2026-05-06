@@ -27,8 +27,7 @@ def register_error_handlers(app):
     
     @app.errorhandler(Exception)
     def handle_exception(e):
-        print(f"[GLOBAL ERROR] {e}")
-        return jsonify({"error" : str(e)}) , 500
+        return jsonify({"error" : "Internal server error"}) , 500
         
 
 
