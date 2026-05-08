@@ -17,10 +17,8 @@ def get_user_id():
     if not DJANGO_SECRET_KEY:
         print("[JWT] Missing DJANGO_SECRET_KEY", flush=True)
         return None
-
     try:
         decoded = jwt.decode( token, DJANGO_SECRET_KEY, algorithms=["HS256"])
-
         return str(decoded.get("user_id"))
 
     except Exception as e:

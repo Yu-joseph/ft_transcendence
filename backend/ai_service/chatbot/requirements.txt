@@ -10,9 +10,5 @@ langchain-groq
 Pillow
 PyJWT
 gunicorn
-<<<<<<< HEAD
-redis
-=======
 redis
 gevent
->>>>>>> 1893babdcdb759c06251eeca73adc603da066f95

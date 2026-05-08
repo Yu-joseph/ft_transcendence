@@ -1,4 +1,5 @@
 flask
 gunicorn
-dotenv
 PyJWT
+
+dotenv

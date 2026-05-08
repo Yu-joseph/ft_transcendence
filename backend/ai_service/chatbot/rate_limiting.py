@@ -67,6 +67,7 @@ def check_rate_limit_postgres_only(user_id: str):
         usage.updated_at = datetime.utcnow()
         db.session.commit()
         return True
+    
     except Exception as e:
         db.session.rollback()
         print(f"[DB FALLBACK ERROR] {e}")
@@ -76,7 +77,6 @@ def check_rate_limit(user_id : str):
 
     minute_key = f"rate:minute:{user_id}"
     daily_key  = f"rate:daily:{user_id}"
-
     try:
         daily_count = r.get(daily_key)
 
@@ -103,7 +103,6 @@ def check_rate_limit(user_id : str):
         pipe.expire(daily_key , seconds_until_midnight())
 
         results = pipe.execute()
-
         new_daily = results[2]
 
         if new_daily % SYNC_EVERY == 0 :
