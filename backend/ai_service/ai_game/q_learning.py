@@ -3,6 +3,7 @@ import random
 from utils import check_winner, action_to_key
 import os
 
+
 try:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(BASE_DIR , "q_table.json") , "r") as f:

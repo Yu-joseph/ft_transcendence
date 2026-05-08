@@ -36,12 +36,10 @@ def seconds_until_midnight():
 
 
 def restore_from_postgres(user_id  : str) -> int:
+    
     usage = db.session.get(UserUsage, user_id)
-
     today = datetime.utcnow().date()
-
-    print(f"usage = {usage} \n")
-    print(f"today = {today} \n")
+    
     if usage and usage.updated_at and usage.updated_at.date() == today:
         return usage.daily_count
     return 0
@@ -75,8 +73,10 @@ def check_rate_limit_postgres_only(user_id: str):
         return True
 
 def check_rate_limit(user_id : str):
+
     minute_key = f"rate:minute:{user_id}"
     daily_key  = f"rate:daily:{user_id}"
+
     try:
         daily_count = r.get(daily_key)
 
@@ -93,9 +93,6 @@ def check_rate_limit(user_id : str):
         minute_count  = r.get(minute_key)
         if minute_count and int(minute_count) >= LIMIT_PER_MINUTE:
             return False
-        
-        print(f"daily_count ={daily_count} ")
-        print(f"minute_count ={minute_count} ")
 
         pipe = r.pipeline()
 
@@ -106,7 +103,6 @@ def check_rate_limit(user_id : str):
         pipe.expire(daily_key , seconds_until_midnight())
 
         results = pipe.execute()
-        print(f"result = {results}")
 
         new_daily = results[2]
 

@@ -32,7 +32,6 @@ def get_messages(session_id: str) -> list:
             .order_by(Message.id.asc())
             .all()
         )
-        print(f"[DB] Loaded {len(rows)} messages for session {session_id}")
         return [
             {"role": m.role, "content": m.content, "timestamp": m.timestamp.isoformat()}
             for m in rows

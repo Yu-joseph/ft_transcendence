@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 import os
 from q_learning import  get_difficulty_action
 from utils import get_state, get_available_actions
+from auth import get_user_id
+
 
 app = Flask(__name__)
 
@@ -20,7 +22,13 @@ except Exception as e:
 
 @app.route("/api/ai-move", methods=["POST"])
 def ai_move():
+    user_id = get_user_id()
+    if  not user_id:
+        return jsonify({"error" : "Unauthorized"})
+    
     try:
+
+
         data = request.get_json(silent=True)
 
         if not data:
@@ -31,6 +39,9 @@ def ai_move():
         player = data.get("player", "O")
         difficulty = data.get("difficulty" , "hard")
         
+
+        if player not in ("X" , "O"):
+            return jsonify({"error" : "player must be X or O "}) , 400
 
         if not isinstance(board, list)  or len(board) != 9:
             return jsonify({"error": "'board' must be a list of 9 elements "}), 400

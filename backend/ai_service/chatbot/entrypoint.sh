@@ -19,9 +19,4 @@ with app.app_context():
     print('Tables ready')
 "
 
-<<<<<<< HEAD
-exec gunicorn -w 4 -b 0.0.0.0:5000 app:app
-=======
-# exec gunicorn -w 4 -b 0.0.0.0:5000 app:app
 exec gunicorn app:app -k gevent -w 4 -b 0.0.0.0:5000
->>>>>>> 1893babdcdb759c06251eeca73adc603da066f95
