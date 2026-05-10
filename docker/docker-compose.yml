@@ -49,12 +49,9 @@ services:
     env_file:
       - .env.local
     build: ../frontend
-<<<<<<< HEAD
     # volumes:
     #   - ../frontend:/app/
     #   - /app/node_modules 
-=======
->>>>>>> 1893babdcdb759c06251eeca73adc603da066f95
 
   nginx:
     build : ./nginx
@@ -89,17 +86,8 @@ services:
       - app-network
     env_file:
       - .env.local
-<<<<<<< HEAD
     environment:
       DATABASE_URL: postgres://sayf:1234@db:5432/mydb
-=======
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 15s
->>>>>>> 1893babdcdb759c06251eeca73adc603da066f95
     depends_on:
       auth:
         condition: service_healthy

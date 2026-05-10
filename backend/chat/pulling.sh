@@ -11,8 +11,4 @@ fi
 
 npx prisma db pull
 npx prisma generate
-<<<<<<< HEAD:backend/chat/backend/pulling.sh
 exec npm run dev
-=======
-exec npx tsx watch src/server.ts
->>>>>>> 1893babdcdb759c06251eeca73adc603da066f95:backend/chat/pulling.sh

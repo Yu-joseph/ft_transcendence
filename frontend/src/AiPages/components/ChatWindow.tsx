@@ -121,7 +121,6 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
       })
 
       if (!response.ok) {
-<<<<<<< HEAD
         const friendly = 
           response.status === 401 ? 'Session expired. Please sign in again.' :
           response.status === 403 ? 'This chat is unavailable.' :
@@ -130,13 +129,6 @@ function ChatWindow({ onFirstMessage, initialMessages = [], sessionId, onStreami
           response.status >= 500 ? 'Server error. Try again.' :
           'Something went wrong.';
         throw new Error(friendly);
-=======
-        const text = await response.text().catch(() => '')
-        const message = getErrorText(text) || `Request failed (${response.status})`
-        setErrorNotice(message)
-        writeDraft(null)
-        throw new Error(message)
->>>>>>> 1893babdcdb759c06251eeca73adc603da066f95
       }
       if (!response.body) {
         writeDraft(null)

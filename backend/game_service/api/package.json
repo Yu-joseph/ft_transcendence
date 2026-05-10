@@ -31,15 +31,9 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.6.0",
-<<<<<<< HEAD
     "@types/socket.io": "^3.0.1",
     "dotenv": "^17.4.2",
     "prisma": "^6.19.2",
-=======
-    "@types/pg": "^8.20.0",
-    "@types/socket.io": "^3.0.1",
-    "prisma": "^7.8.0",
->>>>>>> 1893babdcdb759c06251eeca73adc603da066f95
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },

@@ -44,24 +44,9 @@ export const initSocket = (server: HTTPServer) => {
 
     io = new Server(server, {
         cors: {
-<<<<<<< HEAD:backend/chat/backend/src/socket/index.ts
-                origin: [
-    "http://localhost:8080",
-    "http://localhost:5173",
-    "http://localhost:5173",
-    "https://localhost:8443",
-    "https://10.30.234.188:8443",
-    "https://10.30.242.27:8443"
-
-
-  ],
-  
-            credentials: true
-=======
                 origin: corsOrigins,
                 credentials: true,
                 optionsSuccessStatus: 200
->>>>>>> 1893babdcdb759c06251eeca73adc603da066f95:backend/chat/src/socket/index.ts
         }
     })
     console.log("[🔌] Socket.IO engine initialized on HTTP server...");

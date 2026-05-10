@@ -133,11 +133,7 @@ export default function UserMatchHistory({ limit = 8, id }: UserMatchHistoryProp
     return () => {
       isActive = false;
     };
-<<<<<<< HEAD
   }, [user?.id, id]);
-=======
-  }, [id]);
->>>>>>> 1893babdcdb759c06251eeca73adc603da066f95
 
   const visibleMatches = useMemo(() => matches.slice(0, limit), [matches, limit]);
 

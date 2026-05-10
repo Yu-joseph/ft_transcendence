@@ -8,7 +8,6 @@ import { isPlayerInActiveMatch } from "./socket/onevone/lobbyPresence";
 import { players } from "./socket/onevone/onevoneState";
 import helmet from 'helmet';
 
-<<<<<<< HEAD
 const app = express();
 const PORT = 3000;
 const CORE = process.env.SECRET_KEY;
@@ -23,12 +22,6 @@ const corsOptions = {
   ],
   methods: ["GET", "POST"],
   credentials: true,
-=======
-export const app = express();
-
-(BigInt.prototype as any).toJSON = function () {
-  return this.toString();
->>>>>>> 1893babdcdb759c06251eeca73adc603da066f95
 };
 
 export const corsOrigins = process.env.CORS_ORIGIN

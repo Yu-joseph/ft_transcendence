@@ -144,7 +144,6 @@ function LandinPage() {
             </section>
           </div>
         </section>
-<<<<<<< HEAD
         <section className="mt-10 grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-500">
@@ -166,9 +165,6 @@ function LandinPage() {
             </div>
           </div>
         </section>
-=======
-     
->>>>>>> 1893babdcdb759c06251eeca73adc603da066f95
         <section className="mt-12">
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-500">
             Developers

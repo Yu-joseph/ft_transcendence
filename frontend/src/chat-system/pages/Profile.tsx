@@ -40,19 +40,11 @@ export function Profile() {
                 setUserInfo(prev => prev ? { ...prev, user_status: data.status } : prev);
             }
         };
-<<<<<<< HEAD
 
         chatSocket.on('status:update', onStatusUpdate);
         return () => { chatSocket.off('status:update', onStatusUpdate); };
     }, [userInfo?.id, setUserInfo]);
 
-=======
-        
-        chatSocket.on('status:update', onStatusUpdate);
-        return () => { chatSocket.off('status:update', onStatusUpdate); };
-    }, [userInfo?.id, setUserInfo]);
-    /**__________________________________________________ */
->>>>>>> 1893babdcdb759c06251eeca73adc603da066f95
     useEffect(() => {
         if(!user?.id || !userId)
             return ;
@@ -108,13 +100,10 @@ export function Profile() {
                                 />
                                 <PlayerState  id={isOwnProfile ? userId : userInfo?.id} />
                                 <UserMatchHistory limit={8} id={isOwnProfile ? userId : userInfo?.id} />
-<<<<<<< HEAD
                                 {/* <UserStatCard 
                                     userGameStat={userStat} 
                                     isOwnProfile={isOwnProfile} 
                                 /> */}
-=======
->>>>>>> 1893babdcdb759c06251eeca73adc603da066f95
                             </div>
                         )
                     }
